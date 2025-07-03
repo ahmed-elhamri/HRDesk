@@ -63,6 +63,8 @@ return [
         Illuminate\Database\DatabaseServiceProvider::class,
         Illuminate\Foundation\Providers\FoundationServiceProvider::class,
         Illuminate\Foundation\Providers\ConsoleSupportServiceProvider::class,
+        Illuminate\Encryption\EncryptionServiceProvider::class,
+        Illuminate\Cookie\CookieServiceProvider::class,
 
 
         // Add this line:

@@ -10,14 +10,23 @@ class Employe extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
+        'fonction_id',
         'nom',
         'prenom',
-        'email',
-        'poste',
-        'departement',
         'date_embauche',
         'salaire_base',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function fonction()
+    {
+        return $this->belongsTo(Fonction::class);
+    }
 
     public function primes() {
         return $this->hasMany(Prime::class);

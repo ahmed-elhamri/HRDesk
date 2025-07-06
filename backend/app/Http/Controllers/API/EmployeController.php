@@ -19,8 +19,6 @@ class EmployeController extends Controller
             'nom' => 'required|string',
             'prenom' => 'required|string',
             'email' => 'required|email|unique:employes,email',
-            'poste' => 'required|string',
-            'departement' => 'required|string',
             'date_embauche' => 'required|date',
             'salaire_base' => 'required|numeric',
         ]);

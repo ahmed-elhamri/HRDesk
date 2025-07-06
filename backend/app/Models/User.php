@@ -24,6 +24,21 @@ class User extends Authenticatable
         'role',
     ];
 
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
+
+    public function admin()
+    {
+        return $this->hasOne(Admin::class);
+    }
+
+    public function supervisor()
+    {
+        return $this->hasOne(Supervisor::class);
+    }
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -32,7 +47,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'mot_de_passe',
-        'remember_token',
     ];
 
     /**

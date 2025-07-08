@@ -5,9 +5,19 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Fonction;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class FonctionController extends Controller
+class FonctionController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            'auth:sanctum',
+            new Middleware('role:SUPERVISOR,ADMIN', except: ['index', 'show']),
+        ];
+    }
+
     public function index()
     {
         return response()->json(Fonction::all());

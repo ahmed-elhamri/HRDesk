@@ -46,6 +46,7 @@ import SignUp from "layouts/authentication/sign-up";
 import Icon from "@mui/material/Icon";
 import Employes from "./pages/Employes";
 import Primes from "./pages/Primes";
+import Test from "./pages/Test";
 
 const routes = [
   {
@@ -120,6 +121,14 @@ const routes = [
   //   route: "/authentication/sign-in",
   //   component: <SignIn />,
   // },
+  {
+    type: "collapse",
+    name: "Test",
+    key: "test",
+    icon: <Icon fontSize="small">login</Icon>,
+    route: "/test",
+    component: <Test />,
+  },
   // {
   //   type: "collapse",
   //   name: "Sign Up",

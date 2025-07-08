@@ -18,11 +18,11 @@ Route::middleware('api')->group(function () {
 });
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     Route::get('/user', [AuthController::class, 'user']);
 });
 
@@ -30,6 +30,25 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->get('/dashboard', function (Request $request) {
     return response()->json([
         'message' => 'Welcome to dashboard',
-        'user' => $request->user()
     ]);
 });
+
+Route::get('/check-auth', function (Request $request) {
+    return $request->user() ? 'Authenticated' : 'Not Authenticated';
+})->middleware('auth:sanctum');
+
+//Route::get('/dashboard', function () {
+//    return response()->json(['message' => 'Hello']);
+//});
+
+Route::middleware(['role:SUPERVISOR'])->get('/admin-dashboard', function () {
+    return 'Admin dashboard';
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/test', function (Request $request) {
+        return response()->json(['user' => "hello"]);
+    });
+});
+
+

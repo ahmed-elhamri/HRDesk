@@ -13,6 +13,7 @@ class Prime extends Model
         'employe_id',
         'montant',
         'motif',
+        'impot',
         'date_attribution',
     ];
 

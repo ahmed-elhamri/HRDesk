@@ -21,8 +21,9 @@ class DatabaseSeeder extends Seeder
             FonctionSeeder::class,
             UserSeeder::class,
             EmployeSeeder::class,
+            PrimeSeeder::class,
             AdminSeeder::class,
-            Supervisor::class,
+            SupervisorSeeder::class,
         ]);
     }
 }

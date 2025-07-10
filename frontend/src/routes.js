@@ -47,6 +47,9 @@ import Icon from "@mui/material/Icon";
 import Employes from "./pages/Employes";
 import Primes from "./pages/Primes";
 import Test from "./pages/Test";
+import Departements from "./pages/Departement/Departements";
+import Services from "./pages/Service/Services";
+import Fonctions from "./pages/Fonction/Fonctions";
 
 const routes = [
   {
@@ -56,6 +59,30 @@ const routes = [
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
     component: <Dashboard />,
+  },
+  {
+    type: "collapse",
+    name: "Départements",
+    key: "departements",
+    icon: <Icon fontSize="small">apartment</Icon>,
+    route: "/departements",
+    component: <Departements />,
+  },
+  {
+    type: "collapse",
+    name: "Services",
+    key: "services",
+    icon: <Icon fontSize="small">location_city</Icon>,
+    route: "/services",
+    component: <Services />,
+  },
+  {
+    type: "collapse",
+    name: "Fonctions",
+    key: "fonctions",
+    icon: <Icon fontSize="small">work</Icon>,
+    route: "/fonctions",
+    component: <Fonctions />,
   },
   {
     type: "collapse",

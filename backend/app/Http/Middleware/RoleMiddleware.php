@@ -17,6 +17,7 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = $request->user();
+//        dd($user->role);
         if (!$user || !in_array($user->role, $roles)) {
             abort(403, 'Access denied');
         }

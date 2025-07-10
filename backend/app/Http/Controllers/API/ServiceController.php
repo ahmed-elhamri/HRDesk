@@ -10,7 +10,7 @@ class ServiceController extends Controller
 {
     public function index()
     {
-        return response()->json(Service::all());
+        return response()->json($services = Service::with('departement')->get());
     }
 
     public function store(Request $request)
@@ -32,8 +32,26 @@ class ServiceController extends Controller
         return response()->json($service);
     }
 
+    public function getByReference($reference)
+    {
+        $service = Service::with('departement')
+            ->where('reference', $reference)
+            ->first();
+
+        if (!$service) {
+            return response()->json(['message' => 'Service not found'], 404);
+        }
+
+        return response()->json($service);
+    }
+
     public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'departement_id' => 'required|exists:departements,id',
+            'reference' => 'required|string|unique:services,reference,' . $id,
+            'designation' => 'required|string|max:255',
+        ]);
         $service = Service::findOrFail($id);
         $service->update($request->all());
 

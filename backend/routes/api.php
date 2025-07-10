@@ -9,13 +9,21 @@ use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\FonctionController;
 use \App\Http\Controllers\API\AuthController;
 
-Route::middleware('api')->group(function () {
-    Route::apiResource('employes', EmployeController::class);
-    Route::apiResource('primes', PrimeController::class);
-    Route::apiResource('departements', DepartementController::class);
-    Route::apiResource('services', ServiceController::class);
-    Route::apiResource('fonctions', FonctionController::class);
-});
+//Route::middleware('api')->group(function () {
+//});
+
+Route::apiResource('departements', DepartementController::class);
+Route::get('/departements/reference/{reference}', [DepartementController::class, 'getByReference']);
+//Route::get('/departements/services', [DepartementController::class, 'getAllServices']);
+
+Route::apiResource('services', ServiceController::class);
+Route::get('/services/reference/{reference}', [ServiceController::class, 'getByReference']);
+
+Route::apiResource('fonctions', FonctionController::class);
+Route::get('/fonctions/reference/{reference}', [FonctionController::class, 'getByReference']);
+
+Route::apiResource('employes', EmployeController::class);
+Route::apiResource('primes', PrimeController::class);
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -27,28 +35,28 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Example protected route
-Route::middleware('auth:sanctum')->get('/dashboard', function (Request $request) {
-    return response()->json([
-        'message' => 'Welcome to dashboard',
-    ]);
-});
-
-Route::get('/check-auth', function (Request $request) {
-    return $request->user() ? 'Authenticated' : 'Not Authenticated';
-})->middleware('auth:sanctum');
-
-//Route::get('/dashboard', function () {
-//    return response()->json(['message' => 'Hello']);
+//Route::middleware('auth:sanctum')->get('/dashboard', function (Request $request) {
+//    return response()->json([
+//        'message' => 'Welcome to dashboard',
+//    ]);
 //});
-
-Route::middleware(['role:SUPERVISOR'])->get('/admin-dashboard', function () {
-    return 'Admin dashboard';
-});
-
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/test', function (Request $request) {
-        return response()->json(['user' => "hello"]);
-    });
-});
+//
+//Route::get('/check-auth', function (Request $request) {
+//    return $request->user() ? 'Authenticated' : 'Not Authenticated';
+//})->middleware('auth:sanctum');
+//
+////Route::get('/dashboard', function () {
+////    return response()->json(['message' => 'Hello']);
+////});
+//
+//Route::middleware(['role:SUPERVISOR'])->get('/admin-dashboard', function () {
+//    return 'Admin dashboard';
+//});
+//
+//Route::middleware(['auth:sanctum'])->group(function () {
+//    Route::get('/test', function (Request $request) {
+//        return response()->json(['user' => "hello"]);
+//    });
+//});
 
 

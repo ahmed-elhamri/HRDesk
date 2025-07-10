@@ -44,6 +44,8 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    const token = localStorage.getItem("token");
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     try {
       await axios.post("/api/logout", null, {
         headers: {

@@ -17,6 +17,9 @@ import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "co
 import brandWhite from "assets/images/HRDesk_logo_dark.png";
 import brandDark from "assets/images/HRDesk_logo_light.png";
 import SignIn from "./layouts/authentication/sign-in";
+import DepartementDetails from "./pages/Departement/DepartementDetails";
+import ServiceDetails from "./pages/Service/ServiceDetails";
+import FonctionDetails from "./pages/Fonction/FonctionDetails";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -125,6 +128,9 @@ export default function App() {
         {token ? (
           <>
             {getRoutes(routes)}
+            <Route path="/departements/details/:reference" element={<DepartementDetails />} />
+            <Route path="/services/details/:reference" element={<ServiceDetails />} />
+            <Route path="/fonctions/details/:reference" element={<FonctionDetails />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </>
         ) : (

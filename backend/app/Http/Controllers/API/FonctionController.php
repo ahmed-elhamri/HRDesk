@@ -14,20 +14,20 @@ class FonctionController extends Controller implements HasMiddleware
     {
         return [
             'auth:sanctum',
-            new Middleware('role:SUPERVISOR,ADMIN', except: ['index', 'show']),
+            new Middleware('role:SUPERVISOR,ADMIN'),
         ];
     }
 
     public function index()
     {
-        return response()->json(Fonction::all());
+        return response()->json(Fonction::with('service.departement')->get());
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'service_id' => 'required|exists:services,id',
-            'reference' => 'required|string',
+            'reference' => 'required|string|unique:fonctions,reference',
             'designation' => 'required|string',
         ]);
 
@@ -42,8 +42,27 @@ class FonctionController extends Controller implements HasMiddleware
         return response()->json($fonction);
     }
 
+    public function getByReference($reference)
+    {
+        $service = Fonction::with('service.departement')
+            ->where('reference', $reference)
+            ->first();
+
+        if (!$service) {
+            return response()->json(['message' => 'Service not found'], 404);
+        }
+
+        return response()->json($service);
+    }
+
     public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'reference' => 'required|string|unique:fonctions,reference,' . $id,
+            'designation' => 'required|string|max:255',
+        ]);
+
         $fonction = Fonction::findOrFail($id);
         $fonction->update($request->all());
 

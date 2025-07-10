@@ -5,12 +5,26 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Departement;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class DepartementController extends Controller
+class DepartementController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            'auth:sanctum',
+            new Middleware('role:SUPERVISOR,ADMIN'),
+        ];
+    }
     public function index()
     {
         return response()->json(Departement::all());
+    }
+
+    public function getAllServices()
+    {
+        return response()->json(Departement::services()->get());
     }
 
     public function store(Request $request)
@@ -27,14 +41,31 @@ class DepartementController extends Controller
 
     public function show($id)
     {
-        $departement = Departement::findOrFail($id);
+        $departement = Departement::with("services")->findOrFail($id);
+        return response()->json($departement);
+    }
+
+    public function getByReference($reference)
+    {
+        $departement = Departement::where('reference', $reference)->first();
+
+        if (!$departement) {
+            return response()->json(['message' => 'Departement not found'], 404);
+        }
+
         return response()->json($departement);
     }
 
     public function update(Request $request, $id)
     {
         $departement = Departement::findOrFail($id);
-        $departement->update($request->all());
+
+        $validated = $request->validate([
+            'reference' => 'required|string|unique:departements,reference,' . $id,
+            'designation' => 'required|string|max:255',
+        ]);
+
+        $departement->update($validated);
 
         return response()->json($departement);
     }

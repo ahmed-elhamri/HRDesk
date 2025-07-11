@@ -44,7 +44,7 @@ class FonctionController extends Controller implements HasMiddleware
 
     public function getByReference($reference)
     {
-        $service = Fonction::with('service.departement')
+        $service = Fonction::with(['service.departement', 'employes'])
             ->where('reference', $reference)
             ->first();
 

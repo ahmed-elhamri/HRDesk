@@ -12,18 +12,35 @@ import Sidenav from "examples/Sidenav";
 import Configurator from "examples/Configurator";
 import theme from "assets/theme";
 import themeDark from "assets/theme-dark";
-import routes from "routes";
+// import routes from "./routes";
+import supervisorRoutes from "./routes/supervisorRoutes";
+import adminRoutes from "./routes/adminRoutes";
+import employeRoutes from "./routes/employeRoutes";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import brandWhite from "assets/images/HRDesk_logo_dark.png";
 import brandDark from "assets/images/HRDesk_logo_light.png";
-import SignIn from "./layouts/authentication/sign-in";
+import SignIn from "./pages/Authentication/SignIn";
 import DepartementDetails from "./pages/Departement/DepartementDetails";
 import ServiceDetails from "./pages/Service/ServiceDetails";
 import FonctionDetails from "./pages/Fonction/FonctionDetails";
-
+import EmployeDetails from "./pages/Employe/EmployeDetails";
+import ChangePassword from "./pages/Authentication/ChangePassword";
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
   const token = localStorage.getItem("token");
+  const user_id = localStorage.getItem("user_id");
+  const role = localStorage.getItem("user_role");
+  const [routes, setRoutes] = useState([]);
+  useEffect(() => {
+    if (role === "ADMIN") {
+      setRoutes(adminRoutes);
+    } else if (role === "SUPERVISOR") {
+      setRoutes(supervisorRoutes);
+    } else {
+      setRoutes(employeRoutes);
+    }
+  }, [role]);
+
   const navigate = useNavigate();
   const {
     miniSidenav,
@@ -119,19 +136,30 @@ export default function App() {
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
           />
-          <Configurator />
-          {configsButton}
+          {/*<Configurator />*/}
+          {/*{configsButton}*/}
         </>
       )}
-      {layout === "vr" && <Configurator />}
+      {/*{layout === "vr" && <Configurator />}*/}
       <Routes>
         {token ? (
           <>
+            <Route path="/change-password" element={<ChangePassword />} />
             {getRoutes(routes)}
-            <Route path="/departements/details/:reference" element={<DepartementDetails />} />
-            <Route path="/services/details/:reference" element={<ServiceDetails />} />
-            <Route path="/fonctions/details/:reference" element={<FonctionDetails />} />
-            <Route path="*" element={<Navigate to="/dashboard" />} />
+            {role === "SUPERVISOR" && (
+              <>
+                <Route path="/departements/details/:reference" element={<DepartementDetails />} />
+                <Route path="/services/details/:reference" element={<ServiceDetails />} />
+                <Route path="/fonctions/details/:reference" element={<FonctionDetails />} />
+                <Route path="/employes/details/:matricule" element={<EmployeDetails />} />
+                <Route path="*" element={<Navigate to="/dashboard" />} />
+              </>
+            )}
+            {role === "ADMIN" && (
+              <>
+                <Route path="*" element={<Navigate to="/dashboard" />} />
+              </>
+            )}
           </>
         ) : (
           <>

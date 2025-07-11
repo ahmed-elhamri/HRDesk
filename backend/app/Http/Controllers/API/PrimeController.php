@@ -6,9 +6,19 @@ use App\Models\Prime;
 use App\Models\Employe;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class PrimeController extends Controller
+class PrimeController extends Controller implements HasMiddleware
 {
+
+    public static function middleware(): array
+    {
+        return [
+            'auth:sanctum',
+            new Middleware('role:SUPERVISOR,ADMIN'),
+        ];
+    }
     public function index()
     {
         return response()->json(Prime::with('employe')->get());
@@ -20,6 +30,7 @@ class PrimeController extends Controller
             'employe_id' => 'required|exists:employes,id',
             'montant' => 'required|numeric',
             'motif' => 'required|string',
+            'impot' => 'required|in:IMPOSABLE,NON IMPOSABLE',
             'date_attribution' => 'required|date',
         ]);
 
@@ -36,6 +47,13 @@ class PrimeController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'employe_id' => 'required|exists:employes,id',
+            'montant' => 'required|numeric',
+            'motif' => 'required|string',
+            'impot' => 'required|in:IMPOSABLE,NON IMPOSABLE',
+            'date_attribution' => 'required|date',
+        ]);
         $prime = Prime::findOrFail($id);
         $prime->update($request->all());
 

@@ -1,24 +1,95 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
-import { Card, Grid } from "@mui/material";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Card,
+  Grid,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Tooltip,
+  Icon,
+} from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import DataTable from "examples/Tables/DataTable";
 
 export default function DepartementDetails() {
   const { reference } = useParams();
+  const navigate = useNavigate();
   const [departement, setDepartement] = useState(null);
+  const [form, setForm] = useState({ reference: "", designation: "" });
+  const [open, setOpen] = useState(false);
+  const [errors, setErrors] = useState({});
   const token = localStorage.getItem("token");
+
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
+  const fetchDepartement = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/departements/reference/${reference}`);
+      setDepartement(res.data);
+      setForm({ reference: res.data.reference, designation: res.data.designation });
+    } catch {
+      setDepartement(null);
+    }
+  };
+
   useEffect(() => {
-    axios
-      .get(`http://localhost:8000/api/departements/reference/${reference}`)
-      .then((res) => setDepartement(res.data))
-      .catch(() => setDepartement(null));
+    fetchDepartement();
   }, [reference]);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => {
+    setErrors({});
+    setForm({ reference: departement.reference, designation: departement.designation });
+    setOpen(false);
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const res = await axios.put(`http://localhost:8000/api/departements/${departement.id}`, form);
+      setDepartement(res.data);
+      setOpen(false);
+      if (reference !== form.reference) {
+        navigate(`/departements/details/${form.reference}`);
+      }
+    } catch (err) {
+      if (err.response?.status === 422) {
+        setErrors(err.response.data.errors);
+      }
+    }
+  };
+
+  const columns = [
+    { Header: "Référence", accessor: "reference" },
+    { Header: "Désignation", accessor: "designation" },
+    {
+      Header: "Actions",
+      accessor: "actions",
+      Cell: ({ row }) => (
+        <Tooltip title="Voir détails">
+          <Button
+            variant="text"
+            color="secondary"
+            onClick={() => navigate(`/services/details/${row.original.reference}`)}
+          >
+            <Icon>info</Icon>
+          </Button>
+        </Tooltip>
+      ),
+    },
+  ];
 
   return (
     <DashboardLayout>
@@ -28,9 +99,15 @@ export default function DepartementDetails() {
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Card sx={{ p: 3 }}>
-                <MDTypography variant="h4" mb={2}>
-                  Détails du Département
-                </MDTypography>
+                <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <MDTypography variant="h4">Détails du Département</MDTypography>
+                  <Tooltip title="Modifier">
+                    <Button variant="contained" color="primary" onClick={handleOpen}>
+                      <Icon sx={{ color: "#fff" }}>edit</Icon>
+                    </Button>
+                  </Tooltip>
+                </MDBox>
+
                 <MDTypography>
                   <strong>Référence:</strong> {departement.reference}
                 </MDTypography>
@@ -39,11 +116,59 @@ export default function DepartementDetails() {
                 </MDTypography>
               </Card>
             </Grid>
+
+            <Grid item xs={12}>
+              <Card sx={{ p: 2 }}>
+                <MDTypography variant="h5" mb={2}>
+                  Services liés
+                </MDTypography>
+                <DataTable
+                  table={{ columns, rows: departement.services || [] }}
+                  isSorted={false}
+                  entriesPerPage={false}
+                  showTotalEntries={false}
+                  noEndBorder
+                />
+              </Card>
+            </Grid>
           </Grid>
         ) : (
           <p>Chargement ou Département introuvable...</p>
         )}
       </MDBox>
+
+      {/* Dialog: Modifier Département */}
+      <Dialog open={open} onClose={handleClose} fullWidth>
+        <DialogTitle>Modifier Département</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Référence"
+            name="reference"
+            fullWidth
+            margin="normal"
+            value={form.reference}
+            onChange={handleChange}
+            error={Boolean(errors.reference)}
+            helperText={errors.reference?.[0] || ""}
+          />
+          <TextField
+            label="Désignation"
+            name="designation"
+            fullWidth
+            margin="normal"
+            value={form.designation}
+            onChange={handleChange}
+            error={Boolean(errors.designation)}
+            helperText={errors.designation?.[0] || ""}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Annuler</Button>
+          <Button onClick={handleUpdate} variant="contained" color="primary" sx={{ color: "#fff" }}>
+            Modifier
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardLayout>
   );
 }

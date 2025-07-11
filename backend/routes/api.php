@@ -8,13 +8,15 @@ use App\Http\Controllers\API\DepartementController;
 use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\FonctionController;
 use \App\Http\Controllers\API\AuthController;
+use \App\Http\Controllers\API\AdminController;
+
 
 //Route::middleware('api')->group(function () {
 //});
+Route::apiResource('admins', AdminController::class);
 
 Route::apiResource('departements', DepartementController::class);
 Route::get('/departements/reference/{reference}', [DepartementController::class, 'getByReference']);
-//Route::get('/departements/services', [DepartementController::class, 'getAllServices']);
 
 Route::apiResource('services', ServiceController::class);
 Route::get('/services/reference/{reference}', [ServiceController::class, 'getByReference']);
@@ -23,6 +25,10 @@ Route::apiResource('fonctions', FonctionController::class);
 Route::get('/fonctions/reference/{reference}', [FonctionController::class, 'getByReference']);
 
 Route::apiResource('employes', EmployeController::class);
+Route::get('/employes/matricule/{matricule}', [EmployeController::class, 'getByMatricule']);
+
+
+
 Route::apiResource('primes', PrimeController::class);
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -31,6 +37,8 @@ Route::post('/register', [AuthController::class, 'register']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::put('/reset-password/{id}', [AuthController::class, 'resetPassword']);
+    Route::put('/change-password/{id}', [AuthController::class, 'changePassword']);
     Route::get('/user', [AuthController::class, 'user']);
 });
 

@@ -47,7 +47,7 @@ class DepartementController extends Controller implements HasMiddleware
 
     public function getByReference($reference)
     {
-        $departement = Departement::where('reference', $reference)->first();
+        $departement = Departement::with("services")->where('reference', $reference)->first();
 
         if (!$departement) {
             return response()->json(['message' => 'Departement not found'], 404);

@@ -14,7 +14,6 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email'    => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
             'role'     => 'required|in:EMPLOYE,ADMIN',
         ]);
 
@@ -24,11 +23,34 @@ class AuthController extends Controller
 
         User::create([
             'email'    => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make("123456"),
             'role'     => $request->role,
         ]);
 
         return response()->json(['success' => "User registered succefully"], 201);
+    }
+
+    public function resetPassword($id){
+        $user = User::findOrFail($id);
+        $user->password = Hash::make('123456');
+        $user->password_changed = false;
+        $user->save();
+        return response()->json(['message' => 'Password reset']);
+    }
+
+    public function changePassword(Request $request, $id)
+    {
+        $request->validate([
+            'new_password' => 'required|min:6|confirmed', // expects new_password + new_password_confirmation
+        ]);
+
+        $user = User::findOrFail($id);
+
+        $user->password = Hash::make($request->new_password);
+        $user->password_changed = true;
+        $user->save();
+
+        return response()->json(['message' => 'Mot de passe modifié avec succès']);
     }
 
     public function login(Request $request)
@@ -43,6 +65,7 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
+
 
         $token = $user->createToken('api-token')->plainTextToken;
 

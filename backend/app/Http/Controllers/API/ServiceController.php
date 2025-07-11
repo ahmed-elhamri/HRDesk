@@ -5,9 +5,18 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ServiceController extends Controller
+class ServiceController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            'auth:sanctum',
+            new Middleware('role:SUPERVISOR,ADMIN'),
+        ];
+    }
     public function index()
     {
         return response()->json($services = Service::with('departement')->get());
@@ -34,7 +43,7 @@ class ServiceController extends Controller
 
     public function getByReference($reference)
     {
-        $service = Service::with('departement')
+        $service = Service::with(['departement', 'fonctions'])
             ->where('reference', $reference)
             ->first();
 

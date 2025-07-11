@@ -33,6 +33,8 @@ export function AuthProvider({ children }) {
 
       // Store token in localStorage if needed
       localStorage.setItem("token", access_token);
+      localStorage.setItem("user_id", user.id);
+      localStorage.setItem("user_role", user.role);
       // Set default Authorization header for axios
       axios.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
 

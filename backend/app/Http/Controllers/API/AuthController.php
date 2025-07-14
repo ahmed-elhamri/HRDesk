@@ -38,19 +38,54 @@ class AuthController extends Controller
         return response()->json(['message' => 'Password reset']);
     }
 
-    public function changePassword(Request $request, $id)
+    public function changeDefaultPassword(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'new_password' => 'required|min:6|confirmed', // expects new_password + new_password_confirmation
         ]);
-
-        $user = User::findOrFail($id);
-
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+        $user = User::where('email', $request->user()->email)->first();
         $user->password = Hash::make($request->new_password);
         $user->password_changed = true;
         $user->save();
 
         return response()->json(['message' => 'Mot de passe modifié avec succès']);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'old_password' => ['required'],
+            'new_password' => ['required', 'confirmed', 'min:6'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('email', $request->user()->email)->first();
+//        dd($user);
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json([
+                'errors' => [
+                    'old_password' => ['L’ancien mot de passe est incorrect.']
+                ]
+            ], 422);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->password_changed = true;
+        $user->save();
+
+        return response()->json(['message' => 'Mot de passe changé avec succès']);
     }
 
     public function login(Request $request)

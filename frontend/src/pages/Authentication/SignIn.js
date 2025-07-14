@@ -12,26 +12,24 @@ import { useAuth } from "context/AuthContext"; // NEW
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const { login, user } = useAuth();
-  const token = localStorage.getItem("token");
+  const { login } = useAuth();
   const navigate = useNavigate(); // NEW
-  useEffect(() => {
-    if (token) {
-      navigate("/test");
-    }
-  }, [user, navigate]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const success = await login(email, password);
     if (success) {
-      navigate("/dashboard");
+      if (
+        localStorage.getItem("password_changed") === "0" &&
+        localStorage.getItem("user_role") !== "SUPERVISOR"
+      ) {
+        navigate("/change-password");
+      } else {
+        navigate("/dashboard");
+      }
     } else {
       alert("Invalid email or password");
     }
   };
-
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
   return (
     <BasicLayout image={bgImage}>

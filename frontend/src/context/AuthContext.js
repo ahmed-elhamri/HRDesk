@@ -35,6 +35,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem("token", access_token);
       localStorage.setItem("user_id", user.id);
       localStorage.setItem("user_role", user.role);
+      localStorage.setItem("password_changed", user.password_changed);
       // Set default Authorization header for axios
       axios.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
 
@@ -58,8 +59,9 @@ export function AuthProvider({ children }) {
       setUser(null);
       setToken(null);
       localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("role");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("password_changed");
 
       // Remove default auth header
       delete axios.defaults.headers.common["Authorization"];

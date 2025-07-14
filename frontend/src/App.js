@@ -25,11 +25,13 @@ import ServiceDetails from "./pages/Service/ServiceDetails";
 import FonctionDetails from "./pages/Fonction/FonctionDetails";
 import EmployeDetails from "./pages/Employe/EmployeDetails";
 import ChangePassword from "./pages/Authentication/ChangePassword";
+import UserProfile from "./pages/UserProfile";
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
   const token = localStorage.getItem("token");
   const user_id = localStorage.getItem("user_id");
   const role = localStorage.getItem("user_role");
+  const password_changed = localStorage.getItem("password_changed");
   const [routes, setRoutes] = useState([]);
   useEffect(() => {
     if (role === "ADMIN") {
@@ -142,22 +144,44 @@ export default function App() {
       )}
       {/*{layout === "vr" && <Configurator />}*/}
       <Routes>
+        <Route path="/profil" element={<UserProfile />} />
         {token ? (
           <>
-            <Route path="/change-password" element={<ChangePassword />} />
-            {getRoutes(routes)}
             {role === "SUPERVISOR" && (
               <>
+                {getRoutes(routes)}
                 <Route path="/departements/details/:reference" element={<DepartementDetails />} />
                 <Route path="/services/details/:reference" element={<ServiceDetails />} />
                 <Route path="/fonctions/details/:reference" element={<FonctionDetails />} />
                 <Route path="/employes/details/:matricule" element={<EmployeDetails />} />
+                <Route path="/profil" element={<UserProfile />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />
               </>
             )}
             {role === "ADMIN" && (
               <>
-                <Route path="*" element={<Navigate to="/dashboard" />} />
+                {password_changed === "1" ? (
+                  getRoutes(routes)
+                ) : (
+                  <>
+                    <Route path="/change-password" element={<ChangePassword />} />
+                    <Route path="/profil" element={<UserProfile />} />
+                    <Route path="*" element={<Navigate to="/change-password" />} />
+                  </>
+                )}
+              </>
+            )}
+            {role === "EMPLOYE" && (
+              <>
+                {password_changed === "1" ? (
+                  getRoutes(routes)
+                ) : (
+                  <>
+                    <Route path="/change-password" element={<ChangePassword />} />
+                    <Route path="/profil" element={<UserProfile />} />
+                    <Route path="*" element={<Navigate to="/change-password" />} />
+                  </>
+                )}
               </>
             )}
           </>

@@ -69,15 +69,6 @@ export default function EmployeDetails() {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
-        {/*<Button*/}
-        {/*  variant="outlined"*/}
-        {/*  color="primary"*/}
-        {/*  onClick={() => navigate(-1)}*/}
-        {/*  startIcon={<Icon>arrow_back</Icon>}*/}
-        {/*  sx={{ mb: 3 }}*/}
-        {/*>*/}
-        {/*  Retour*/}
-        {/*</Button>*/}
         <Card sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom>
             Détails de l&apos;employé {employe.nom} {employe.prenom}

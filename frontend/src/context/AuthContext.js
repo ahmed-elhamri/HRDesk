@@ -9,6 +9,7 @@ const AuthContext = createContext();
 // eslint-disable-next-line react/prop-types
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [employe, setEmploye] = useState(null);
   const [token, setToken] = useState(null);
 
   const getCsrfCookie = async () => {
@@ -25,10 +26,10 @@ export function AuthProvider({ children }) {
 
       const response = await axios.post("/api/login", { email, password });
       console.log(response);
-      const { user, access_token } = response.data;
+      const { user, employe, access_token } = response.data;
 
       setUser(user);
-      console.log(user);
+      setEmploye(employe);
       setToken(access_token);
 
       // Store token in localStorage if needed
@@ -71,7 +72,9 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, employe, token, login, logout }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

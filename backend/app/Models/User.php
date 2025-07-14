@@ -25,9 +25,9 @@ class User extends Authenticatable
         'role',
     ];
 
-    public function employee()
+    public function employe()
     {
-        return $this->hasOne(Employee::class);
+        return $this->hasOne(Employe::class);
     }
 
     public function admin()

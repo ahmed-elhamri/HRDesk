@@ -467,6 +467,11 @@ export default function Employes() {
                 onChange={handleChange}
                 error={Boolean(errors.sexe)}
                 helperText={errors.sexe?.[0]}
+                sx={{
+                  ".MuiInputBase-root": {
+                    height: "45px",
+                  },
+                }}
               >
                 <MenuItem value="HOMME">HOMME</MenuItem>
                 <MenuItem value="FEMME">FEMME</MenuItem>
@@ -482,12 +487,17 @@ export default function Employes() {
                 onChange={handleChange}
                 error={Boolean(errors.situation_familiale)}
                 helperText={errors.situation_familiale?.[0]}
+                sx={{
+                  ".MuiInputBase-root": {
+                    height: "45px",
+                  },
+                }}
               >
                 <MenuItem value="MARIE">Marié</MenuItem>
                 <MenuItem value="CELIBATAIRE">Célibataire</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
               <Autocomplete
                 options={fonctions}
                 getOptionLabel={(option) => option.designation}
@@ -499,6 +509,11 @@ export default function Employes() {
                     label="Fonction"
                     error={Boolean(errors.fonction_id)}
                     helperText={errors.fonction_id?.[0]}
+                    sx={{
+                      ".MuiInputBase-root": {
+                        height: "45px",
+                      },
+                    }}
                   />
                 )}
               />

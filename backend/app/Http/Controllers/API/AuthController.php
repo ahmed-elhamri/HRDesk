@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Employe;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -101,9 +102,17 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-
         $token = $user->createToken('api-token')->plainTextToken;
 
+        if ($user->role == 'EMPLOYE') {
+            $employe = $user->employe;
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user,
+                'employe' => $employe,
+            ]);
+        }
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',

@@ -37,6 +37,7 @@
 
 import Dashboard from "layouts/dashboard";
 import Icon from "@mui/material/Icon";
+import PersonalInformations from "../pages/Employe/PersonalInformations";
 
 const employeRoutes = [
   {
@@ -46,6 +47,14 @@ const employeRoutes = [
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
     component: <Dashboard />,
+  },
+  {
+    type: "collapse",
+    name: "Mes Informations Personnelles",
+    key: "personal-informations",
+    icon: <Icon fontSize="small">person4</Icon>,
+    route: "/personal-informations",
+    component: <PersonalInformations />,
   },
 ];
 

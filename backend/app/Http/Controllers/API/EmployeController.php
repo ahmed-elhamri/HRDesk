@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -17,7 +18,7 @@ class EmployeController extends Controller implements HasMiddleware
     {
         return [
             'auth:sanctum',
-            new Middleware('role:SUPERVISOR,ADMIN'),
+            new Middleware('role:SUPERVISOR,ADMIN', except: ['show', 'update']),
         ];
     }
     public function index()
@@ -73,7 +74,12 @@ class EmployeController extends Controller implements HasMiddleware
 
     public function show($id)
     {
-        $employe = Employe::findOrFail($id);
+        $employe = Employe::with([
+            'fonction',
+            'fonction.service',
+            'fonction.service.departement',
+            'user'
+        ])->where("user_id", $id)->first();
         return response()->json($employe);
     }
 
@@ -95,25 +101,44 @@ class EmployeController extends Controller implements HasMiddleware
 
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'fonction_id' => 'required|exists:fonctions,id',
-            'matricule' => 'required|string|unique:employes,matricule,' . $id,
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-            'cin' => 'required|string',
-            'sexe' => 'required|in:HOMME,FEMME',
-            'nationalite' => 'required|string',
-            'date_de_naissance' => 'required|date',
-            'pays' => 'required|string',
-            'ville' => 'required|string',
-            'adresse_actuelle' => 'required|string',
-            'telephone_mobile' => 'required|string',
-            'telephone_fixe' => 'required|string',
-            'email_personnel' => 'required|email|unique:employes,email_personnel,' . $id,
-            'situation_familiale' => 'required|in:MARIE,CELIBATAIRE',
-            'date_embauche' => 'required|date',
-            'salaire_base' => 'required|numeric'
-        ]);
+        if ($request->user()->role === 'EMPLOYE') {
+            $validator = Validator::make($request->all(), [
+                'nom' => 'required|string',
+                'prenom' => 'required|string',
+                'cin' => 'required|string',
+                'sexe' => 'required|in:HOMME,FEMME',
+                'nationalite' => 'required|string',
+                'date_de_naissance' => 'required|date',
+                'pays' => 'required|string',
+                'ville' => 'required|string',
+                'adresse_actuelle' => 'required|string',
+                'telephone_mobile' => 'required|string',
+                'telephone_fixe' => 'required|string',
+                'email_personnel' => 'required|email|unique:employes,email_personnel,' . $id,
+                'situation_familiale' => 'required|in:MARIE,CELIBATAIRE',
+            ]);
+        } else{
+            $validator = Validator::make($request->all(), [
+                'fonction_id' => 'required|exists:fonctions,id',
+                'matricule' => 'required|string|unique:employes,matricule,' . $id,
+                'nom' => 'required|string',
+                'prenom' => 'required|string',
+                'cin' => 'required|string',
+                'sexe' => 'required|in:HOMME,FEMME',
+                'nationalite' => 'required|string',
+                'date_de_naissance' => 'required|date',
+                'pays' => 'required|string',
+                'ville' => 'required|string',
+                'adresse_actuelle' => 'required|string',
+                'telephone_mobile' => 'required|string',
+                'telephone_fixe' => 'required|string',
+                'email_personnel' => 'required|email|unique:employes,email_personnel,' . $id,
+                'situation_familiale' => 'required|in:MARIE,CELIBATAIRE',
+                'date_embauche' => 'required|date',
+                'salaire_base' => 'required|numeric'
+            ]);
+        }
+
 
         if ($validator->fails()) {
             return response()->json([

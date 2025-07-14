@@ -14,16 +14,19 @@ import {
   DialogTitle,
   TextField,
   Divider,
+  MenuItem,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-export default function EmployeDetails() {
+export default function PersonalInformations() {
   const { matricule } = useParams();
-  const [employe, setEmploye] = useState(null);
+  const user_id = localStorage.getItem("user_id");
   const [loading, setLoading] = useState(true);
+  const [employe, setEmploye] = useState({});
   const [openEdit, setOpenEdit] = useState(false);
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
@@ -34,7 +37,7 @@ export default function EmployeDetails() {
   useEffect(() => {
     async function fetchEmploye() {
       try {
-        const res = await axios.get(`http://localhost:8000/api/employes/matricule/${matricule}`);
+        const res = await axios.get(`http://localhost:8000/api/employes/${user_id}`);
         setEmploye(res.data);
         setForm({
           ...res.data,
@@ -54,6 +57,10 @@ export default function EmployeDetails() {
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
   const handleUpdate = async () => {
     try {
       await axios.put(`http://localhost:8000/api/employes/${form.id}`, form);
@@ -108,9 +115,7 @@ export default function EmployeDetails() {
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h5">
-            Détails de l&apos;employé {employe.nom} {employe.prenom}
-          </Typography>
+          <Typography variant="h5">Mes Informations Personnelles</Typography>
           <Button
             variant="contained"
             color="info"
@@ -170,8 +175,6 @@ export default function EmployeDetails() {
         <DialogContent>
           <Grid container spacing={2}>
             {[
-              { name: "email", label: "Email (connexion)", required: true },
-              { name: "matricule", label: "Matricule" },
               { name: "nom", label: "Nom" },
               { name: "prenom", label: "Prénom" },
               { name: "cin", label: "CIN" },
@@ -182,9 +185,7 @@ export default function EmployeDetails() {
               { name: "telephone_mobile", label: "Téléphone mobile" },
               { name: "telephone_fixe", label: "Téléphone fixe" },
               { name: "email_personnel", label: "Email personnel" },
-              { name: "salaire_base", label: "Salaire de base", type: "number" },
               { name: "date_de_naissance", label: "Date de naissance", type: "date" },
-              { name: "date_embauche", label: "Date d'embauche", type: "date" },
             ].map((field) => (
               <Grid item xs={12} md={6} key={field.name}>
                 <TextField
@@ -200,6 +201,46 @@ export default function EmployeDetails() {
                 />
               </Grid>
             ))}
+            <Grid item xs={12} md={6}>
+              <TextField
+                select
+                label="Sexe"
+                name="sexe"
+                fullWidth
+                value={form.sexe}
+                onChange={handleChange}
+                error={Boolean(errors.sexe)}
+                helperText={errors.sexe?.[0]}
+                sx={{
+                  ".MuiInputBase-root": {
+                    height: "45px",
+                  },
+                }}
+              >
+                <MenuItem value="HOMME">HOMME</MenuItem>
+                <MenuItem value="FEMME">FEMME</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                select
+                label="Situation familiale"
+                name="situation_familiale"
+                fullWidth
+                value={form.situation_familiale}
+                onChange={handleChange}
+                error={Boolean(errors.situation_familiale)}
+                helperText={errors.situation_familiale?.[0]}
+                sx={{
+                  ".MuiInputBase-root": {
+                    height: "45px",
+                  },
+                }}
+              >
+                <MenuItem value="MARIE">Marié</MenuItem>
+                <MenuItem value="CELIBATAIRE">Célibataire</MenuItem>
+              </TextField>
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>

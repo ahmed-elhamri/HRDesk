@@ -12,6 +12,8 @@ import {
   TextField,
   Tooltip,
   Icon,
+  CircularProgress,
+  Typography,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -25,16 +27,23 @@ export default function Admins() {
   const [form, setForm] = useState({ email: "" });
   const [errors, setErrors] = useState({});
   const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
   const fetchAdmins = async () => {
+    setLoading(true);
+    setLoadError(false);
     try {
       const res = await axios.get("http://localhost:8000/api/admins");
       setAdmins(res.data);
     } catch (error) {
       console.error("Error fetching admins:", error);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,6 +122,30 @@ export default function Admins() {
     },
   ];
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <CircularProgress />
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  if (loadError || !admins.length) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <Typography variant="h6" color="error">
+            Aucune donnée trouvée ou une erreur est survenue.
+          </Typography>
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -168,7 +201,7 @@ export default function Admins() {
         </Grid>
       </MDBox>
 
-      {/* Dialog: Ajouter Admin */}
+      {/* Dialog: Ajouter admin */}
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>Ajouter Admin</DialogTitle>
         <DialogContent>

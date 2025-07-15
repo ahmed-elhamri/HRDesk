@@ -14,6 +14,8 @@ import {
   Tooltip,
   Icon,
   MenuItem,
+  CircularProgress,
+  Typography,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -47,12 +49,14 @@ export default function Employes() {
   });
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [selectedFonction, setSelectedFonction] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDepartement, setSelectedDepartement] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
@@ -60,8 +64,10 @@ export default function Employes() {
     try {
       const res = await axios.get("http://localhost:8000/api/employes");
       setEmployes(res.data);
+      setLoadError(false);
     } catch (error) {
       console.error("Error fetching employes:", error);
+      setLoadError(true);
     }
   };
 
@@ -69,14 +75,20 @@ export default function Employes() {
     try {
       const res = await axios.get("http://localhost:8000/api/fonctions");
       setFonctions(res.data);
+      setLoadError(false);
     } catch (error) {
       console.error("Error fetching fonctions:", error);
+      setLoadError(true);
     }
   };
 
   useEffect(() => {
-    fetchEmployes();
-    fetchFonctions();
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchEmployes(), fetchFonctions()]);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   const handleOpen = () => setOpen(true);
@@ -118,7 +130,7 @@ export default function Employes() {
       } else {
         await axios.post("http://localhost:8000/api/employes", form);
       }
-      fetchEmployes();
+      await fetchEmployes();
       handleClose();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -144,12 +156,22 @@ export default function Employes() {
       console.error("Erreur lors de la suppression :", error);
     }
   };
+
+  const handleResetPassword = async (id) => {
+    try {
+      await axios.put(`http://localhost:8000/api/reset-password/${id}`);
+      alert("Mot de passe réinitialisé avec succès !");
+    } catch (err) {
+      console.error("Erreur de réinitialisation:", err);
+    }
+  };
+
   const columns = [
     { Header: "Matricule", accessor: "matricule" },
     { Header: "Nom", accessor: "nom" },
     { Header: "Prénom", accessor: "prenom" },
     {
-      Header: "Fonction",
+      Header: "fonction",
       accessor: "fonction.designation",
       Cell: ({ row }) => row.original.fonction?.designation || "",
     },
@@ -168,26 +190,6 @@ export default function Employes() {
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          {/*<Tooltip title="Modifier">*/}
-          {/*  <Button onClick={() => handleEdit(row.original)} variant="text" size="small">*/}
-          {/*    <Icon>edit</Icon>*/}
-          {/*  </Button>*/}
-          {/*</Tooltip>*/}
-          {/*<Tooltip title="Supprimer">*/}
-          {/*  <Button onClick={() => handleDelete(row.original.id)} variant="text" size="small">*/}
-          {/*    <Icon sx={{ color: "error.main" }}>delete</Icon>*/}
-          {/*  </Button>*/}
-          {/*</Tooltip>*/}
-          {/*<Tooltip title="Détails">*/}
-          {/*  <Button*/}
-          {/*    onClick={() => navigate(`/employes/details/${row.original.matricule}`)}*/}
-          {/*    variant="text"*/}
-          {/*    size="small"*/}
-          {/*    color="secondary"*/}
-          {/*  >*/}
-          {/*    <Icon>info</Icon>*/}
-          {/*  </Button>*/}
-          {/*</Tooltip>*/}
           <Tooltip
             title="modifier"
             componentsProps={{
@@ -207,6 +209,27 @@ export default function Employes() {
               size="large"
             >
               <Icon>edit</Icon>
+            </Button>
+          </Tooltip>
+          <Tooltip
+            title="Réinitialiser le mot de passe"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(123, 128, 154, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
+            <Button
+              onClick={() => handleResetPassword(row.original.user_id)}
+              variant="text"
+              size="large"
+              color="info"
+            >
+              <Icon>lock_reset</Icon>
             </Button>
           </Tooltip>
           <Tooltip
@@ -256,6 +279,49 @@ export default function Employes() {
       ),
     },
   ];
+
+  const filteredEmployes = useMemo(() => {
+    return employes.filter((emp) => {
+      const matchesSearch =
+        emp.nom.toLowerCase().includes(searchText.toLowerCase()) ||
+        emp.prenom.toLowerCase().includes(searchText.toLowerCase()) ||
+        emp.matricule.toLowerCase().includes(searchText.toLowerCase());
+
+      const matchesFonction = selectedFonction ? emp.fonction_id === selectedFonction.id : true;
+      const matchesService = selectedService
+        ? emp.fonction?.service?.id === selectedService.id
+        : true;
+      const matchesDepartement = selectedDepartement
+        ? emp.fonction?.service?.departement?.id === selectedDepartement.id
+        : true;
+
+      return matchesSearch && matchesFonction && matchesService && matchesDepartement;
+    });
+  }, [employes, searchText, selectedFonction, selectedService, selectedDepartement]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <CircularProgress />
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <Typography variant="h6" color="error">
+            Erreur lors du chargement des données.
+          </Typography>
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -360,32 +426,10 @@ export default function Employes() {
                 </MDBox>
 
                 <DataTable
-                  table={useMemo(
-                    () => ({
-                      columns,
-                      rows: employes.filter((emp) => {
-                        const matchesSearch =
-                          emp.nom.toLowerCase().includes(searchText.toLowerCase()) ||
-                          emp.prenom.toLowerCase().includes(searchText.toLowerCase()) ||
-                          emp.matricule.toLowerCase().includes(searchText.toLowerCase());
-
-                        const matchesFonction = selectedFonction
-                          ? emp.fonction_id === selectedFonction.id
-                          : true;
-                        const matchesService = selectedService
-                          ? emp.fonction?.service?.id === selectedService.id
-                          : true;
-                        const matchesDepartement = selectedDepartement
-                          ? emp.fonction?.service?.departement?.id === selectedDepartement.id
-                          : true;
-
-                        return (
-                          matchesSearch && matchesFonction && matchesService && matchesDepartement
-                        );
-                      }),
-                    }),
-                    [employes]
-                  )}
+                  table={{
+                    columns,
+                    rows: filteredEmployes,
+                  }}
                   isSorted={false}
                   entriesPerPage={false}
                   showTotalEntries={false}
@@ -522,7 +566,7 @@ export default function Employes() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Annuler</Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
+          <Button onClick={handleSubmit} variant="contained" color="primary" sx={{ color: "#fff" }}>
             {form.id ? "Modifier" : "Ajouter"}
           </Button>
         </DialogActions>

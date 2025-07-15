@@ -131,11 +131,11 @@ export default function PersonalInformations() {
           </Typography>
           <Grid container spacing={2}>
             {displayField("Matricule", employe.matricule)}
-            {displayField("Fonction", employe.fonction?.designation)}
+            {displayField("fonction", employe.fonction?.designation)}
             {displayField("Service", employe.fonction?.service?.designation)}
             {displayField("Département", employe.fonction?.service?.departement?.designation)}
             {displayField("Date d'embauche", employe.date_embauche)}
-            {displayField("Salaire de base", employe.salaire_base)}
+            {displayField("Salaire de base", employe.salaire_base + " DH")}
           </Grid>
         </Card>
 

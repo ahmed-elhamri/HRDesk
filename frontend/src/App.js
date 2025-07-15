@@ -19,12 +19,12 @@ import employeRoutes from "./routes/employeRoutes";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import brandWhite from "assets/images/HRDesk_logo_dark.png";
 import brandDark from "assets/images/HRDesk_logo_light.png";
-import SignIn from "./pages/Authentication/SignIn";
-import DepartementDetails from "./pages/Departement/DepartementDetails";
-import ServiceDetails from "./pages/Service/ServiceDetails";
-import FonctionDetails from "./pages/Fonction/FonctionDetails";
-import EmployeDetails from "./pages/Employe/EmployeDetails";
-import ChangePassword from "./pages/Authentication/ChangePassword";
+import SignIn from "./pages/authentication/SignIn";
+import DepartementDetails from "./pages/departement/DepartementDetails";
+import ServiceDetails from "./pages/service/ServiceDetails";
+import FonctionDetails from "./pages/fonction/FonctionDetails";
+import EmployeDetails from "./pages/employe/EmployeDetails";
+import ChangePassword from "./pages/authentication/ChangePassword";
 import UserProfile from "./pages/UserProfile";
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();

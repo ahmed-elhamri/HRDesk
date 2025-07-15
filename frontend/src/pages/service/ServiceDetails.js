@@ -14,6 +14,8 @@ import {
   Tooltip,
   Icon,
   Autocomplete,
+  CircularProgress,
+  Typography,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -29,8 +31,10 @@ export default function ServiceDetails() {
   const [form, setForm] = useState({ reference: "", designation: "", departement_id: "" });
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState({});
-  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
+  const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
   const fetchService = async () => {
@@ -44,6 +48,7 @@ export default function ServiceDetails() {
       });
     } catch {
       setService(null);
+      setFetchError(true);
     }
   };
 
@@ -53,12 +58,18 @@ export default function ServiceDetails() {
       setDepartements(res.data);
     } catch (err) {
       console.error("Error loading departements:", err);
+      setFetchError(true);
     }
   };
 
   useEffect(() => {
-    fetchService();
-    fetchDepartements();
+    const load = async () => {
+      setLoading(true);
+      setFetchError(false);
+      await Promise.all([fetchService(), fetchDepartements()]);
+      setLoading(false);
+    };
+    load();
   }, [reference]);
 
   const handleOpen = () => setOpen(true);
@@ -105,6 +116,7 @@ export default function ServiceDetails() {
         <Tooltip title="Voir détails">
           <Button
             variant="text"
+            size="large"
             color="secondary"
             onClick={() => navigate(`/fonctions/details/${row.original.reference}`)}
           >
@@ -115,56 +127,87 @@ export default function ServiceDetails() {
     },
   ];
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <CircularProgress />
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  if (fetchError || !service) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <Typography variant="h6" color="error">
+            Une erreur est survenue ou le service est introuvable.
+          </Typography>
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
-        {service ? (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Card sx={{ p: 3 }}>
-                <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <MDTypography variant="h4">Détails du Service</MDTypography>
-                  <Tooltip title="Modifier">
-                    <Button variant="contained" color="primary" onClick={handleOpen}>
-                      <Icon sx={{ color: "#fff" }}>edit</Icon>
-                    </Button>
-                  </Tooltip>
-                </MDBox>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card sx={{ p: 3 }}>
+              <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <MDTypography variant="h4">Détails du Service</MDTypography>
+                <Tooltip
+                  title="Modifier"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(26, 115, 232, 0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
+                    },
+                  }}
+                >
+                  <Button variant="contained" color="primary" onClick={handleOpen}>
+                    <Icon sx={{ color: "#fff" }}>edit</Icon>
+                  </Button>
+                </Tooltip>
+              </MDBox>
 
-                <MDTypography>
-                  <strong>Référence:</strong> {service.reference}
-                </MDTypography>
-                <MDTypography>
-                  <strong>Désignation:</strong> {service.designation}
-                </MDTypography>
-                <MDTypography>
-                  <strong>Département:</strong> {service.departement?.designation || "Non défini"}
-                </MDTypography>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Card sx={{ p: 2 }}>
-                <MDTypography variant="h5" mb={2}>
-                  Fonctions liées
-                </MDTypography>
-                <DataTable
-                  table={{ columns, rows: service.fonctions || [] }}
-                  isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
-                  noEndBorder
-                />
-              </Card>
-            </Grid>
+              <MDTypography>
+                <strong>Référence:</strong> {service.reference}
+              </MDTypography>
+              <MDTypography>
+                <strong>Désignation:</strong> {service.designation}
+              </MDTypography>
+              <MDTypography>
+                <strong>Département:</strong> {service.departement?.designation || "Non défini"}
+              </MDTypography>
+            </Card>
           </Grid>
-        ) : (
-          <p>Chargement ou Service introuvable...</p>
-        )}
+
+          <Grid item xs={12}>
+            <Card sx={{ p: 2 }}>
+              <MDTypography variant="h5" mb={2}>
+                Fonctions liées
+              </MDTypography>
+              <DataTable
+                table={{ columns, rows: service.fonctions || [] }}
+                isSorted={false}
+                entriesPerPage={false}
+                showTotalEntries={false}
+                noEndBorder
+              />
+            </Card>
+          </Grid>
+        </Grid>
       </MDBox>
 
-      {/* Dialog: Modifier Service */}
+      {/* Dialog: Modifier service */}
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>Modifier Service</DialogTitle>
         <DialogContent>

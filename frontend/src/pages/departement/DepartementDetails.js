@@ -13,6 +13,8 @@ import {
   TextField,
   Tooltip,
   Icon,
+  CircularProgress,
+  Typography,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -27,17 +29,23 @@ export default function DepartementDetails() {
   const [form, setForm] = useState({ reference: "", designation: "" });
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState({});
-  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
+  const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
   const fetchDepartement = async () => {
+    setLoading(true);
+    setNotFound(false);
     try {
       const res = await axios.get(`http://localhost:8000/api/departements/reference/${reference}`);
       setDepartement(res.data);
       setForm({ reference: res.data.reference, designation: res.data.designation });
     } catch {
-      setDepartement(null);
+      setNotFound(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,50 +99,81 @@ export default function DepartementDetails() {
     },
   ];
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <CircularProgress />
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  if (notFound || !departement) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <Typography variant="h6" color="error">
+            Département introuvable ou une erreur est survenue.
+          </Typography>
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
-        {departement ? (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Card sx={{ p: 3 }}>
-                <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <MDTypography variant="h4">Détails du Département</MDTypography>
-                  <Tooltip title="Modifier">
-                    <Button variant="contained" color="primary" onClick={handleOpen}>
-                      <Icon sx={{ color: "#fff" }}>edit</Icon>
-                    </Button>
-                  </Tooltip>
-                </MDBox>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card sx={{ p: 3 }}>
+              <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <MDTypography variant="h4">Détails du Département</MDTypography>
+                <Tooltip
+                  title="Modifier"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(26, 115, 232, 0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
+                    },
+                  }}
+                >
+                  <Button variant="contained" color="primary" onClick={handleOpen}>
+                    <Icon sx={{ color: "#fff" }}>edit</Icon>
+                  </Button>
+                </Tooltip>
+              </MDBox>
 
-                <MDTypography>
-                  <strong>Référence:</strong> {departement.reference}
-                </MDTypography>
-                <MDTypography>
-                  <strong>Désignation:</strong> {departement.designation}
-                </MDTypography>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Card sx={{ p: 2 }}>
-                <MDTypography variant="h5" mb={2}>
-                  Services liés
-                </MDTypography>
-                <DataTable
-                  table={{ columns, rows: departement.services || [] }}
-                  isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
-                  noEndBorder
-                />
-              </Card>
-            </Grid>
+              <MDTypography>
+                <strong>Référence:</strong> {departement.reference}
+              </MDTypography>
+              <MDTypography>
+                <strong>Désignation:</strong> {departement.designation}
+              </MDTypography>
+            </Card>
           </Grid>
-        ) : (
-          <p>Chargement ou Département introuvable...</p>
-        )}
+
+          <Grid item xs={12}>
+            <Card sx={{ p: 2 }}>
+              <MDTypography variant="h5" mb={2}>
+                Services liés
+              </MDTypography>
+              <DataTable
+                table={{ columns, rows: departement.services || [] }}
+                isSorted={false}
+                entriesPerPage={false}
+                showTotalEntries={false}
+                noEndBorder
+              />
+            </Card>
+          </Grid>
+        </Grid>
       </MDBox>
 
       {/* Dialog: Modifier Département */}

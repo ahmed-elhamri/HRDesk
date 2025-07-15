@@ -37,7 +37,7 @@
 
 import Dashboard from "layouts/dashboard";
 import Icon from "@mui/material/Icon";
-import PersonalInformations from "../pages/Employe/PersonalInformations";
+import PersonalInformations from "../pages/employe/PersonalInformations";
 
 const employeRoutes = [
   {

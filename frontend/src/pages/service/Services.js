@@ -13,6 +13,8 @@ import {
   Autocomplete,
   Tooltip,
   Icon,
+  CircularProgress,
+  Typography,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -34,31 +36,33 @@ export default function Services() {
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedDepartement, setSelectedDepartement] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-  const fetchServices = async () => {
+  const fetchData = async () => {
+    setLoading(true);
+    setFetchError(false);
     try {
-      const res = await axios.get("http://localhost:8000/api/services");
-      setServices(res.data);
+      const [resServices, resDepartements] = await Promise.all([
+        axios.get("http://localhost:8000/api/services"),
+        axios.get("http://localhost:8000/api/departements"),
+      ]);
+      setServices(resServices.data);
+      setDepartements(resDepartements.data);
     } catch (error) {
-      console.error("Error fetching services:", error);
-    }
-  };
-
-  const fetchDepartements = async () => {
-    try {
-      const res = await axios.get("http://localhost:8000/api/departements");
-      setDepartements(res.data);
-    } catch (error) {
-      console.error("Error fetching departments:", error);
+      console.error("Error fetching services or departments:", error);
+      setFetchError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchServices();
-    fetchDepartements();
+    fetchData();
   }, []);
 
   const handleOpen = () => setOpen(true);
@@ -79,7 +83,7 @@ export default function Services() {
       } else {
         await axios.post("http://localhost:8000/api/services", form);
       }
-      fetchServices();
+      fetchData();
       handleClose();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -95,7 +99,7 @@ export default function Services() {
 
   const handleDelete = async (id) => {
     await axios.delete(`http://localhost:8000/api/services/${id}`);
-    fetchServices();
+    fetchData();
   };
 
   const filteredServices = services.filter((service) => {
@@ -189,6 +193,32 @@ export default function Services() {
     },
   ];
 
+  // Show loading spinner
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <CircularProgress />
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  // Show error message
+  if (fetchError) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <Typography variant="h6" color="error">
+            Une erreur est survenue lors du chargement des données.
+          </Typography>
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -270,7 +300,7 @@ export default function Services() {
 
       {/* Dialog */}
       <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle>{form.id ? "Modifier Service" : "Ajouter Service"}</DialogTitle>
+        <DialogTitle>{form.id ? "Modifier service" : "Ajouter service"}</DialogTitle>
         <DialogContent>
           <Grid item xs={12} sx={{ mt: 2 }}>
             <Autocomplete

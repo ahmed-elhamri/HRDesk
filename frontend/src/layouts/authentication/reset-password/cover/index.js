@@ -22,7 +22,7 @@ import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 
-// Authentication layout components
+// authentication layout components
 import CoverLayout from "layouts/authentication/components/CoverLayout";
 
 // Images

@@ -10,6 +10,10 @@ import {
   DialogTitle,
   Grid,
   TextField,
+  Tooltip,
+  Icon,
+  CircularProgress,
+  Typography,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -17,8 +21,6 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useNavigate } from "react-router-dom";
-import Icon from "@mui/material/Icon";
-import Tooltip from "@mui/material/Tooltip";
 
 export default function Departements() {
   const [departements, setDepartements] = useState([]);
@@ -26,13 +28,25 @@ export default function Departements() {
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
   const fetchDepartements = async () => {
-    const res = await axios.get("http://localhost:8000/api/departements");
-    setDepartements(res.data);
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const res = await axios.get("http://localhost:8000/api/departements");
+      setDepartements(res.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des départements :", error);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -80,7 +94,6 @@ export default function Departements() {
     setSearchText(e.target.value);
   };
 
-  // Filter departments by reference or designation
   const filteredDepartements = departements.filter(
     (dep) =>
       dep.reference.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -100,8 +113,8 @@ export default function Departements() {
             componentsProps={{
               tooltip: {
                 sx: {
-                  backgroundColor: "rgba(26, 115, 232, 0.8)", // semi-transparent black
-                  color: "#fff", // white text
+                  backgroundColor: "rgba(26, 115, 232, 0.8)",
+                  color: "#fff",
                   fontSize: "0.8rem",
                 },
               },
@@ -121,8 +134,8 @@ export default function Departements() {
             componentsProps={{
               tooltip: {
                 sx: {
-                  backgroundColor: "rgba(244, 67, 53, 0.8)", // semi-transparent black
-                  color: "#fff", // white text
+                  backgroundColor: "rgba(244, 67, 53, 0.8)",
+                  color: "#fff",
                   fontSize: "0.8rem",
                 },
               },
@@ -142,8 +155,8 @@ export default function Departements() {
             componentsProps={{
               tooltip: {
                 sx: {
-                  backgroundColor: "rgba(123, 128, 154, 0.8)", // semi-transparent black
-                  color: "#fff", // white text
+                  backgroundColor: "rgba(123, 128, 154, 0.8)",
+                  color: "#fff",
                   fontSize: "0.8rem",
                 },
               },
@@ -163,6 +176,30 @@ export default function Departements() {
       ),
     },
   ];
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <CircularProgress />
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  if (loadError || departements.length === 0) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <Typography variant="h6" color="error">
+            Aucune donnée trouvée ou une erreur est survenue.
+          </Typography>
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>

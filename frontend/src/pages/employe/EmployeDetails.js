@@ -14,6 +14,8 @@ import {
   DialogTitle,
   TextField,
   Divider,
+  MenuItem,
+  Autocomplete,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -23,6 +25,7 @@ import { useParams, useNavigate } from "react-router-dom";
 export default function EmployeDetails() {
   const { matricule } = useParams();
   const [employe, setEmploye] = useState(null);
+  const [fonctions, setFonctions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openEdit, setOpenEdit] = useState(false);
   const [form, setForm] = useState({});
@@ -31,22 +34,32 @@ export default function EmployeDetails() {
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-  useEffect(() => {
-    async function fetchEmploye() {
-      try {
-        const res = await axios.get(`http://localhost:8000/api/employes/matricule/${matricule}`);
-        setEmploye(res.data);
-        setForm({
-          ...res.data,
-          email: res.data.user?.email || "",
-        });
-      } catch (error) {
-        console.error("Error fetching employe details:", error);
-      } finally {
-        setLoading(false);
-      }
+  const fetchEmploye = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/employes/matricule/${matricule}`);
+      setEmploye(res.data);
+      setForm({
+        ...res.data,
+        email: res.data.user?.email || "",
+      });
+    } catch (error) {
+      console.error("Error fetching employe details:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+  const fetchFonctions = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/fonctions");
+      setFonctions(res.data);
+    } catch (error) {
+      console.error("Error fetching fonctions:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchEmploye();
+    fetchFonctions();
   }, [matricule]);
 
   const handleFormChange = (e) => {
@@ -60,6 +73,7 @@ export default function EmployeDetails() {
       setEmploye({ ...form });
       setOpenEdit(false);
       setErrors({});
+      fetchEmploye();
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});
@@ -126,11 +140,11 @@ export default function EmployeDetails() {
           </Typography>
           <Grid container spacing={2}>
             {displayField("Matricule", employe.matricule)}
-            {displayField("Fonction", employe.fonction?.designation)}
+            {displayField("fonction", employe.fonction?.designation)}
             {displayField("Service", employe.fonction?.service?.designation)}
             {displayField("Département", employe.fonction?.service?.departement?.designation)}
             {displayField("Date d'embauche", employe.date_embauche)}
-            {displayField("Salaire de base", employe.salaire_base)}
+            {displayField("Salaire de base", employe.salaire_base + " DH")}
           </Grid>
         </Card>
 
@@ -200,6 +214,67 @@ export default function EmployeDetails() {
                 />
               </Grid>
             ))}
+            <Grid item xs={12} md={6}>
+              <TextField
+                select
+                label="Sexe"
+                name="sexe"
+                fullWidth
+                value={form.sexe}
+                onChange={handleFormChange}
+                error={Boolean(errors.sexe)}
+                helperText={errors.sexe?.[0]}
+                sx={{
+                  ".MuiInputBase-root": {
+                    height: "45px",
+                  },
+                }}
+              >
+                <MenuItem value="HOMME">HOMME</MenuItem>
+                <MenuItem value="FEMME">FEMME</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                select
+                label="Situation familiale"
+                name="situation_familiale"
+                fullWidth
+                value={form.situation_familiale}
+                onChange={handleFormChange}
+                error={Boolean(errors.situation_familiale)}
+                helperText={errors.situation_familiale?.[0]}
+                sx={{
+                  ".MuiInputBase-root": {
+                    height: "45px",
+                  },
+                }}
+              >
+                <MenuItem value="MARIE">Marié</MenuItem>
+                <MenuItem value="CELIBATAIRE">Célibataire</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Autocomplete
+                options={fonctions}
+                getOptionLabel={(option) => option.designation}
+                value={fonctions.find((f) => f.id === form.fonction_id) || null}
+                onChange={(e, val) => setForm({ ...form, fonction_id: val?.id || "" })}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Fonction"
+                    error={Boolean(errors.fonction_id)}
+                    helperText={errors.fonction_id?.[0]}
+                    sx={{
+                      ".MuiInputBase-root": {
+                        height: "45px",
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>

@@ -44,13 +44,13 @@ import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import Icon from "@mui/material/Icon";
-import Employes from "../pages/Employe/Employes";
+import Employes from "../pages/employe/Employes";
 import Primes from "../pages/Primes";
 import Test from "../pages/Test";
-import Departements from "../pages/Departement/Departements";
-import Services from "../pages/Service/Services";
-import Fonctions from "../pages/Fonction/Fonctions";
-import Admins from "../pages/Admin/Admins";
+import Departements from "../pages/departement/Departements";
+import Services from "../pages/service/Services";
+import Fonctions from "../pages/fonction/Fonctions";
+import Admins from "../pages/admin/Admins";
 
 const supervisorRoutes = [
   {

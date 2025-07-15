@@ -13,6 +13,8 @@ import {
   Autocomplete,
   Tooltip,
   Icon,
+  CircularProgress,
+  Typography,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -29,23 +31,41 @@ export default function Fonctions() {
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedService, setSelectedService] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
   const fetchFonctions = async () => {
-    const res = await axios.get("http://localhost:8000/api/fonctions");
-    setFonctions(res.data);
+    try {
+      const res = await axios.get("http://localhost:8000/api/fonctions");
+      setFonctions(res.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des fonctions :", error);
+      setLoadError(true);
+    }
   };
 
   const fetchServices = async () => {
-    const res = await axios.get("http://localhost:8000/api/services");
-    setServices(res.data);
+    try {
+      const res = await axios.get("http://localhost:8000/api/services");
+      setServices(res.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des services :", error);
+      setLoadError(true);
+    }
   };
 
   useEffect(() => {
-    fetchFonctions();
-    fetchServices();
+    const loadData = async () => {
+      setLoading(true);
+      setLoadError(false);
+      await Promise.all([fetchFonctions(), fetchServices()]);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   const handleOpen = () => setOpen(true);
@@ -66,7 +86,7 @@ export default function Fonctions() {
       } else {
         await axios.post("http://localhost:8000/api/fonctions", form);
       }
-      fetchFonctions();
+      await fetchFonctions();
       handleClose();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -108,7 +128,18 @@ export default function Fonctions() {
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          <Tooltip title="modifier">
+          <Tooltip
+            title="modifier"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(26, 115, 232, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
             <Button
               onClick={() => handleEdit(row.original)}
               variant="text"
@@ -118,18 +149,40 @@ export default function Fonctions() {
               <Icon>edit</Icon>
             </Button>
           </Tooltip>
-          <Tooltip title="supprimer">
+          <Tooltip
+            title="supprimer"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(244, 67, 53, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
             <Button
               onClick={() => handleDelete(row.original.id)}
               variant="text"
-              color="error"
               size="large"
+              color="error"
               sx={{ ml: 1 }}
             >
               <Icon sx={{ color: "error.main" }}>delete</Icon>
             </Button>
           </Tooltip>
-          <Tooltip title="détails">
+          <Tooltip
+            title="détails"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(123, 128, 154, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
             <Button
               onClick={() => navigate(`/fonctions/details/${row.original.reference}`)}
               variant="text"
@@ -145,6 +198,33 @@ export default function Fonctions() {
     },
   ];
 
+  // Show loading spinner page if loading
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <CircularProgress />
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  // Show error message page if error or no data
+  if (loadError || fonctions.length === 0) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <Typography variant="h6" color="error">
+            Aucune donnée trouvée ou une erreur est survenue.
+          </Typography>
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  // Main render when data loaded without error
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -223,7 +303,7 @@ export default function Fonctions() {
 
       {/* Dialog */}
       <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle>{form.id ? "Modifier Fonction" : "Ajouter Fonction"}</DialogTitle>
+        <DialogTitle>{form.id ? "Modifier fonction" : "Ajouter fonction"}</DialogTitle>
         <DialogContent>
           <Grid item xs={12} sx={{ mt: 2 }}>
             <Autocomplete

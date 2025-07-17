@@ -10,14 +10,15 @@ class Prime extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employe_id',
-        'montant',
         'motif',
         'impot',
-        'date_attribution',
+        'plafond',
     ];
 
-    public function employe() {
-        return $this->belongsTo(Employe::class);
+    public function employes()
+    {
+        return $this->belongsToMany(Employe::class, "employe_prime")
+            ->withPivot('montant', 'date_attribution')
+            ->withTimestamps();
     }
 }

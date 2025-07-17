@@ -35,13 +35,16 @@ class Employe extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function primes()
+    {
+        return $this->belongsToMany(Prime::class, "employe_prime")
+            ->withPivot('montant', 'date_attribution')
+            ->withTimestamps();
+    }
+
     public function fonction()
     {
         return $this->belongsTo(Fonction::class);
-    }
-
-    public function primes() {
-        return $this->hasMany(Prime::class);
     }
 
     public function conges() {

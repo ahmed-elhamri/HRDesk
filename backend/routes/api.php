@@ -9,6 +9,7 @@ use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\FonctionController;
 use \App\Http\Controllers\API\AuthController;
 use \App\Http\Controllers\API\AdminController;
+use \App\Http\Controllers\API\EmployePrimeController;
 
 
 //Route::middleware('api')->group(function () {
@@ -27,9 +28,9 @@ Route::get('/fonctions/reference/{reference}', [FonctionController::class, 'getB
 Route::apiResource('employes', EmployeController::class);
 Route::get('/employes/matricule/{matricule}', [EmployeController::class, 'getByMatricule']);
 
-
-
 Route::apiResource('primes', PrimeController::class);
+
+Route::apiResource('employe-primes', EmployePrimeController::class);
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);

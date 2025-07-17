@@ -155,7 +155,9 @@ class EmployeController extends Controller implements HasMiddleware
 
     public function destroy($id)
     {
-        Employe::destroy($id);
+        $employe = Employe::findOrFail($id);
+        User::destroy($employe->user_id);
+        $employe->delete();
         return response()->json(['message' => 'Employe deleted successfully']);
     }
 }

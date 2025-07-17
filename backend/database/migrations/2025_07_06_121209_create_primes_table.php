@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('primes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employe_id')->constrained('employes')->onDelete('cascade');
-            $table->decimal('montant', 10, 2);
             $table->string('motif');
             $table->enum('impot', ['IMPOSABLE', 'NON IMPOSABLE'])->default('NON IMPOSABLE');
-            $table->date('date_attribution');
+            $table->decimal('plafond');
             $table->timestamps();
         });
 

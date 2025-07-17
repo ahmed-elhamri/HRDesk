@@ -50,7 +50,7 @@ const employeRoutes = [
   },
   {
     type: "collapse",
-    name: "Mes Informations Personnelles",
+    name: "Mes Informations",
     key: "personal-informations",
     icon: <Icon fontSize="small">person4</Icon>,
     route: "/personal-informations",

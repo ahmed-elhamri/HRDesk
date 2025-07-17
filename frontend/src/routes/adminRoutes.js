@@ -50,6 +50,7 @@ import Test from "../pages/Test";
 import Departements from "../pages/departement/Departements";
 import Services from "../pages/service/Services";
 import Fonctions from "../pages/fonction/Fonctions";
+import EmployePrimes from "../pages/EmployePrimes";
 
 const adminRoutes = [
   {
@@ -95,10 +96,10 @@ const adminRoutes = [
   {
     type: "collapse",
     name: "Primes",
-    key: "primes",
+    key: "employe-primes",
     icon: <Icon fontSize="small">payment</Icon>,
-    route: "/primes",
-    component: <Primes />,
+    route: "/employe-primes",
+    component: <EmployePrimes />,
   },
   // {
   //   type: "collapse",

@@ -16,6 +16,8 @@ import {
   MenuItem,
   CircularProgress,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -55,6 +57,9 @@ export default function Employes() {
   const [selectedDepartement, setSelectedDepartement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -160,16 +165,25 @@ export default function Employes() {
   const handleResetPassword = async (id) => {
     try {
       await axios.put(`http://localhost:8000/api/reset-password/${id}`);
-      alert("Mot de passe réinitialisé avec succès !");
+      setSnackbarMessage("Mot de passe réinitialisé avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (err) {
+      setSnackbarMessage("Erreur lors de la réinitialisation du mot de passe.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       console.error("Erreur de réinitialisation:", err);
     }
   };
 
   const columns = [
     { Header: "Matricule", accessor: "matricule" },
-    { Header: "Nom", accessor: "nom" },
-    { Header: "Prénom", accessor: "prenom" },
+    // { Header: "Nom", accessor: "nom" },
+    // { Header: "Prénom", accessor: "prenom" },
+    {
+      Header: "Nom complet",
+      accessor: (row) => `${row.nom} ${row.prenom}`,
+    },
     {
       Header: "fonction",
       accessor: "fonction.designation",
@@ -571,6 +585,20 @@ export default function Employes() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

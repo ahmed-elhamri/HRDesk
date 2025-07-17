@@ -21,17 +21,15 @@ class PrimeController extends Controller implements HasMiddleware
     }
     public function index()
     {
-        return response()->json(Prime::with('employe')->get());
+        return response()->json(Prime::all());
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'employe_id' => 'required|exists:employes,id',
-            'montant' => 'required|numeric',
             'motif' => 'required|string',
             'impot' => 'required|in:IMPOSABLE,NON IMPOSABLE',
-            'date_attribution' => 'required|date',
+            'plafond' => 'required|numeric',
         ]);
 
         $prime = Prime::create($request->all());
@@ -41,18 +39,16 @@ class PrimeController extends Controller implements HasMiddleware
 
     public function show($id)
     {
-        $prime = Prime::with('employe')->findOrFail($id);
+        $prime = Prime::findOrFail($id);
         return response()->json($prime);
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'employe_id' => 'required|exists:employes,id',
-            'montant' => 'required|numeric',
             'motif' => 'required|string',
             'impot' => 'required|in:IMPOSABLE,NON IMPOSABLE',
-            'date_attribution' => 'required|date',
+            'plafond' => 'required|numeric',
         ]);
         $prime = Prime::findOrFail($id);
         $prime->update($request->all());

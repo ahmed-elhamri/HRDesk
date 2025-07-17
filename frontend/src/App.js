@@ -26,6 +26,7 @@ import FonctionDetails from "./pages/fonction/FonctionDetails";
 import EmployeDetails from "./pages/employe/EmployeDetails";
 import ChangePassword from "./pages/authentication/ChangePassword";
 import UserProfile from "./pages/UserProfile";
+import Primes from "./pages/Primes";
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
   const token = localStorage.getItem("token");
@@ -154,6 +155,7 @@ export default function App() {
                 <Route path="/services/details/:reference" element={<ServiceDetails />} />
                 <Route path="/fonctions/details/:reference" element={<FonctionDetails />} />
                 <Route path="/employes/details/:matricule" element={<EmployeDetails />} />
+                <Route path="/primes" element={<Primes />} />
                 <Route path="/profil" element={<UserProfile />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />
               </>
@@ -166,6 +168,7 @@ export default function App() {
                   <>
                     <Route path="/change-password" element={<ChangePassword />} />
                     <Route path="/profil" element={<UserProfile />} />
+                    <Route path="/primes" element={<Primes />} />
                     <Route path="*" element={<Navigate to="/change-password" />} />
                   </>
                 )}

@@ -16,22 +16,28 @@ import {
   Divider,
   MenuItem,
   Autocomplete,
+  Alert,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import { useParams, useNavigate } from "react-router-dom";
+import Tooltip from "@mui/material/Tooltip";
+import Snackbar from "@mui/material/Snackbar";
 
 export default function EmployeDetails() {
   const { matricule } = useParams();
   const [employe, setEmploye] = useState(null);
   const [fonctions, setFonctions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openEdit, setOpenEdit] = useState(false);
+  const [open, setOpen] = useState(false);
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
   const fetchEmploye = async () => {
@@ -57,11 +63,26 @@ export default function EmployeDetails() {
     }
   };
 
+  const handleResetPassword = async (id) => {
+    try {
+      await axios.put(`http://localhost:8000/api/reset-password/${id}`);
+      setSnackbarMessage("Mot de passe réinitialisé avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (err) {
+      setSnackbarMessage("Erreur lors de la réinitialisation du mot de passe.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Erreur de réinitialisation:", err);
+    }
+  };
+
   useEffect(() => {
     fetchEmploye();
     fetchFonctions();
   }, [matricule]);
 
+  const handleOpen = () => setOpen(true);
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
@@ -71,7 +92,7 @@ export default function EmployeDetails() {
     try {
       await axios.put(`http://localhost:8000/api/employes/${form.id}`, form);
       setEmploye({ ...form });
-      setOpenEdit(false);
+      setOpen(false);
       setErrors({});
       fetchEmploye();
     } catch (err) {
@@ -125,14 +146,44 @@ export default function EmployeDetails() {
           <Typography variant="h5">
             Détails de l&apos;employé {employe.nom} {employe.prenom}
           </Typography>
-          <Button
-            variant="contained"
-            color="info"
-            onClick={() => setOpenEdit(true)}
-            startIcon={<Icon>edit</Icon>}
-          >
-            Modifier
-          </Button>
+          <MDBox display="flex" justifyContent="space-between" alignItems="center" gap={2}>
+            <Tooltip
+              title="Modifier"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(26, 115, 232, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
+                },
+              }}
+            >
+              <Button variant="contained" color="primary" onClick={handleOpen}>
+                <Icon sx={{ color: "#fff" }}>edit</Icon>
+              </Button>
+            </Tooltip>
+            <Tooltip
+              title="Réinitialiser le mot de passe"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(123, 128, 154, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
+                },
+              }}
+            >
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => handleResetPassword(employe.id)}
+              >
+                <Icon sx={{ color: "#fff" }}>lock_reset</Icon>
+              </Button>
+            </Tooltip>
+          </MDBox>
         </MDBox>
         <Card sx={{ p: 3, mt: 3 }}>
           <Typography variant="h6" gutterBottom>
@@ -179,7 +230,7 @@ export default function EmployeDetails() {
       </MDBox>
 
       {/* Edit Form */}
-      <Dialog open={openEdit} onClose={() => setOpenEdit(false)} fullWidth maxWidth="md">
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>Modifier Employé</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
@@ -278,12 +329,26 @@ export default function EmployeDetails() {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenEdit(false)}>Annuler</Button>
+          <Button onClick={() => setOpen(false)}>Annuler</Button>
           <Button onClick={handleUpdate} variant="contained" color="primary" sx={{ color: "#fff" }}>
             Enregistrer
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

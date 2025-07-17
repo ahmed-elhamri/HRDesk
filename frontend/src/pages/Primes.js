@@ -10,30 +10,22 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
-import Autocomplete from "@mui/material/Autocomplete";
+import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DataTable from "examples/Tables/DataTable";
-import { Icon } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 
 function Primes() {
   const [rows, setRows] = useState([]);
   const [openForm, setOpenForm] = useState(false);
-  const [openInfo, setOpenInfo] = useState(false);
-  const navigate = useNavigate();
   const [form, setForm] = useState({
     id: null,
-    employe_id: "",
-    montant: "",
     motif: "",
-    impot: "IMPOSABLE", // default value
-    date_attribution: "",
+    impot: "IMPOSABLE",
+    plafond: "",
   });
-  const [employees, setEmployees] = useState([]);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [expandedMotifs, setExpandedMotifs] = useState({});
 
@@ -48,24 +40,28 @@ function Primes() {
   };
 
   const truncateText = (text, maxLength = 30) => {
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength) + "...";
+    if (!text) return "";
+    return text.length <= maxLength ? text : text.slice(0, maxLength) + "...";
   };
 
-  const fetchData = async () => {
-    const res = await axios.get("http://localhost:8000/api/primes");
-    setRows(res.data);
-  };
-
-  const fetchEmployees = async () => {
-    const res = await axios.get("http://localhost:8000/api/employes");
-    setEmployees(res.data);
+  const fetchPrimes = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/primes");
+      setRows(res.data || []);
+    } catch (error) {
+      console.error("Erreur de chargement des primes:", error);
+      setRows([]);
+    }
   };
 
   useEffect(() => {
-    fetchData();
-    fetchEmployees();
+    fetchPrimes();
   }, []);
+
+  const filteredRows = useMemo(() => {
+    if (!searchText) return rows;
+    return rows.filter((row) => row.motif?.toLowerCase().includes(searchText.toLowerCase()));
+  }, [searchText, rows]);
 
   const columns = [
     {
@@ -73,7 +69,7 @@ function Primes() {
       accessor: "motif",
       Cell: ({ row }) => {
         const id = row.original.id;
-        const fullText = row.original.motif;
+        const fullText = row.original.motif || "";
         const isExpanded = expandedMotifs[id];
         return (
           <div>
@@ -92,30 +88,25 @@ function Primes() {
         );
       },
     },
-    { Header: "Montant", accessor: "montant" },
     { Header: "Impôt", accessor: "impot" },
-    { Header: "Date", accessor: "date_attribution" },
-    {
-      Header: "Employé",
-      accessor: "employe.nom",
-      Cell: ({ row }) => (
-        <Tooltip title="Cliquez pour plus d'informations" arrow>
-          <Button
-            variant="text"
-            color="info"
-            onClick={() => navigate(`/employes/details/${row.original.employe.matricule}`)}
-          >
-            {row.original.employe.prenom} {row.original.employe.nom}
-          </Button>
-        </Tooltip>
-      ),
-    },
+    { Header: "Plafond", accessor: "plafond" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          <Tooltip title="modifier">
+          <Tooltip
+            title="modifier"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(26, 115, 232, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
             <Button
               onClick={() => handleEdit(row.original)}
               variant="text"
@@ -125,7 +116,18 @@ function Primes() {
               <Icon>edit</Icon>
             </Button>
           </Tooltip>
-          <Tooltip title="supprimer">
+          <Tooltip
+            title="supprimer"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(244, 67, 53, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
             <Button
               onClick={() => handleDelete(row.original.id)}
               variant="text"
@@ -141,25 +143,12 @@ function Primes() {
     },
   ];
 
-  // Filter rows by employee's prenom or nom based on searchText
-  const filteredRows = useMemo(() => {
-    if (!searchText) return rows;
-    const lower = searchText.toLowerCase();
-    return rows.filter((row) => {
-      const prenom = row.employe.prenom.toLowerCase();
-      const nom = row.employe.nom.toLowerCase();
-      return prenom.includes(lower) || nom.includes(lower);
-    });
-  }, [rows, searchText]);
-
   const handleOpenForm = () => {
     setForm({
       id: null,
-      employe_id: "",
-      montant: "",
       motif: "",
       impot: "IMPOSABLE",
-      date_attribution: "",
+      plafond: "",
     });
     setOpenForm(true);
   };
@@ -168,11 +157,9 @@ function Primes() {
     setOpenForm(false);
     setForm({
       id: null,
-      employe_id: "",
-      montant: "",
       motif: "",
       impot: "IMPOSABLE",
-      date_attribution: "",
+      plafond: "",
     });
   };
 
@@ -183,33 +170,31 @@ function Primes() {
       } else {
         await axios.post("http://localhost:8000/api/primes", form);
       }
-      fetchData();
+      fetchPrimes();
       handleCloseForm();
     } catch (error) {
-      console.error("Error saving prime:", error);
+      console.error("Erreur lors de l'enregistrement de la prime:", error);
     }
   };
 
   const handleEdit = (prime) => {
     setForm({
       id: prime.id,
-      employe_id: prime.employe.id,
-      montant: prime.montant,
       motif: prime.motif,
       impot: prime.impot,
-      date_attribution: prime.date_attribution,
+      plafond: prime.plafond,
     });
     setOpenForm(true);
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:8000/api/primes/${id}`);
-    fetchData();
-  };
-
-  const handleCloseInfo = () => {
-    setOpenInfo(false);
-    setSelectedEmployee(null);
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette prime ?")) return;
+    try {
+      await axios.delete(`http://localhost:8000/api/primes/${id}`);
+      fetchPrimes();
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error);
+    }
   };
 
   return (
@@ -243,7 +228,7 @@ function Primes() {
               </MDBox>
               <MDBox px={2} pt={2} display="flex" justifyContent="flex-end" flexWrap="wrap">
                 <TextField
-                  label="Recherche par employé"
+                  label="Recherche par motif"
                   size="small"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
@@ -264,20 +249,9 @@ function Primes() {
         </Grid>
       </MDBox>
 
-      {/* Form Dialog */}
       <Dialog open={openForm} onClose={handleCloseForm} fullWidth>
         <DialogTitle>{form.id ? "Modifier Prime" : "Ajouter Prime"}</DialogTitle>
         <DialogContent>
-          <Autocomplete
-            options={employees}
-            getOptionLabel={(option) => `${option.prenom} ${option.nom}`}
-            renderInput={(params) => <TextField {...params} label="Employé" margin="normal" />}
-            value={employees.find((e) => e.id === form.employe_id) || null}
-            onChange={(event, newValue) => {
-              setForm({ ...form, employe_id: newValue?.id || "" });
-            }}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-          />
           <TextField
             label="Motif"
             fullWidth
@@ -285,15 +259,6 @@ function Primes() {
             name="motif"
             value={form.motif}
             onChange={(e) => setForm({ ...form, motif: e.target.value })}
-          />
-          <TextField
-            label="Montant"
-            type="number"
-            fullWidth
-            margin="normal"
-            name="montant"
-            value={form.montant}
-            onChange={(e) => setForm({ ...form, montant: e.target.value })}
           />
           <TextField
             label="Impôt"
@@ -309,14 +274,13 @@ function Primes() {
             <option value="NON IMPOSABLE">NON IMPOSABLE</option>
           </TextField>
           <TextField
-            label="Date d'attribution"
-            type="date"
+            label="Plafond"
+            type="number"
             fullWidth
             margin="normal"
-            name="date_attribution"
-            value={form.date_attribution}
-            InputLabelProps={{ shrink: true }}
-            onChange={(e) => setForm({ ...form, date_attribution: e.target.value })}
+            name="plafond"
+            value={form.plafond}
+            onChange={(e) => setForm({ ...form, plafond: e.target.value })}
           />
         </DialogContent>
         <DialogActions>

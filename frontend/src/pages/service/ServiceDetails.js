@@ -113,7 +113,18 @@ export default function ServiceDetails() {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <Tooltip title="Voir détails">
+        <Tooltip
+          title="Voir détails"
+          componentsProps={{
+            tooltip: {
+              sx: {
+                backgroundColor: "rgba(123, 128, 154, 0.8)",
+                color: "#fff",
+                fontSize: "0.8rem",
+              },
+            },
+          }}
+        >
           <Button
             variant="text"
             size="large"

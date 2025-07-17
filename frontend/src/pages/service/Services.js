@@ -305,6 +305,7 @@ export default function Services() {
           <Grid item xs={12} sx={{ mt: 2 }}>
             <Autocomplete
               options={departements}
+              sx={{ mb: 2 }}
               getOptionLabel={(option) => option.designation}
               value={departements.find((dep) => dep.id === form.departement_id) || null}
               onChange={(event, newValue) => {

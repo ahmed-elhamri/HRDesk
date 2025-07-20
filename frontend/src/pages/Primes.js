@@ -32,6 +32,8 @@ function Primes() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -133,7 +135,10 @@ function Primes() {
             }}
           >
             <Button
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => {
+                setDeleteId(row.original.id);
+                setConfirmDialogOpen(true);
+              }}
               variant="text"
               color="error"
               size="large"
@@ -196,20 +201,9 @@ function Primes() {
     }
   };
 
-  const handleEdit = (prime) => {
-    setForm({
-      id: prime.id,
-      motif: prime.motif,
-      impot: prime.impot,
-      plafond: prime.plafond,
-    });
-    setOpenForm(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette prime ?")) return;
+  const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/primes/${id}`);
+      await axios.delete(`http://localhost:8000/api/primes/${deleteId}`);
       fetchPrimes();
       setSnackbarMessage("Prime supprimé avec succès !");
       setSnackbarSeverity("success");
@@ -219,7 +213,20 @@ function Primes() {
       setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setConfirmDialogOpen(false);
+      setDeleteId(null);
     }
+  };
+
+  const handleEdit = (prime) => {
+    setForm({
+      id: prime.id,
+      motif: prime.motif,
+      impot: prime.impot,
+      plafond: prime.plafond,
+    });
+    setOpenForm(true);
   };
 
   return (
@@ -315,6 +322,19 @@ function Primes() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle>Confirmation de suppression</DialogTitle>
+        <DialogContent>Êtes-vous sûr de vouloir supprimer cette prime ?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Annuler</Button>
+          <Button onClick={confirmDelete} color="error" variant="text" sx={{ color: "error.main" }}>
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

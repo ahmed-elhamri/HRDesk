@@ -61,6 +61,10 @@ export default function Employes() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
 
+  // New state for delete confirmation dialog
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -167,10 +171,17 @@ export default function Employes() {
     setOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) return;
+  // Modified handleDelete to only open confirmation dialog
+  const handleDelete = (id) => {
+    setDeleteId(id);
+    setConfirmDeleteOpen(true);
+  };
+
+  // New function: called when deletion is confirmed
+  const handleDeleteConfirmed = async () => {
+    if (!deleteId) return;
     try {
-      await axios.delete(`http://localhost:8000/api/employes/${id}`);
+      await axios.delete(`http://localhost:8000/api/employes/${deleteId}`);
       fetchEmployes();
       setSnackbarMessage("Employé supprimé avec succès !");
       setSnackbarSeverity("success");
@@ -180,7 +191,15 @@ export default function Employes() {
       setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setConfirmDeleteOpen(false);
+      setDeleteId(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDeleteOpen(false);
+    setDeleteId(null);
   };
 
   const handleResetPassword = async (id) => {
@@ -199,8 +218,6 @@ export default function Employes() {
 
   const columns = [
     { Header: "Matricule", accessor: "matricule" },
-    // { Header: "Nom", accessor: "nom" },
-    // { Header: "Prénom", accessor: "prenom" },
     {
       Header: "Nom complet",
       accessor: (row) => `${row.nom} ${row.prenom}`,
@@ -301,7 +318,7 @@ export default function Employes() {
             }}
           >
             <Button
-              onClick={() => navigate(`/employes/details/${row.original.matricule}`)}
+              onClick={() => navigate(`/employes/${row.original.matricule}`)}
               variant="text"
               color="secondary"
               size="large"
@@ -476,7 +493,7 @@ export default function Employes() {
         </Grid>
       </MDBox>
 
-      {/* Dialog */}
+      {/* Employe Add/Edit Dialog */}
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
         <DialogTitle>{form.id ? "Modifier Employé" : "Ajouter Employé"}</DialogTitle>
         <DialogContent>
@@ -606,6 +623,33 @@ export default function Employes() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* New Delete Confirmation Dialog */}
+      <Dialog
+        open={confirmDeleteOpen}
+        onClose={handleCancelDelete}
+        aria-labelledby="confirm-delete-title"
+        aria-describedby="confirm-delete-description"
+      >
+        <DialogTitle id="confirm-delete-title">Confirmation</DialogTitle>
+        <DialogContent>
+          <Typography id="confirm-delete-description" sx={{ mt: 1 }}>
+            Êtes-vous sûr de vouloir supprimer cet employé ?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>Annuler</Button>
+          <Button
+            onClick={handleDeleteConfirmed}
+            variant="text"
+            color="error"
+            sx={{ color: "error.main" }}
+          >
+            Confirmer la suppression
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

@@ -33,7 +33,10 @@ export default function Admins() {
   const [loadError, setLoadError] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [adminToDelete, setAdminToDelete] = useState(null);
 
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -45,7 +48,6 @@ export default function Admins() {
       const res = await axios.get("http://localhost:8000/api/admins");
       setAdmins(res.data);
     } catch (error) {
-      console.error("Error fetching admins:", error);
       setLoadError(true);
     } finally {
       setLoading(false);
@@ -80,18 +82,24 @@ export default function Admins() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const confirmDelete = (id) => {
+    setAdminToDelete(id);
+    setConfirmDialogOpen(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/admins/${id}`);
+      await axios.delete(`http://localhost:8000/api/admins/${adminToDelete}`);
       fetchAdmins();
       setSnackbarMessage("Admin supprimé avec succès !");
       setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (err) {
+    } catch {
       setSnackbarMessage("Erreur lors de la suppression d'admin");
       setSnackbarSeverity("error");
+    } finally {
       setSnackbarOpen(true);
-      console.error("Erreur de suppression:", err);
+      setConfirmDialogOpen(false);
+      setAdminToDelete(null);
     }
   };
 
@@ -100,12 +108,11 @@ export default function Admins() {
       await axios.put(`http://localhost:8000/api/reset-password/${id}`);
       setSnackbarMessage("Mot de passe réinitialisé avec succès !");
       setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (err) {
+    } catch {
       setSnackbarMessage("Erreur lors de la réinitialisation du mot de passe.");
       setSnackbarSeverity("error");
+    } finally {
       setSnackbarOpen(true);
-      console.error("Erreur de réinitialisation:", err);
     }
   };
 
@@ -154,7 +161,7 @@ export default function Admins() {
             }}
           >
             <Button
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => confirmDelete(row.original.id)}
               variant="text"
               size="large"
               sx={{ ml: 1 }}
@@ -246,7 +253,6 @@ export default function Admins() {
         </Grid>
       </MDBox>
 
-      {/* Dialog: Ajouter admin */}
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>Ajouter Admin</DialogTitle>
         <DialogContent>
@@ -268,6 +274,23 @@ export default function Admins() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle>Confirmation</DialogTitle>
+        <DialogContent>Êtes-vous sûr de vouloir supprimer cet admin ?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Annuler</Button>
+          <Button
+            onClick={handleDeleteConfirmed}
+            variant="text"
+            color="error"
+            sx={{ color: "error.main" }}
+          >
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

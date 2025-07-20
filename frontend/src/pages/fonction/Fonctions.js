@@ -39,6 +39,10 @@ export default function Fonctions() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
+  // New state for delete confirmation dialog
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedIdToDelete, setSelectedIdToDelete] = useState(null);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -120,17 +124,26 @@ export default function Fonctions() {
     setOpen(true);
   };
 
-  const handleDelete = async (id) => {
+  // Replace handleDelete call with confirm dialog opener
+  const confirmDelete = (id) => {
+    setSelectedIdToDelete(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/fonctions/${id}`);
+      await axios.delete(`http://localhost:8000/api/fonctions/${selectedIdToDelete}`);
       fetchFonctions();
-      setSnackbarMessage("Département supprimé avec succès !");
+      setSnackbarMessage("Fonction supprimée avec succès !");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
       setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setConfirmOpen(false);
+      setSelectedIdToDelete(null);
     }
   };
 
@@ -191,7 +204,7 @@ export default function Fonctions() {
             }}
           >
             <Button
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => confirmDelete(row.original.id)}
               variant="text"
               size="large"
               color="error"
@@ -227,7 +240,6 @@ export default function Fonctions() {
     },
   ];
 
-  // Show loading spinner page if loading
   if (loading) {
     return (
       <DashboardLayout>
@@ -239,7 +251,6 @@ export default function Fonctions() {
     );
   }
 
-  // Show error message page if error or no data
   if (loadError || fonctions.length === 0) {
     return (
       <DashboardLayout>
@@ -253,7 +264,6 @@ export default function Fonctions() {
     );
   }
 
-  // Main render when data loaded without error
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -330,7 +340,7 @@ export default function Fonctions() {
         </Grid>
       </MDBox>
 
-      {/* Dialog */}
+      {/* Dialog formulaire */}
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>{form.id ? "Modifier fonction" : "Ajouter fonction"}</DialogTitle>
         <DialogContent>
@@ -374,6 +384,29 @@ export default function Fonctions() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Dialog confirmation suppression */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirmation</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir supprimer cette fonction ?</Typography>
+          <Typography sx={{ color: "error.main", fontSize: "medium" }} variant="caption">
+            Si vous supprimez cette fonction, les employés associés seront également supprimés.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Annuler</Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="text"
+            color="error"
+            sx={{ color: "error.main" }}
+          >
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

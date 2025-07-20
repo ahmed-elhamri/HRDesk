@@ -42,7 +42,10 @@ export default function Services() {
   const [fetchError, setFetchError] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedIdToDelete, setSelectedIdToDelete] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -117,9 +120,14 @@ export default function Services() {
     setOpen(true);
   };
 
-  const handleDelete = async (id) => {
+  const confirmDelete = (id) => {
+    setSelectedIdToDelete(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/services/${id}`);
+      await axios.delete(`http://localhost:8000/api/services/${selectedIdToDelete}`);
       fetchData();
       setSnackbarMessage("Service supprimé avec succès !");
       setSnackbarSeverity("success");
@@ -128,6 +136,9 @@ export default function Services() {
       setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setConfirmOpen(false);
+      setSelectedIdToDelete(null);
     }
   };
 
@@ -187,7 +198,7 @@ export default function Services() {
             }}
           >
             <Button
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => confirmDelete(row.original.id)}
               variant="text"
               size="large"
               sx={{ ml: 1 }}
@@ -222,7 +233,6 @@ export default function Services() {
     },
   ];
 
-  // Show loading spinner
   if (loading) {
     return (
       <DashboardLayout>
@@ -234,7 +244,6 @@ export default function Services() {
     );
   }
 
-  // Show error message
   if (fetchError) {
     return (
       <DashboardLayout>
@@ -279,7 +288,6 @@ export default function Services() {
                 </Tooltip>
               </MDBox>
 
-              {/* Filters */}
               <MDBox px={2} py={2} display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">
                 <TextField
                   label="Recherche"
@@ -327,7 +335,6 @@ export default function Services() {
         </Grid>
       </MDBox>
 
-      {/* Dialog */}
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>{form.id ? "Modifier service" : "Ajouter service"}</DialogTitle>
         <DialogContent>
@@ -373,6 +380,29 @@ export default function Services() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirmation</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir supprimer ce service ?</Typography>
+          <Typography sx={{ color: "error.main", fontSize: "medium" }} variant="caption">
+            Si vous supprimez ce service. Les fonctions et employés associés seront également
+            supprimés.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Annuler</Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="text"
+            color="error"
+            sx={{ color: "error.main" }}
+          >
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

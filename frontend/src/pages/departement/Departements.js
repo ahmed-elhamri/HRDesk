@@ -34,7 +34,10 @@ export default function Departements() {
   const [loadError, setLoadError] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -87,15 +90,9 @@ export default function Departements() {
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors);
-        if (form.id) {
-          setSnackbarMessage("Erreur lors de la modification !");
-          setSnackbarSeverity("error");
-          setSnackbarOpen(true);
-        } else {
-          setSnackbarMessage("Erreur lors d'ajout !");
-          setSnackbarSeverity("error");
-          setSnackbarOpen(true);
-        }
+        setSnackbarMessage(form.id ? "Erreur lors de la modification !" : "Erreur lors d'ajout !");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     }
   };
@@ -105,9 +102,14 @@ export default function Departements() {
     setOpen(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDeleteClick = (id) => {
+    setSelectedDeleteId(id);
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/departements/${id}`);
+      await axios.delete(`http://localhost:8000/api/departements/${selectedDeleteId}`);
       fetchDepartements();
       setSnackbarMessage("Département supprimé avec succès !");
       setSnackbarSeverity("success");
@@ -116,6 +118,9 @@ export default function Departements() {
       setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setConfirmDeleteOpen(false);
+      setSelectedDeleteId(null);
     }
   };
 
@@ -171,7 +176,7 @@ export default function Departements() {
             }}
           >
             <Button
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDeleteClick(row.original.id)}
               variant="text"
               size="large"
               sx={{ ml: 1 }}
@@ -285,7 +290,6 @@ export default function Departements() {
         </Grid>
       </MDBox>
 
-      {/* Dialog */}
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>{form.id ? "Modifier Département" : "Ajouter Département"}</DialogTitle>
         <DialogContent>
@@ -312,6 +316,24 @@ export default function Departements() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
+        <DialogTitle>Confirmation</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir supprimer ce département ?</Typography>
+          <Typography sx={{ color: "error.main", fontSize: "medium" }} variant="caption">
+            Si vous supprimez ce département. Les services, fonctions et employés associés seront
+            également supprimés.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)}>Annuler</Button>
+          <Button onClick={confirmDelete} color="error" variant="text" sx={{ color: "error.main" }}>
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

@@ -47,6 +47,10 @@ export default function EmployePrimes() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
+  // Confirmation delete state
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
@@ -112,9 +116,6 @@ export default function EmployePrimes() {
       }
       fetchData();
       handleClose();
-      setSnackbarMessage("Prime modifié avec succès !");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});
@@ -135,9 +136,14 @@ export default function EmployePrimes() {
     setOpen(true);
   };
 
-  const handleDelete = async (id) => {
+  const confirmDelete = (id) => {
+    setDeleteId(id);
+    setConfirmDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/employe-primes/${id}`);
+      await axios.delete(`http://localhost:8000/api/employe-primes/${deleteId}`);
       fetchData();
       setSnackbarMessage("Prime supprimé avec succès !");
       setSnackbarSeverity("success");
@@ -147,6 +153,9 @@ export default function EmployePrimes() {
       setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setConfirmDeleteOpen(false);
+      setDeleteId(null);
     }
   };
 
@@ -220,7 +229,7 @@ export default function EmployePrimes() {
             }}
           >
             <Button
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => confirmDelete(row.original.id)}
               variant="text"
               size="large"
               sx={{ ml: 1 }}
@@ -307,6 +316,7 @@ export default function EmployePrimes() {
         </Grid>
       </MDBox>
 
+      {/* Form Dialog */}
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>{form.id ? "Modifier" : "Ajouter"} Prime</DialogTitle>
         <DialogContent>
@@ -379,6 +389,25 @@ export default function EmployePrimes() {
           <Button onClick={handleClose}>Annuler</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary" sx={{ color: "#fff" }}>
             {form.id ? "Modifier" : "Ajouter"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
+        <DialogTitle>Confirmation</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir supprimer cette prime ?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)}>Annuler</Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="text"
+            color="error"
+            sx={{ color: "error.main" }}
+          >
+            Supprimer
           </Button>
         </DialogActions>
       </Dialog>

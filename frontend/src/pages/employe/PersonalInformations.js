@@ -15,6 +15,8 @@ import {
   TextField,
   Divider,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -31,6 +33,9 @@ export default function PersonalInformations() {
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
@@ -67,9 +72,15 @@ export default function PersonalInformations() {
       setEmploye({ ...form });
       setOpenEdit(false);
       setErrors({});
+      setSnackbarMessage("Votre informations a été modifiés avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});
+        setSnackbarMessage("Erreur lors de la modification !");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     }
   };
@@ -250,6 +261,20 @@ export default function PersonalInformations() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

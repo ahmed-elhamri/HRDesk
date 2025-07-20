@@ -14,6 +14,8 @@ import {
   Icon,
   CircularProgress,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -29,6 +31,9 @@ export default function Admins() {
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
 
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -65,6 +70,9 @@ export default function Admins() {
       await axios.post("http://localhost:8000/api/admins", form);
       fetchAdmins();
       handleClose();
+      setSnackbarMessage("Admin ajouté avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors);
@@ -73,15 +81,30 @@ export default function Admins() {
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:8000/api/admins/${id}`);
-    fetchAdmins();
+    try {
+      await axios.delete(`http://localhost:8000/api/admins/${id}`);
+      fetchAdmins();
+      setSnackbarMessage("Admin supprimé avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (err) {
+      setSnackbarMessage("Erreur lors de la suppression d'admin");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Erreur de suppression:", err);
+    }
   };
 
   const handleResetPassword = async (id) => {
     try {
       await axios.put(`http://localhost:8000/api/reset-password/${id}`);
-      alert("Mot de passe réinitialisé avec succès !");
+      setSnackbarMessage("Mot de passe réinitialisé avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (err) {
+      setSnackbarMessage("Erreur lors de la réinitialisation du mot de passe.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       console.error("Erreur de réinitialisation:", err);
     }
   };
@@ -97,7 +120,18 @@ export default function Admins() {
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          <Tooltip title="Réinitialiser le mot de passe">
+          <Tooltip
+            title="Réinitialiser le mot de passe"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(123, 128, 154, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
             <Button
               onClick={() => handleResetPassword(row.original.id)}
               variant="text"
@@ -107,7 +141,18 @@ export default function Admins() {
               <Icon>lock_reset</Icon>
             </Button>
           </Tooltip>
-          <Tooltip title="Supprimer">
+          <Tooltip
+            title="Supprimer"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(244, 67, 53, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
             <Button
               onClick={() => handleDelete(row.original.id)}
               variant="text"
@@ -218,11 +263,25 @@ export default function Admins() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Annuler</Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
+          <Button onClick={handleSubmit} variant="contained" color="primary" sx={{ color: "#fff" }}>
             Ajouter
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

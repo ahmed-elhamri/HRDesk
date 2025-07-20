@@ -132,14 +132,29 @@ export default function Employes() {
     try {
       if (form.id) {
         await axios.put(`http://localhost:8000/api/employes/${form.id}`, form);
+        setSnackbarMessage("Employé modifié avec succès !");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       } else {
         await axios.post("http://localhost:8000/api/employes", form);
+        setSnackbarMessage("Employé ajouté avec succès !");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       }
       await fetchEmployes();
       handleClose();
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});
+        if (form.id) {
+          setSnackbarMessage("Erreur lors de la modification !");
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        } else {
+          setSnackbarMessage("Erreur lors d'ajout !");
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        }
       }
     }
   };
@@ -157,8 +172,14 @@ export default function Employes() {
     try {
       await axios.delete(`http://localhost:8000/api/employes/${id}`);
       fetchEmployes();
+      setSnackbarMessage("Employé supprimé avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (error) {
       console.error("Erreur lors de la suppression :", error);
+      setSnackbarMessage("Erreur lors de la suppression !");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 

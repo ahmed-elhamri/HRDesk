@@ -16,6 +16,8 @@ import {
   Autocomplete,
   CircularProgress,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -33,6 +35,9 @@ export default function ServiceDetails() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -94,6 +99,9 @@ export default function ServiceDetails() {
       const res = await axios.put(`http://localhost:8000/api/services/${service.id}`, form);
       setService(res.data);
       setOpen(false);
+      setSnackbarMessage("Service modifié avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
       if (reference !== form.reference) {
         navigate(`/services/details/${form.reference}`);
       } else {
@@ -269,6 +277,20 @@ export default function ServiceDetails() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

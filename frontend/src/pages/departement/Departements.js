@@ -14,6 +14,8 @@ import {
   Icon,
   CircularProgress,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -30,6 +32,9 @@ export default function Departements() {
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -68,14 +73,29 @@ export default function Departements() {
     try {
       if (form.id) {
         await axios.put(`http://localhost:8000/api/departements/${form.id}`, form);
+        setSnackbarMessage("Département modifié avec succès !");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       } else {
         await axios.post("http://localhost:8000/api/departements", form);
+        setSnackbarMessage("Département ajouté avec succès !");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       }
       fetchDepartements();
       handleClose();
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors);
+        if (form.id) {
+          setSnackbarMessage("Erreur lors de la modification !");
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        } else {
+          setSnackbarMessage("Erreur lors d'ajout !");
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        }
       }
     }
   };
@@ -86,8 +106,17 @@ export default function Departements() {
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:8000/api/departements/${id}`);
-    fetchDepartements();
+    try {
+      await axios.delete(`http://localhost:8000/api/departements/${id}`);
+      fetchDepartements();
+      setSnackbarMessage("Département supprimé avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Erreur lors de la suppression !");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
   };
 
   const handleSearchChange = (e) => {
@@ -163,7 +192,7 @@ export default function Departements() {
             }}
           >
             <Button
-              onClick={() => navigate(`/departements/details/${row.original.reference}`)}
+              onClick={() => navigate(`/departements/${row.original.reference}`)}
               variant="text"
               color="secondary"
               size="large"
@@ -283,6 +312,20 @@ export default function Departements() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

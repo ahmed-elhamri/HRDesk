@@ -15,6 +15,8 @@ import {
   Icon,
   CircularProgress,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -31,6 +33,9 @@ export default function DepartementDetails() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
 
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -69,12 +74,18 @@ export default function DepartementDetails() {
       const res = await axios.put(`http://localhost:8000/api/departements/${departement.id}`, form);
       setDepartement(res.data);
       setOpen(false);
+      setSnackbarMessage("Département modifié avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
       if (reference !== form.reference) {
         navigate(`/departements/details/${form.reference}`);
       }
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors);
+        setSnackbarMessage("Erreur lors de la modification !");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     }
   };
@@ -220,6 +231,20 @@ export default function DepartementDetails() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

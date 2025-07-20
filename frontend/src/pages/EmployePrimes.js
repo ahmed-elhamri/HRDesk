@@ -41,9 +41,11 @@ export default function EmployePrimes() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
   const [expandedMotifs, setExpandedMotifs] = useState({});
   const navigate = useNavigate();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -97,19 +99,32 @@ export default function EmployePrimes() {
 
   const handleSubmit = async () => {
     try {
-      const method = form.id ? "put" : "post";
-      const url = form.id
-        ? `http://localhost:8000/api/employe-primes/${form.id}`
-        : "http://localhost:8000/api/employe-primes";
-      await axios[method](url, form);
+      if (form.id) {
+        await axios.put(`http://localhost:8000/api/employe-primes/${form.id}`, form);
+        setSnackbarMessage("Prime modifié avec succès !");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+      } else {
+        await axios.post("http://localhost:8000/api/employe-primes", form);
+        setSnackbarMessage("Prime ajouté avec succès !");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+      }
       fetchData();
       handleClose();
-      setSnack({ open: true, message: "Opération réussie", severity: "success" });
+      setSnackbarMessage("Prime modifié avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});
+        setSnackbarMessage("Erreur lors de l'ajout !");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         if (err.response.data.message?.includes("plafond")) {
-          setSnack({ open: true, message: err.response.data.message, severity: "error" });
+          setSnackbarMessage("Montant dépasse le plafond autorisé pour ce prime");
+          setSnackbarSeverity("warning");
+          setSnackbarOpen(true);
         }
       }
     }
@@ -124,8 +139,14 @@ export default function EmployePrimes() {
     try {
       await axios.delete(`http://localhost:8000/api/employe-primes/${id}`);
       fetchData();
+      setSnackbarMessage("Prime supprimé avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (err) {
       console.error("Erreur de suppression :", err);
+      setSnackbarMessage("Erreur lors de la suppression !");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -363,12 +384,18 @@ export default function EmployePrimes() {
       </Dialog>
 
       <Snackbar
-        open={snack.open}
+        open={snackbarOpen}
         autoHideDuration={4000}
-        onClose={() => setSnack({ ...snack, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert severity={snack.severity}>{snack.message}</Alert>
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
       </Snackbar>
     </DashboardLayout>
   );

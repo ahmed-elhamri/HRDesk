@@ -16,6 +16,8 @@ import {
   DialogActions,
   CircularProgress,
   Typography,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -32,6 +34,9 @@ export default function FonctionDetails() {
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const navigate = useNavigate();
 
@@ -95,6 +100,9 @@ export default function FonctionDetails() {
       const res = await axios.put(`http://localhost:8000/api/fonctions/${fonction.id}`, form);
       setFonction(res.data);
       setOpen(false);
+      setSnackbarMessage("Fonction modifié avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
       if (reference !== form.reference) {
         navigate(`/fonctions/details/${form.reference}`);
       } else {
@@ -274,6 +282,20 @@ export default function FonctionDetails() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

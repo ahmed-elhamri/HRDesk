@@ -16,6 +16,7 @@ import MDTypography from "components/MDTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DataTable from "examples/Tables/DataTable";
+import { Alert, Snackbar } from "@mui/material";
 
 function Primes() {
   const [rows, setRows] = useState([]);
@@ -28,6 +29,9 @@ function Primes() {
   });
   const [searchText, setSearchText] = useState("");
   const [expandedMotifs, setExpandedMotifs] = useState({});
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -167,12 +171,27 @@ function Primes() {
     try {
       if (form.id) {
         await axios.put(`http://localhost:8000/api/primes/${form.id}`, form);
+        setSnackbarMessage("Prime modifié avec succès !");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       } else {
         await axios.post("http://localhost:8000/api/primes", form);
+        setSnackbarMessage("Prime ajouté avec succès !");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       }
       fetchPrimes();
       handleCloseForm();
     } catch (error) {
+      if (form.id) {
+        setSnackbarMessage("Erreur lors de la modification !");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Erreur lors de l'ajout !");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      }
       console.error("Erreur lors de l'enregistrement de la prime:", error);
     }
   };
@@ -192,8 +211,14 @@ function Primes() {
     try {
       await axios.delete(`http://localhost:8000/api/primes/${id}`);
       fetchPrimes();
+      setSnackbarMessage("Prime supprimé avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (error) {
       console.error("Erreur lors de la suppression :", error);
+      setSnackbarMessage("Erreur lors de la suppression !");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -290,6 +315,20 @@ function Primes() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

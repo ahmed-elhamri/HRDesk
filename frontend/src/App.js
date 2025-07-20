@@ -151,10 +151,10 @@ export default function App() {
             {role === "SUPERVISOR" && (
               <>
                 {getRoutes(routes)}
-                <Route path="/departements/details/:reference" element={<DepartementDetails />} />
-                <Route path="/services/details/:reference" element={<ServiceDetails />} />
-                <Route path="/fonctions/details/:reference" element={<FonctionDetails />} />
-                <Route path="/employes/details/:matricule" element={<EmployeDetails />} />
+                <Route path="/departements/:reference" element={<DepartementDetails />} />
+                <Route path="/services/:reference" element={<ServiceDetails />} />
+                <Route path="/fonctions/:reference" element={<FonctionDetails />} />
+                <Route path="/employes/:matricule" element={<EmployeDetails />} />
                 <Route path="/primes" element={<Primes />} />
                 <Route path="/profil" element={<UserProfile />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />
@@ -163,12 +163,18 @@ export default function App() {
             {role === "ADMIN" && (
               <>
                 {password_changed === "1" ? (
-                  getRoutes(routes)
+                  <>
+                    getRoutes(routes)
+                    <Route path="/departements/:reference" element={<DepartementDetails />} />
+                    <Route path="/services/:reference" element={<ServiceDetails />} />
+                    <Route path="/fonctions/:reference" element={<FonctionDetails />} />
+                    <Route path="/employes/:matricule" element={<EmployeDetails />} />
+                    <Route path="/profil" element={<UserProfile />} />
+                    <Route path="/primes" element={<Primes />} />
+                  </>
                 ) : (
                   <>
                     <Route path="/change-password" element={<ChangePassword />} />
-                    <Route path="/profil" element={<UserProfile />} />
-                    <Route path="/primes" element={<Primes />} />
                     <Route path="*" element={<Navigate to="/change-password" />} />
                   </>
                 )}
@@ -177,11 +183,13 @@ export default function App() {
             {role === "EMPLOYE" && (
               <>
                 {password_changed === "1" ? (
-                  getRoutes(routes)
+                  <>
+                    getRoutes(routes)
+                    <Route path="/profil" element={<UserProfile />} />
+                  </>
                 ) : (
                   <>
                     <Route path="/change-password" element={<ChangePassword />} />
-                    <Route path="/profil" element={<UserProfile />} />
                     <Route path="*" element={<Navigate to="/change-password" />} />
                   </>
                 )}

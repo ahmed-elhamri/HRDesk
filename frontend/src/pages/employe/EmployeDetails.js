@@ -16,6 +16,7 @@ import {
   Divider,
   MenuItem,
   Autocomplete,
+  Snackbar,
   Alert,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -23,7 +24,6 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import { useParams, useNavigate } from "react-router-dom";
 import Tooltip from "@mui/material/Tooltip";
-import Snackbar from "@mui/material/Snackbar";
 
 export default function EmployeDetails() {
   const { matricule } = useParams();
@@ -95,6 +95,9 @@ export default function EmployeDetails() {
       setOpen(false);
       setErrors({});
       fetchEmploye();
+      setSnackbarMessage("Employé modifié avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});

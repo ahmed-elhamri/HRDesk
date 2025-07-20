@@ -82,7 +82,8 @@ class AdminController extends Controller
      */
     public function destroy($id)
     {
-        User::destroy($id);
-        return response()->json(['message' => 'Employe deleted successfully']);
+        $user = User::findOrFail($id);
+        $user->delete();
+        return response()->json(['message' => 'Admin deleted successfully']);
     }
 }

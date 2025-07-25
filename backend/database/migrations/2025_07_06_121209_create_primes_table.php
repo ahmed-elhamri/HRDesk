@@ -15,7 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('motif');
             $table->enum('impot', ['IMPOSABLE', 'NON IMPOSABLE'])->default('NON IMPOSABLE');
-            $table->decimal('plafond');
+            $table->boolean('soumis_cotisation_cnss_amo_cimr')->default(false);
+            $table->boolean('soumis_ir')->default(false);
+            $table->decimal('plafond_ir');
+            $table->decimal('plafond_cnss');
+            $table->boolean('calcul_proportionnel_jours')->default(false);
             $table->timestamps();
         });
 

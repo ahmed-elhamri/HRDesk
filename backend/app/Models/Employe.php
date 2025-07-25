@@ -13,21 +13,24 @@ class Employe extends Model
         'user_id',
         'fonction_id',
         'matricule',
+        'civilite',
         'nom',
         'prenom',
-        'cin',
-        'sexe',
-        'nationalite',
-        'date_de_naissance',
-        'pays',
+        'adresse',
         'ville',
-        'adresse_actuelle',
+        'nationalite',
+        'cin',
+        'sejour',
         'telephone_mobile',
         'telephone_fixe',
-        'email_personnel',
+        'email',
+        'date_de_naissance',
         'situation_familiale',
+        'nb_enfants',
+        'nb_enfants',
         'date_embauche',
-        'salaire_base',
+        'date_entree',
+        'taux_anciennete',
     ];
 
     public function user()
@@ -49,6 +52,22 @@ class Employe extends Model
 
     public function conges() {
         return $this->hasMany(Conge::class);
+    }
+
+    public function contrat() {
+        return $this->hasOne(Contrat::class);
+    }
+
+    public function paiment() {
+        return $this->hasOne(Paiement::class);
+    }
+
+    public function caisse() {
+        return $this->hasOne(CaisseSociale::class);
+    }
+
+    public function document() {
+        return $this->hasOne(Document::class);
     }
 
     public function absences() {

@@ -14,26 +14,24 @@ class EmployeSeeder extends Seeder
      */
     public function run(): void
     {
-//        Employe::create([
-//            'user_id' => 3,
-//            'fonction_id' => 1,
-//            'matricule' => "003",
-//            'nom' => "ELHAMRI",
-//            'prenom' => "Ahmed",
-//            'cin' => "EA243377",
-//            'sexe' => "HOMME",
-//            'nationalite' => "Marocain",
-//            'date_de_naissance' => "2003-01-07",
-//            'pays' => "Maroc",
-//            'ville' => "Ben Guerir",
-//            'adresse_actuelle' => fake()->address(),
-//            'telephone_mobile' => "0641866092",
-//            'telephone_fixe' => fake()->phoneNumber(),
-//            'email_personnel' => "elhamri949@gmail.com",
-//            'situation_familiale' => "CELIBATAIRE",
-//            'date_embauche' => fake()->date(),
-//            'salaire_base' => "10000",
-//        ]);
+        Employe::create([
+            'user_id' => 3,
+            'fonction_id' => 1,
+            'matricule' => "003",
+            'civilite' => "M",
+            'nom' => "ELHAMRI",
+            'prenom' => "Ahmed",
+            'adresse' => fake()->address(),
+            'ville' => "Ben Guerir",
+            'nationalite' => "Marocain",
+            'cin' => "EA243377",
+            'telephone_mobile' => "0641866092",
+            'email' => "elhamri949@gmail.com",
+            'date_de_naissance' => "2003-01-07",
+            'situation_familiale' => "CELIBATAIRE",
+            'date_embauche' => fake()->date(),
+            'date_entree' => fake()->date(),
+        ]);
 
         $userIds = User::pluck('id')->shuffle();
 
@@ -42,21 +40,19 @@ class EmployeSeeder extends Seeder
                 'user_id' => $i,
                 'fonction_id' => fake()->numberBetween(1, 27),
                 'matricule' => str_pad($i, 3, '0', STR_PAD_LEFT),
+                'civilite' => fake()->randomElement(['M', 'MME', 'MLLE']),
                 'nom' => fake()->lastName(),
                 'prenom' => fake()->firstName(),
-                'cin' => strtoupper(fake()->lexify('??') . fake()->numerify('#####')),
-                'sexe' => fake()->randomElement(['HOMME', 'FEMME']),
-                'nationalite' => "Marocain",
-                'date_de_naissance' => fake()->date(),
-                'pays' => fake()->firstName(),
+                'adresse' => fake()->address(),
                 'ville' => fake()->firstName(),
-                'adresse_actuelle' => fake()->address(),
+                'nationalite' => "Marocain",
+                'cin' => strtoupper(fake()->lexify('??') . fake()->numerify('#####')),
                 'telephone_mobile' => fake()->phoneNumber(),
-                'telephone_fixe' => fake()->phoneNumber(),
-                'email_personnel' => fake()->email(),
+                'email' => fake()->email(),
+                'date_de_naissance' => fake()->date(),
                 'situation_familiale' => fake()->randomElement(['MARIE', 'CELIBATAIRE']),
                 'date_embauche' => fake()->date(),
-                'salaire_base' => fake()->numberBetween(5000, 12000),
+                'date_entree' => fake()->date(),
             ]);
         }
 

@@ -29,7 +29,8 @@ class PrimeController extends Controller implements HasMiddleware
         $request->validate([
             'motif' => 'required|string',
             'impot' => 'required|in:IMPOSABLE,NON IMPOSABLE',
-            'plafond' => 'required|numeric',
+            'plafond_ir' => 'required|numeric',
+            'plafond_cnss' => 'required|numeric',
         ]);
 
         $prime = Prime::create($request->all());
@@ -48,7 +49,8 @@ class PrimeController extends Controller implements HasMiddleware
         $request->validate([
             'motif' => 'required|string',
             'impot' => 'required|in:IMPOSABLE,NON IMPOSABLE',
-            'plafond' => 'required|numeric',
+            'plafond_ir' => 'required|numeric',
+            'plafond_cnss' => 'required|numeric',
         ]);
         $prime = Prime::findOrFail($id);
         $prime->update($request->all());

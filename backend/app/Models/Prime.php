@@ -12,7 +12,11 @@ class Prime extends Model
     protected $fillable = [
         'motif',
         'impot',
-        'plafond',
+        'soumis_cotisation_cnss_amo_cimr',
+        'soumis_ir',
+        'plafond_ir',
+        'plafond_cnss',
+        'calcul_proportionnel_jours',
     ];
 
     public function employes()

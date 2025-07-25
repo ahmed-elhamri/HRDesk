@@ -397,7 +397,11 @@ export default function Employes() {
                   Employés
                 </MDTypography>
                 <Tooltip title="Ajouter employé">
-                  <Button variant="contained" color="success" onClick={handleOpen}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => navigate("/add-employe")}
+                  >
                     <Icon sx={{ color: "info.main" }}>add</Icon>
                   </Button>
                 </Tooltip>

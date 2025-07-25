@@ -10,6 +10,10 @@ use App\Http\Controllers\API\FonctionController;
 use \App\Http\Controllers\API\AuthController;
 use \App\Http\Controllers\API\AdminController;
 use \App\Http\Controllers\API\EmployePrimeController;
+use \App\Http\Controllers\API\ContratController;
+use \App\Http\Controllers\API\DocumentController;
+use \App\Http\Controllers\API\CaisseSocialeController;
+use \App\Http\Controllers\API\PaiementController;
 
 
 //Route::middleware('api')->group(function () {
@@ -27,6 +31,19 @@ Route::get('/fonctions/reference/{reference}', [FonctionController::class, 'getB
 
 Route::apiResource('employes', EmployeController::class);
 Route::get('/employes/matricule/{matricule}', [EmployeController::class, 'getByMatricule']);
+
+Route::post('/contrats', [ContratController::class, 'store']);
+Route::put('/contrats', [ContratController::class, 'update']);
+
+Route::post('/caisses-sociales', [CaisseSocialeController::class, 'store']);
+Route::put('/caisses-sociales', [CaisseSocialeController::class, 'update']);
+
+Route::post('/paiements', [PaiementController::class, 'store']);
+Route::put('/paiements', [PaiementController::class, 'update']);
+
+Route::post('/documents', [DocumentController::class, 'store']);
+Route::put('/documents', [DocumentController::class, 'update']);
+
 
 Route::apiResource('primes', PrimeController::class);
 

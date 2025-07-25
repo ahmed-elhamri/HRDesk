@@ -27,6 +27,7 @@ import EmployeDetails from "./pages/employe/EmployeDetails";
 import ChangePassword from "./pages/authentication/ChangePassword";
 import UserProfile from "./pages/UserProfile";
 import Primes from "./pages/Primes";
+import AddEmploye from "./pages/employe/AddEmploye";
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
   const token = localStorage.getItem("token");
@@ -157,6 +158,7 @@ export default function App() {
                 <Route path="/employes/:matricule" element={<EmployeDetails />} />
                 <Route path="/primes" element={<Primes />} />
                 <Route path="/profil" element={<UserProfile />} />
+                <Route path="/add-employe" element={<AddEmploye />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />
               </>
             )}
@@ -171,6 +173,8 @@ export default function App() {
                     <Route path="/employes/:matricule" element={<EmployeDetails />} />
                     <Route path="/profil" element={<UserProfile />} />
                     <Route path="/primes" element={<Primes />} />
+                    <Route path="/add-employe" element={<AddEmploye />} />
+                    <Route path="*" element={<Navigate to="/dashboard" />} />
                   </>
                 ) : (
                   <>

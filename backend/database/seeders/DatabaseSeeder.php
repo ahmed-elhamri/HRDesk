@@ -1,9 +1,6 @@
 <?php
 
 namespace Database\Seeders;
-
-use App\Models\Supervisor;
-use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -21,6 +18,10 @@ class DatabaseSeeder extends Seeder
             FonctionSeeder::class,
             UserSeeder::class,
             EmployeSeeder::class,
+            ContratSeeder::class,
+            CaisseSocialeSeeder::class,
+            PaiementSeeder::class,
+            DocumentSeeder::class,
             PrimeSeeder::class,
             AdminSeeder::class,
             SupervisorSeeder::class,

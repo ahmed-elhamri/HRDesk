@@ -25,7 +25,8 @@ function Primes() {
     id: null,
     motif: "",
     impot: "IMPOSABLE",
-    plafond: "",
+    plafond_ir: "",
+    plafond_cnss: "",
   });
   const [searchText, setSearchText] = useState("");
   const [expandedMotifs, setExpandedMotifs] = useState({});
@@ -95,7 +96,23 @@ function Primes() {
       },
     },
     { Header: "Impôt", accessor: "impot" },
-    { Header: "Plafond", accessor: "plafond" },
+    { Header: "Plafond IR", accessor: "plafond_ir" },
+    { Header: "Plafond CNSS", accessor: "plafond_cnss" },
+    {
+      Header: "Soumis CNSS/AMO/CIMR",
+      accessor: "soumis_cotisation_cnss_amo_cimr",
+      Cell: ({ value }) => (value ? "Oui" : "Non"),
+    },
+    {
+      Header: "Soumis IR",
+      accessor: "soumis_ir",
+      Cell: ({ value }) => (value ? "Oui" : "Non"),
+    },
+    {
+      Header: "Calcul proportionnel",
+      accessor: "calcul_proportionnel_jours",
+      Cell: ({ value }) => (value ? "Oui" : "Non"),
+    },
     {
       Header: "Actions",
       accessor: "actions",
@@ -158,18 +175,28 @@ function Primes() {
       motif: "",
       impot: "IMPOSABLE",
       plafond: "",
+      soumis_cotisation_cnss_amo_cimr: false,
+      soumis_ir: false,
+      plafond_ir: "",
+      plafond_cnss: "",
+      calcul_proportionnel_jours: false,
     });
     setOpenForm(true);
   };
 
   const handleCloseForm = () => {
-    setOpenForm(false);
     setForm({
       id: null,
       motif: "",
       impot: "IMPOSABLE",
       plafond: "",
+      soumis_cotisation_cnss_amo_cimr: false,
+      soumis_ir: false,
+      plafond_ir: "",
+      plafond_cnss: "",
+      calcul_proportionnel_jours: false,
     });
+    setOpenForm(false);
   };
 
   const handleSubmit = async () => {
@@ -225,6 +252,11 @@ function Primes() {
       motif: prime.motif,
       impot: prime.impot,
       plafond: prime.plafond,
+      soumis_cotisation_cnss_amo_cimr: prime.soumis_cotisation_cnss_amo_cimr,
+      soumis_ir: prime.soumis_ir,
+      plafond_ir: prime.plafond_ir,
+      plafond_cnss: prime.plafond_cnss,
+      calcul_proportionnel_jours: prime.calcul_proportionnel_jours,
     });
     setOpenForm(true);
   };
@@ -306,14 +338,59 @@ function Primes() {
             <option value="NON IMPOSABLE">NON IMPOSABLE</option>
           </TextField>
           <TextField
-            label="Plafond"
+            label="Plafond IR"
             type="number"
             fullWidth
             margin="normal"
-            name="plafond"
-            value={form.plafond}
-            onChange={(e) => setForm({ ...form, plafond: e.target.value })}
+            name="plafond_ir"
+            value={form.plafond_ir}
+            onChange={(e) => setForm({ ...form, plafond_ir: e.target.value })}
           />
+          <TextField
+            label="Plafond CNSS"
+            type="number"
+            fullWidth
+            margin="normal"
+            name="plafond_cnss"
+            value={form.plafond_cnss}
+            onChange={(e) => setForm({ ...form, plafond_cnss: e.target.value })}
+          />
+          <Grid container spacing={2} mt={1}>
+            <Grid item xs={12} sm={6}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={form.soumis_cotisation_cnss_amo_cimr}
+                  onChange={(e) =>
+                    setForm({ ...form, soumis_cotisation_cnss_amo_cimr: e.target.checked })
+                  }
+                />{" "}
+                Soumis CNSS/AMO/CIMR
+              </label>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={form.soumis_ir}
+                  onChange={(e) => setForm({ ...form, soumis_ir: e.target.checked })}
+                />{" "}
+                Soumis IR
+              </label>
+            </Grid>
+            <Grid item xs={12}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={form.calcul_proportionnel_jours}
+                  onChange={(e) =>
+                    setForm({ ...form, calcul_proportionnel_jours: e.target.checked })
+                  }
+                />{" "}
+                Calcul proportionnel par jours
+              </label>
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseForm}>Annuler</Button>

@@ -19,7 +19,7 @@ class ServiceController extends Controller implements HasMiddleware
     }
     public function index()
     {
-        return response()->json($services = Service::with('departement')->get());
+        return response()->json(Service::with('departement')->get());
     }
 
     public function store(Request $request)

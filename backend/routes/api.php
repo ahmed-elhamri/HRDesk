@@ -32,15 +32,19 @@ Route::get('/fonctions/reference/{reference}', [FonctionController::class, 'getB
 Route::apiResource('employes', EmployeController::class);
 Route::get('/employes/matricule/{matricule}', [EmployeController::class, 'getByMatricule']);
 
+Route::get('/contrats', [ContratController::class, 'show']);
 Route::post('/contrats', [ContratController::class, 'store']);
 Route::put('/contrats', [ContratController::class, 'update']);
 
+Route::get('/caisses-sociales', [CaisseSocialeController::class, 'show']);
 Route::post('/caisses-sociales', [CaisseSocialeController::class, 'store']);
 Route::put('/caisses-sociales', [CaisseSocialeController::class, 'update']);
 
+Route::get('/paiements', [PaiementController::class, 'show']);
 Route::post('/paiements', [PaiementController::class, 'store']);
 Route::put('/paiements', [PaiementController::class, 'update']);
 
+Route::get('/documents', [DocumentController::class, 'show']);
 Route::post('/documents', [DocumentController::class, 'store']);
 Route::put('/documents', [DocumentController::class, 'update']);
 

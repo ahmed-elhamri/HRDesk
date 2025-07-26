@@ -41,6 +41,12 @@ class PaiementController extends Controller implements HasMiddleware
         return response()->json($paiement, 201);
     }
 
+    public function show(Request $request)
+    {
+        $paiement = Paiement::where("employe_id", $request->employe_id)->firstOrFail();
+        return response()->json($paiement);
+    }
+
     /**
      * Update the specified resource in storage.
      */

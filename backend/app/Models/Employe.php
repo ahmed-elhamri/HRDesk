@@ -25,6 +25,7 @@ class Employe extends Model
         'telephone_fixe',
         'email',
         'date_de_naissance',
+        'lieu_de_naissance',
         'situation_familiale',
         'nb_enfants',
         'nb_enfants',

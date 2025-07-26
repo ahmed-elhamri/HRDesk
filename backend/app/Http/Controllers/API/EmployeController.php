@@ -23,30 +23,39 @@ class EmployeController extends Controller implements HasMiddleware
     }
     public function index()
     {
-        return response()->json(Employe::with(['fonction', 'fonction.service', 'fonction.service.departement'])->get());
+        return response()->json(
+            Employe::select('id', 'fonction_id', 'user_id', 'matricule', 'nom', 'prenom')
+            ->with(['fonction:id,service_id,designation',
+                'fonction.service:id,departement_id,designation',
+                'fonction.service.departement:id,designation'
+                ])
+            ->get());
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|unique:users,email',
             'fonction_id' => 'required|exists:fonctions,id',
             'matricule' => 'required|string|unique:employes,matricule',
+            'civilite' => 'required|in:M,MME,MLLE',
             'nom' => 'required|string',
             'prenom' => 'required|string',
-            'cin' => 'required|string',
-            'sexe' => 'required|in:HOMME,FEMME',
-            'nationalite' => 'required|string',
-            'date_de_naissance' => 'required|date',
-            'pays' => 'required|string',
+            'adresse' => 'required|string',
             'ville' => 'required|string',
-            'adresse_actuelle' => 'required|string',
+            'nationalite' => 'required|string',
+            'cin' => 'nullable|string',
+            'sejour' => 'nullable|string',
             'telephone_mobile' => 'required|string',
-            'telephone_fixe' => 'required|string',
-            'email_personnel' => 'required|email|unique:employes,email_personnel',
+            'telephone_fixe' => 'nullable|string',
+            'email' => 'required|string|unique:employes,email|unique:users,email',
+            'date_de_naissance' => 'required|date',
+            'lieu_de_naissance' => 'required|string',
             'situation_familiale' => 'required|in:MARIE,CELIBATAIRE',
+            'nb_enfants' => 'required|numeric',
+            'nb_deductions' => 'required|numeric',
             'date_embauche' => 'required|date',
-            'salaire_base' => 'required|numeric'
+            'date_entree' => 'required|date',
+            'taux_anciennete' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -65,7 +74,6 @@ class EmployeController extends Controller implements HasMiddleware
         // Create employe
         $employeData = $request->all();
         $employeData['user_id'] = $user->id;
-        unset($employeData['email']);
 
         $employe = Employe::create($employeData);
 
@@ -103,39 +111,46 @@ class EmployeController extends Controller implements HasMiddleware
     {
         if ($request->user()->role === 'EMPLOYE') {
             $validator = Validator::make($request->all(), [
+                'civilite' => 'required|in:M,MME,MLLE',
                 'nom' => 'required|string',
                 'prenom' => 'required|string',
-                'cin' => 'required|string',
-                'sexe' => 'required|in:HOMME,FEMME',
-                'nationalite' => 'required|string',
-                'date_de_naissance' => 'required|date',
-                'pays' => 'required|string',
+                'adresse' => 'required|string',
                 'ville' => 'required|string',
-                'adresse_actuelle' => 'required|string',
+                'nationalite' => 'required|string',
+                'cin' => 'nullable|string',
+                'sejour' => 'nullable|string',
                 'telephone_mobile' => 'required|string',
-                'telephone_fixe' => 'required|string',
-                'email_personnel' => 'required|email|unique:employes,email_personnel,' . $id,
+                'telephone_fixe' => 'nullable|string',
+                'email' => 'required|string',
+                'date_de_naissance' => 'required|date',
+                'lieu_de_naissance' => 'required|string',
                 'situation_familiale' => 'required|in:MARIE,CELIBATAIRE',
+                'nb_enfants' => 'required|numeric',
+                'nb_deductions' => 'required|numeric',
             ]);
         } else{
             $validator = Validator::make($request->all(), [
                 'fonction_id' => 'required|exists:fonctions,id',
                 'matricule' => 'required|string|unique:employes,matricule,' . $id,
+                'civilite' => 'required|in:M,MME,MLLE',
                 'nom' => 'required|string',
                 'prenom' => 'required|string',
-                'cin' => 'required|string',
-                'sexe' => 'required|in:HOMME,FEMME',
-                'nationalite' => 'required|string',
-                'date_de_naissance' => 'required|date',
-                'pays' => 'required|string',
+                'adresse' => 'required|string',
                 'ville' => 'required|string',
-                'adresse_actuelle' => 'required|string',
+                'nationalite' => 'required|string',
+                'cin' => 'nullable|string',
+                'sejour' => 'nullable|string',
                 'telephone_mobile' => 'required|string',
-                'telephone_fixe' => 'required|string',
-                'email_personnel' => 'required|email|unique:employes,email_personnel,' . $id,
+                'telephone_fixe' => 'nullable|string',
+                'email' => 'required|string',
+                'date_de_naissance' => 'required|date',
+                'lieu_de_naissance' => 'required|string',
                 'situation_familiale' => 'required|in:MARIE,CELIBATAIRE',
+                'nb_enfants' => 'required|numeric',
+                'nb_deductions' => 'required|numeric',
                 'date_embauche' => 'required|date',
-                'salaire_base' => 'required|numeric'
+                'date_entree' => 'required|date',
+                'taux_anciennete' => 'required|numeric',
             ]);
         }
 

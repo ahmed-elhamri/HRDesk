@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('telephone_fixe')->nullable();
             $table->string('email');
             $table->date('date_de_naissance');
+            $table->string('lieu_de_naissance');
             $table->enum('situation_familiale', ['MARIE', 'CELIBATAIRE'])->default('CELIBATAIRE');
             $table->integer('nb_enfants')->default(0);
             $table->integer('nb_deductions')->default(0);
@@ -53,7 +54,7 @@ return new class extends Migration
             $table->boolean('est_avocat')->default(false);
             $table->boolean('est_domestique')->default(false);
             $table->boolean('est_saisonnier')->default(false);
-            $table->integer('nb_jours_saisonnier');
+            $table->integer('nb_jours_saisonnier')->nullable();
             $table->boolean('nouveau_declarant')->default(false);
             $table->timestamps();
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contrat;
+use App\Models\Departement;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -15,7 +16,7 @@ class ContratController extends Controller implements HasMiddleware
     {
         return [
             'auth:sanctum',
-            new Middleware('role:SUPERVISOR,ADMIN'),
+//            new Middleware('role:SUPERVISOR,ADMIN'),
         ];
     }
     /**
@@ -49,6 +50,12 @@ class ContratController extends Controller implements HasMiddleware
         Contrat::create($validator->validated());
 
         return response()->json("Contrat added successfully", 201);
+    }
+
+    public function show(Request $request)
+    {
+        $contrat = Contrat::where("employe_id", $request->employe_id)->firstOrFail();
+        return response()->json($contrat);
     }
 
     /**

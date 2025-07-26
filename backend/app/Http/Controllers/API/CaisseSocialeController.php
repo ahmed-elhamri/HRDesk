@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\CaisseSociale;
+use App\Models\Contrat;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -43,6 +44,12 @@ class CaisseSocialeController extends Controller implements HasMiddleware
         $caisse = CaisseSociale::create($validator->validated());
 
         return response()->json($caisse, 201);
+    }
+
+    public function show(Request $request)
+    {
+        $caisse_sociale = CaisseSociale::where("employe_id", $request->employe_id)->firstOrFail();
+        return response()->json($caisse_sociale);
     }
 
     /**

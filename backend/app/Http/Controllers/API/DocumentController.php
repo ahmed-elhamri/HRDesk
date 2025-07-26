@@ -52,6 +52,12 @@ class DocumentController extends Controller
         return response()->json($document, 201);
     }
 
+    public function show(Request $request)
+    {
+        $document = Document::where("employe_id", $request->employe_id)->firstOrFail();
+        return response()->json($document);
+    }
+
     /**
      * Update the specified resource in storage.
      */

@@ -27,8 +27,8 @@ class ContratSeeder extends Seeder
                 'classification' => fake()->randomElement(['NR', 'SO', 'DE', 'IT', 'IL', 'AT', 'CS', 'MS', 'MP']),
                 'est_avocat' => fake()->boolean(),
                 'est_domestique' => fake()->boolean(),
-                'est_saisonnier' => fake()->boolean(),
-                'nb_jours_saisonnier' => fake()->numberBetween(0, 90),
+                'est_saisonnier' => false,
+                'nb_jours_saisonnier' => 0,
                 'nouveau_declarant' => fake()->boolean(),
             ]);
         }

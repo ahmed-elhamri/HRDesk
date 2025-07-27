@@ -18,16 +18,16 @@ class DocumentSeeder extends Seeder
         for($i = 1; $i <= count($employeIds); $i++) {
             Document::create([
                 'employe_id' => $i,
-                'chemin_cin' => 'documents/fake/cin1.pdf',
-                'chemin_cnss' => 'documents/fake/cnss1.pdf',
-                'chemin_contrat_travail' => 'documents/fake/contrat1.pdf',
-                'chemin_tableau_amortissement' => 'documents/fake/amortissement1.pdf',
-                'lettre_demission' => 'documents/fake/demission1.pdf',
-                'diplome_un' => 'documents/fake/diplome1.pdf',
-                'diplome_deux' => 'documents/fake/diplome2.pdf',
-                'diplome_trois' => 'documents/fake/diplome3.pdf',
-                'diplome_quatre' => 'documents/fake/diplome4.pdf',
-                'diplome_cinq' => 'documents/fake/diplome5.pdf',
+                'chemin_cin' => 'cin1.pdf',
+                'chemin_cnss' => 'cnss1.pdf',
+                'chemin_contrat_travail' => 'contrat1.pdf',
+                'chemin_tableau_amortissement' => 'amortissement1.pdf',
+                'lettre_demission' => 'demission1.pdf',
+                'diplome_un' => 'diplome1.pdf',
+                'diplome_deux' => 'diplome2.pdf',
+                'diplome_trois' => 'diplome3.pdf',
+                'diplome_quatre' => 'diplome4.pdf',
+                'diplome_cinq' => 'diplome5.pdf',
             ]);
         }
     }

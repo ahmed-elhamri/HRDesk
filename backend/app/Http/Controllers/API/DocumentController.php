@@ -99,7 +99,7 @@ class DocumentController extends Controller
                 $file = $request->file($field);
                 $hashedName = $file->hashName();
                 $file->storeAs('documents', $hashedName, 'public');
-                $data[$field] = 'documents/' . $hashedName;
+                $data[$field] = $hashedName;
             } elseif ($request->has($field) && $request->input($field) === null) {
                 // If explicitly null, delete the old file and set DB to null
                 if ($document->$field && \Storage::disk('public')->exists($document->$field)) {

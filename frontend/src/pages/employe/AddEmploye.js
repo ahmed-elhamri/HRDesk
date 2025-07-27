@@ -324,6 +324,11 @@ export default function AddEmploye() {
     setDocuments((prev) => ({ ...prev, [name]: files.length > 0 ? files[0] : null }));
   };
 
+  const handleDeleteDocument = (name) => {
+    const updatedDocuments = { ...documents, [name]: null };
+    setDocuments(updatedDocuments);
+  };
+
   // --- Navigation handlers ---
 
   const handleNext = () => {
@@ -859,6 +864,14 @@ export default function AddEmploye() {
               color="info"
               component="label"
               fullWidth
+              onContextMenu={(e) => {
+                e.preventDefault();
+                const updatedDocs = { ...documents, [field.name]: null };
+                setDocuments(updatedDocs);
+
+                const input = document.querySelector(`input[name="${field.name}"]`);
+                if (input) input.value = ""; // Clear input
+              }}
               sx={documents[field.name] ? { color: "info.main" } : { color: "secondary.main" }}
             >
               {documents[field.name]
@@ -869,7 +882,7 @@ export default function AddEmploye() {
                 type="file"
                 name={field.name}
                 onChange={handleDocumentChange}
-                accept="application/pdf,image/*"
+                accept="application/pdf/*"
               />
             </Button>
           </Grid>
@@ -944,7 +957,9 @@ export default function AddEmploye() {
                   {/*{JSON.stringify(employe, null, 2)}*/}
                   {displayField(
                     "Fonction",
-                    fonctions.find((f) => f.id === employe.fonction_id).designation
+                    employe.fonction_id
+                      ? fonctions.find((f) => f.id === employe.fonction_id).designation
+                      : "-"
                   )}
                   {displayField("Nom", employe.nom)}
                   {displayField("Prénom", employe.prenom)}
@@ -963,6 +978,7 @@ export default function AddEmploye() {
                   {displayField("Date d'entrée", employe.date_embauche)}
                   {displayField("Civilité", employe.civilite)}
                   {displayField("Situation familiale", employe.situation_familiale)}
+                  {displayField("Taux d'ancienneté", employe.taux_anciennete)}
                 </pre>
               </Paper>
             </CardContent>

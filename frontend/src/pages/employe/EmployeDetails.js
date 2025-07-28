@@ -34,18 +34,31 @@ import {
 import DashboardNavbar from "../../examples/Navbars/DashboardNavbar";
 import DashboardLayout from "../../examples/LayoutContainers/DashboardLayout";
 import MDBox from "../../components/MDBox";
-import { useParams } from "react-router-dom";
-import MDTypography from "../../components/MDTypography";
-
+import { useNavigate, useParams } from "react-router-dom";
+const labels = {
+  chemin_cin: "CIN",
+  chemin_cnss: "CNSS",
+  chemin_contrat_travail: "Contrat de travail",
+  chemin_tableau_amortissement: "Tableau d'amortissement",
+  lettre_demission: "Lettre de demission",
+  diplome_un: "Diplôme 1",
+  diplome_deux: "Diplôme 2",
+  diplome_trois: "Diplôme 3",
+  diplome_quatre: "Diplôme 4",
+  diplome_cinq: "Diplôme 5",
+};
 export default function EmployeDetails() {
   const [activeTab, setActiveTab] = useState("personal");
   // Data states per section
   const { matricule } = useParams();
+  const navigate = useNavigate();
   const [personal, setPersonal] = useState(null);
   const [contrat, setContrat] = useState(null);
   const [caisseSociale, setCaisseSociale] = useState(null);
   const [paiement, setPaiement] = useState(null);
   const [documents, setDocuments] = useState({});
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const [fonctions, setFonctions] = useState([]);
 
   // Loading & errors
@@ -95,7 +108,6 @@ export default function EmployeDetails() {
     try {
       const res = await axios.get(`${API_BASE}/employes/matricule/${matricule}`);
       setPersonal(res.data);
-      console.log(res.data);
     } catch (err) {
       console.error("Error fetching personal info", err);
       setSnackbarMessage("Erreur lors du chargement des informations personnelles.");
@@ -226,8 +238,10 @@ export default function EmployeDetails() {
         setEditFormPaiement({ ...paiement });
         setEditOpenPaiement(true);
         break;
+      case "documents":
+        setEditFormDocument({ ...documents });
+        setEditOpenDocument(true);
       default:
-        setEditForm({});
         break;
     }
     setErrors({});
@@ -252,6 +266,10 @@ export default function EmployeDetails() {
     const { name, value } = e.target;
     setEditFormPaiement((prev) => ({ ...prev, [name]: value }));
   };
+  const handleDocumentChange = (e) => {
+    const { name, files } = e.target;
+    setEditFormDocument((prev) => ({ ...prev, [name]: files.length > 0 ? files[0] : null }));
+  };
   // Save update handler (generic)
   const handleSave = async () => {
     try {
@@ -261,6 +279,7 @@ export default function EmployeDetails() {
         let payload = { ...editFormPersonnal };
         await axios.put(url, payload);
         setEditOpenPersonnal(false);
+        navigate(`employes/${personal.matricule}`);
       } else if (activeTab === "contrat") {
         url = `${API_BASE}/contrats`;
         let payload = { ...editFormContrat };
@@ -280,8 +299,17 @@ export default function EmployeDetails() {
         await axios.put(url, payload);
         setEditOpenPaiement(false);
       } else {
-        // For documents, we'll handle separately
-        return;
+        url = `${API_BASE}/documents/${personal.id}`;
+        let payload = { ...editFormDocument };
+        let header = {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        };
+        payload.employe_id = personal.id;
+        console.log(payload);
+        await axios.post(url, payload, header);
+        setEditOpenDocument(false);
       }
       setSnackbarMessage("Modifications enregistrées avec succès !");
       setSnackbarSeverity("success");
@@ -300,9 +328,13 @@ export default function EmployeDetails() {
         case "paiement":
           fetchPaiement();
           break;
+        case "documents":
+          fetchDocuments();
+          break;
       }
     } catch (err) {
       if (err.response?.status === 422) {
+        console.error(err.response);
         setErrors(err.response.data.errors || {});
       } else {
         setSnackbarMessage("Erreur lors de la sauvegarde.");
@@ -313,20 +345,49 @@ export default function EmployeDetails() {
   };
 
   // Delete employee handler (only on personal tab)
-  const handleDelete = async () => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) return;
+  // const handleDelete = async () => {
+  //   if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) return;
+  //   try {
+  //     await axios.delete(`${API_BASE}/employes/${personal.id}`);
+  //     setSnackbarMessage("Employé supprimé avec succès !");
+  //     setSnackbarSeverity("success");
+  //     setSnackbarOpen(true);
+  //     // Maybe navigate back or clear data here
+  //     setPersonal(null);
+  //   } catch (err) {
+  //     setSnackbarMessage("Erreur lors de la suppression.");
+  //     setSnackbarSeverity("error");
+  //     setSnackbarOpen(true);
+  //   }
+  // };
+  const handleDelete = (id) => {
+    setDeleteId(id);
+    setConfirmDeleteOpen(true);
+  };
+
+  // New function: called when deletion is confirmed
+  const handleDeleteConfirmed = async () => {
+    if (!deleteId) return;
     try {
-      await axios.delete(`${API_BASE}/employes/${personal.id}`);
+      await axios.delete(`${API_BASE}/employes/${deleteId}`);
       setSnackbarMessage("Employé supprimé avec succès !");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      // Maybe navigate back or clear data here
-      setPersonal(null);
-    } catch (err) {
-      setSnackbarMessage("Erreur lors de la suppression.");
+      navigate("/employes");
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error);
+      setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
+    } finally {
+      setConfirmDeleteOpen(false);
+      setDeleteId(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDeleteOpen(false);
+    setDeleteId(null);
   };
 
   // Reset password handler (personal tab)
@@ -344,8 +405,8 @@ export default function EmployeDetails() {
   };
 
   // Document file preview handlers
-  const handlePreviewOpen = (file) => {
-    setPreviewFile(`http://localhost:8000/storage/${file}`);
+  const handlePreviewOpen = (name, file) => {
+    setPreviewFile({ name: name, file: `http://localhost:8000/storage/documents/${file}` });
     setPreviewOpen(true);
   };
   const handlePreviewClose = () => {
@@ -412,7 +473,12 @@ export default function EmployeDetails() {
                 },
               }}
             >
-              <IconButton variant="text" size="medium" color="error" onClick={handleDelete}>
+              <IconButton
+                variant="text"
+                size="medium"
+                color="error"
+                onClick={() => handleDelete(personal.id)}
+              >
                 <Icon>delete</Icon>
               </IconButton>
             </Tooltip>
@@ -563,81 +629,96 @@ export default function EmployeDetails() {
   // Documents section — full layout as provided by you
   const renderDocuments = () => (
     <Grid item xs={12}>
-      <Card elevation={2}>
-        <CardHeader
-          avatar={
-            <Avatar sx={{ bgcolor: "info.main" }}>
-              <Icon>attach_file</Icon>
-            </Avatar>
-          }
-          title={
-            <Typography variant="h6" fontWeight="bold" color="info.main">
-              Documents
-            </Typography>
-          }
-        />
+      <Card sx={{ p: 3 }}>
+        <MDBox display="flex" justifyContent="flex-end" mb={2}>
+          <Tooltip
+            title="Modifier"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  backgroundColor: "rgba(26, 115, 232, 0.8)",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                },
+              },
+            }}
+          >
+            <IconButton color="info" onClick={openEditDialog}>
+              <Icon>edit</Icon>
+            </IconButton>
+          </Tooltip>
+        </MDBox>
         <CardContent>
           <List>
-            {Object.entries(documents).map(([key, file]) => (
-              <ListItem
-                key={key}
-                sx={{
-                  bgcolor: "grey.50",
-                  borderRadius: 2,
-                  mb: 1,
-                  px: 2,
-                  border: "1px solid",
-                  borderColor: "grey.200",
-                  "&:hover": {
-                    bgcolor: "grey.100",
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  {file ? (
-                    <Avatar sx={{ bgcolor: "success.light", width: 32, height: 32 }}>
-                      <Icon>check_circle</Icon>
-                    </Avatar>
-                  ) : (
-                    <Avatar sx={{ bgcolor: "error.light", width: 32, height: 32 }}>
-                      <Icon>error</Icon>
-                    </Avatar>
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Typography variant="subtitle1" fontWeight="medium">
-                      {key}
-                    </Typography>
-                  }
-                  secondary={
-                    <Typography variant="body2" color="text.secondary">
-                      {file ? file.name : "Aucun fichier"}
-                    </Typography>
-                  }
-                />
+            {Object.entries(documents)
+              .filter(
+                ([key, file]) => !["id", "employe_id", "created_at", "updated_at"].includes(key)
+              )
+              .map(([key, file]) => {
+                const label =
+                  labels[key] || key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <ListItem
+                    key={key}
+                    sx={{
+                      bgcolor: "grey.50",
+                      borderRadius: 2,
+                      mb: 1,
+                      px: 2,
+                      py: 0.5,
+                      border: "1px solid",
+                      borderColor: "grey.200",
+                      "&:hover": {
+                        bgcolor: "grey.100",
+                      },
+                    }}
+                  >
+                    <ListItemIcon>
+                      {file ? (
+                        <Avatar sx={{ bgcolor: "success.light", width: 28, height: 28 }}>
+                          <Icon>check_circle</Icon>
+                        </Avatar>
+                      ) : (
+                        <Avatar sx={{ bgcolor: "error.light", width: 28, height: 28 }}>
+                          <Icon>error</Icon>
+                        </Avatar>
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle1" fontWeight="medium">
+                          {label}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography variant="body2" color="text.secondary">
+                          {file ? file.name : "Aucun fichier"}
+                        </Typography>
+                      }
+                    />
 
-                {file && (
-                  <ListItemSecondaryAction>
-                    <Tooltip title={`Prévisualiser ${key}`}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handlePreviewOpen(file)}
-                        sx={{
-                          mr: 2,
-                          color: "secondary.dark",
-                          "&:hover": {
-                            color: "info.main",
-                          },
-                        }}
-                      >
-                        <Icon>visibility</Icon>
-                      </IconButton>
-                    </Tooltip>
-                  </ListItemSecondaryAction>
-                )}
-              </ListItem>
-            ))}
+                    {file && (
+                      <ListItemSecondaryAction>
+                        <Tooltip title={`Prévisualiser`}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handlePreviewOpen(label, file)}
+                            sx={{
+                              mr: 2,
+                              color: "secondary.dark",
+                              "&:hover": {
+                                color: "info.main",
+                              },
+                            }}
+                          >
+                            <Icon>visibility</Icon>
+                          </IconButton>
+                        </Tooltip>
+                      </ListItemSecondaryAction>
+                    )}
+                  </ListItem>
+                );
+              })}
           </List>
         </CardContent>
       </Card>
@@ -829,7 +910,7 @@ export default function EmployeDetails() {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setEditOpenPersonnal(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained">
+              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
                 Enregistrer
               </Button>
             </DialogActions>
@@ -1020,7 +1101,7 @@ export default function EmployeDetails() {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setEditOpenContrat(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained">
+              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
                 Enregistrer
               </Button>
             </DialogActions>
@@ -1074,7 +1155,7 @@ export default function EmployeDetails() {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setEditOpenCaisse(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained">
+              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
                 Enregistrer
               </Button>
             </DialogActions>
@@ -1112,7 +1193,75 @@ export default function EmployeDetails() {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setEditOpenPaiement(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained">
+              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
+                Enregistrer
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Edit Document Dialog */}
+          <Dialog
+            open={editOpenDocument}
+            onClose={() => {
+              setEditOpenDocument(false);
+              fetchDocuments();
+            }}
+            fullWidth
+            maxWidth="sm"
+          >
+            <DialogTitle>Modifier</DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                {[
+                  { name: "chemin_cin", label: "CIN" },
+                  { name: "chemin_cnss", label: "CNSS" },
+                  { name: "chemin_contrat_travail", label: "Contrat travail" },
+                  { name: "chemin_tableau_amortissement", label: "Tableau amortissement" },
+                  { name: "lettre_demission", label: "Lettre démission" },
+                  { name: "diplome_un", label: "Diplôme 1" },
+                  { name: "diplome_deux", label: "Diplôme 2" },
+                  { name: "diplome_trois", label: "Diplôme 3" },
+                  { name: "diplome_quatre", label: "Diplôme 4" },
+                  { name: "diplome_cinq", label: "Diplôme 5" },
+                ].map((field) => (
+                  <Grid item xs={12} md={6} key={field.name}>
+                    <Button
+                      variant="outlined"
+                      color="info"
+                      component="label"
+                      fullWidth
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        const updatedDocs = { ...editFormDocument, [field.name]: null };
+                        setEditFormDocument(updatedDocs);
+
+                        const input = document.querySelector(`input[name="${field.name}"]`);
+                        if (input) input.value = ""; // Clear input
+                      }}
+                      sx={
+                        editFormDocument[field.name]
+                          ? { color: "info.main" }
+                          : { color: "secondary.main" }
+                      }
+                    >
+                      {editFormDocument[field.name]
+                        ? field.label
+                        : `Choisir fichier: ${field.label}`}
+                      <input
+                        hidden
+                        type="file"
+                        name={field.name}
+                        onChange={handleDocumentChange}
+                        accept="application/pdf/*"
+                      />
+                    </Button>
+                  </Grid>
+                ))}
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditOpenDocument(false)}>Annuler</Button>
+              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
                 Enregistrer
               </Button>
             </DialogActions>
@@ -1164,7 +1313,7 @@ export default function EmployeDetails() {
                   }}
                 >
                   <embed
-                    src={previewFile}
+                    src={previewFile.file}
                     type="application/pdf"
                     width="100%"
                     height="600px"
@@ -1181,6 +1330,32 @@ export default function EmployeDetails() {
                 sx={{ borderRadius: 2, color: "#fff" }}
               >
                 Fermer
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Confirme Delete Dialog */}
+          <Dialog
+            open={confirmDeleteOpen}
+            onClose={handleCancelDelete}
+            aria-labelledby="confirm-delete-title"
+            aria-describedby="confirm-delete-description"
+          >
+            <DialogTitle id="confirm-delete-title">Confirmation</DialogTitle>
+            <DialogContent>
+              <Typography id="confirm-delete-description" sx={{ mt: 1 }}>
+                Êtes-vous sûr de vouloir supprimer cet employé ?
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCancelDelete}>Annuler</Button>
+              <Button
+                onClick={handleDeleteConfirmed}
+                variant="text"
+                color="error"
+                sx={{ color: "error.main" }}
+              >
+                Confirmer la suppression
               </Button>
             </DialogActions>
           </Dialog>

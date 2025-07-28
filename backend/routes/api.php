@@ -46,7 +46,7 @@ Route::put('/paiements', [PaiementController::class, 'update']);
 
 Route::get('/documents', [DocumentController::class, 'show']);
 Route::post('/documents', [DocumentController::class, 'store']);
-Route::put('/documents', [DocumentController::class, 'update']);
+Route::post('/documents/{id}', [DocumentController::class, 'update']);
 
 
 Route::apiResource('primes', PrimeController::class);

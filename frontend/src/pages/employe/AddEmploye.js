@@ -36,6 +36,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Tooltip from "@mui/material/Tooltip";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
+import { green } from "@mui/material/colors";
 
 const SLIDES = {
   EMPLOYE: 0,
@@ -324,10 +325,10 @@ export default function AddEmploye() {
     setDocuments((prev) => ({ ...prev, [name]: files.length > 0 ? files[0] : null }));
   };
 
-  const handleDeleteDocument = (name) => {
-    const updatedDocuments = { ...documents, [name]: null };
-    setDocuments(updatedDocuments);
-  };
+  // const handleDeleteDocument = (name) => {
+  //   const updatedDocuments = { ...documents, [name]: null };
+  //   setDocuments(updatedDocuments);
+  // };
 
   // --- Navigation handlers ---
 
@@ -1393,20 +1394,40 @@ export default function AddEmploye() {
         </Grid>
       </MDBox>
 
-      <Dialog open={successDialogOpen} onClose={() => setSuccessDialogOpen(false)}>
-        <DialogTitle>Employé ajouté avec succès</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={successDialogOpen}
+        onClose={() => setSuccessDialogOpen(false)}
+        PaperProps={{
+          sx: { borderRadius: 3, p: 1, minWidth: 400 },
+        }}
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, pb: 0 }}>
+          <Icon sx={{ color: green[500], fontSize: 30 }}>check_circle</Icon>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Employé ajouté avec succès
+          </Typography>
+          <IconButton onClick={() => setSuccessDialogOpen(false)} size="small">
+            <Icon>close</Icon>
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ pt: 1 }}>
           <Typography>
-            La page sera redirigée vers la liste des employés dans {countdown} secondes.
+            La page sera redirigée vers la liste des employés dans <strong>{countdown}</strong>{" "}
+            secondes.
           </Typography>
         </DialogContent>
-        <DialogActions>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
+            variant="contained"
+            color="success"
             onClick={() => {
               clearInterval(countdownTimer.current);
               setSuccessDialogOpen(false);
               navigate("/employes");
             }}
+            startIcon={<Icon>check_circle</Icon>}
           >
             OK
           </Button>

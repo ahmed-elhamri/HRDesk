@@ -1209,7 +1209,16 @@ export default function EmployeDetails() {
             fullWidth
             maxWidth="sm"
           >
-            <DialogTitle>Modifier</DialogTitle>
+            <DialogTitle>
+              Modifier <br />
+              <Typography
+                variant="caption"
+                gutterBottom
+                sx={{ color: "secondary.main", fontWeight: "bold" }}
+              >
+                Clic droit pour supprimer un fichier
+              </Typography>
+            </DialogTitle>
             <DialogContent>
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 {[

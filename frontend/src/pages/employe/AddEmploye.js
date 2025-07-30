@@ -844,7 +844,14 @@ export default function AddEmploye() {
   const SlideDocuments = (
     <>
       <Typography variant="h6" gutterBottom>
-        Documents (optionnel)
+        Documents
+      </Typography>
+      <Typography
+        variant="caption"
+        gutterBottom
+        sx={{ color: "secondary.main", fontWeight: "bold" }}
+      >
+        Clic droit pour supprimer un fichier
       </Typography>
       <Grid container spacing={2}>
         {[

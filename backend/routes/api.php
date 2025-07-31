@@ -31,6 +31,7 @@ Route::get('/fonctions/reference/{reference}', [FonctionController::class, 'getB
 
 Route::apiResource('employes', EmployeController::class);
 Route::get('/employes/matricule/{matricule}', [EmployeController::class, 'getByMatricule']);
+Route::post('/import-employes', [EmployeController::class, 'import']);
 
 Route::get('/contrats', [ContratController::class, 'show']);
 Route::post('/contrats', [ContratController::class, 'store']);
@@ -54,6 +55,7 @@ Route::apiResource('primes', PrimeController::class);
 Route::apiResource('employe-primes', EmployePrimeController::class);
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/user', [AuthController::class, 'user']);
 Route::post('/register', [AuthController::class, 'register']);
 
 // Protected routes

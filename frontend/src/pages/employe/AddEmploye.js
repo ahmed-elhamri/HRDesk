@@ -876,7 +876,6 @@ export default function AddEmploye() {
                 e.preventDefault();
                 const updatedDocs = { ...documents, [field.name]: null };
                 setDocuments(updatedDocs);
-
                 const input = document.querySelector(`input[name="${field.name}"]`);
                 if (input) input.value = ""; // Clear input
               }}

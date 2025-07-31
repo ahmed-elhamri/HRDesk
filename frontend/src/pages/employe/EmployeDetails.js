@@ -278,8 +278,11 @@ export default function EmployeDetails() {
         url = `${API_BASE}/employes/${personal.id}`;
         let payload = { ...editFormPersonnal };
         await axios.put(url, payload);
+        console.log(payload.matricule);
         setEditOpenPersonnal(false);
-        navigate(`employes/${personal.matricule}`);
+        if (matricule !== payload.matricule) {
+          navigate(`/employes/${payload.matricule}`);
+        }
       } else if (activeTab === "contrat") {
         url = `${API_BASE}/contrats`;
         let payload = { ...editFormContrat };
@@ -487,6 +490,7 @@ export default function EmployeDetails() {
             {displayField("Département", personal.fonction.service.departement.designation)}
             {displayField("Service", personal.fonction.service.designation)}
             {displayField("Fonction", personal.fonction.designation)}
+            {displayField("Matricule", personal.matricule)}
             {displayField("Nom", personal.nom)}
             {displayField("Prénom", personal.prenom)}
             {displayField("Adresse", personal.adresse)}

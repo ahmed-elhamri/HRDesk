@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
 axios.defaults.baseURL = "http://localhost:8000";
@@ -11,6 +11,35 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [employe, setEmploye] = useState(null);
   const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUserId = localStorage.getItem("user_id");
+    const storedUserRole = localStorage.getItem("user_role");
+    const storedPasswordChanged = localStorage.getItem("password_changed");
+
+    if (storedToken && storedUserId) {
+      setToken(storedToken);
+      setUser({
+        id: parseInt(storedUserId),
+        role: storedUserRole,
+        password_changed: storedPasswordChanged === "true",
+      });
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+
+      axios
+        .get(`/api/user`)
+        .then((res) => {
+          setUser(res.data);
+          setEmploye(res.data.employe);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch user:", err);
+          logout(); // Invalidate session if token is invalid
+        });
+    }
+  }, []);
 
   const getCsrfCookie = async () => {
     try {

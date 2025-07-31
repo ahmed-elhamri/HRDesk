@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Imports\EmployesImport;
 use App\Models\Employe;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-
+use Maatwebsite\Excel\Facades\Excel;
 class EmployeController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
@@ -174,5 +175,22 @@ class EmployeController extends Controller implements HasMiddleware
         User::destroy($employe->user_id);
         $employe->delete();
         return response()->json(['message' => 'Employe deleted successfully']);
+    }
+
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|mimes:xlsx,csv',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        Excel::import(new EmployesImport, $request->file('file'));
+
+        return response()->json(['message' => 'Employees imported successfully.']);
     }
 }

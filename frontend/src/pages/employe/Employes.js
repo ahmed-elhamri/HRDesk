@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import {
   Button,
@@ -25,15 +26,22 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import IconButton from "@mui/material/IconButton";
+import Box from "@mui/material/Box";
 
 export default function Employes() {
+  const { user } = useAuth();
   const [employes, setEmployes] = useState([]);
   const [fonctions, setFonctions] = useState([]);
+  const [file, setFile] = useState(null);
+  const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedFonction, setSelectedFonction] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDepartement, setSelectedDepartement] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingIcon, setLoadingIcon] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -43,6 +51,9 @@ export default function Employes() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
+  useEffect(() => {
+    console.log(user);
+  }, []);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -77,6 +88,48 @@ export default function Employes() {
     };
     loadData();
   }, []);
+
+  const onDrop = useCallback((acceptedFiles) => {
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      setFile(acceptedFiles[0]);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+      "application/vnd.ms-excel": [".xls"],
+    },
+    multiple: false,
+  });
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    setLoadingIcon(true);
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      await axios.post("http://localhost:8000/api/import-employes", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setSnackbarMessage("Les employés ont été importés avec succès !");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      setOpen(false);
+      setLoadingIcon(false);
+      setFile(null);
+      fetchEmployes();
+    } catch (err) {
+      setSnackbarMessage("Erreur lors d'importation des employés !");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      setLoadingIcon(false);
+    }
+  };
 
   // Modified handleDelete to only open confirmation dialog
   const handleDelete = (id) => {
@@ -282,16 +335,89 @@ export default function Employes() {
                 <MDTypography variant="h6" color="white">
                   Employés
                 </MDTypography>
-                <Tooltip title="Ajouter employé">
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => navigate("/add-employe")}
-                  >
-                    <Icon sx={{ color: "info.main" }}>add</Icon>
-                  </Button>
-                </Tooltip>
+                <MDBox display="flex" gap={1}>
+                  <Tooltip title="Ajouter employé">
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={() => navigate("/add-employe")}
+                    >
+                      <Icon sx={{ color: "info.main" }}>add</Icon>
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="importer des employés depuis Excel">
+                    <Button variant="contained" color="success" onClick={() => setOpen(true)}>
+                      <Icon sx={{ color: "info.main" }}>attach_file</Icon>
+                      <input
+                        hidden
+                        type="file"
+                        onChange={(e) => setFile(e.target.files[0])}
+                        accept=".xlsx,.xls"
+                      />
+                    </Button>
+                  </Tooltip>
+                </MDBox>
               </MDBox>
+              {/* Dialog */}
+              <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>
+                  Importer les employés
+                  <IconButton
+                    aria-label="close"
+                    onClick={() => setOpen(false)}
+                    sx={{ position: "absolute", right: 8, top: 8 }}
+                  >
+                    <Icon>close</Icon>
+                  </IconButton>
+                </DialogTitle>
+
+                <DialogContent>
+                  <Box
+                    {...getRootProps()}
+                    sx={{
+                      border: "2px dashed #aaa",
+                      borderRadius: 2,
+                      p: 4,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      backgroundColor: isDragActive ? "#f0f0f0" : "transparent",
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    {isDragActive ? (
+                      <Typography>Déposez le fichier ici…</Typography>
+                    ) : (
+                      <Typography>
+                        {file ? file.name : "Glissez un fichier ici ou cliquez pour choisir"}
+                      </Typography>
+                    )}
+                  </Box>
+                </DialogContent>
+                {file != null && (
+                  <DialogActions>
+                    <Button
+                      onClick={() => {
+                        setOpen(false);
+                        setFile(null);
+                      }}
+                    >
+                      Annuler
+                    </Button>
+                    <Button
+                      onClick={handleUpload}
+                      variant="contained"
+                      color="primary"
+                      sx={{ color: "#fff" }}
+                    >
+                      {loadingIcon ? (
+                        <CircularProgress size={20} sx={{ color: "#fff" }} />
+                      ) : (
+                        "Importer"
+                      )}
+                    </Button>
+                  </DialogActions>
+                )}
+              </Dialog>
               <MDBox pt={2}>
                 <MDBox
                   px={2}

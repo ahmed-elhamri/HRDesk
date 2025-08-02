@@ -16,6 +16,7 @@ import themeDark from "assets/theme-dark";
 import supervisorRoutes from "./routes/supervisorRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import employeRoutes from "./routes/employeRoutes";
+import routes from "./routes";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import brandWhite from "assets/images/HRDesk_logo_dark.png";
 import brandDark from "assets/images/HRDesk_logo_light.png";
@@ -34,16 +35,6 @@ export default function App() {
   const user_id = localStorage.getItem("user_id");
   const role = localStorage.getItem("user_role");
   const password_changed = localStorage.getItem("password_changed");
-  const [routes, setRoutes] = useState([]);
-  useEffect(() => {
-    if (role === "ADMIN") {
-      setRoutes(adminRoutes);
-    } else if (role === "SUPERVISOR") {
-      setRoutes(supervisorRoutes);
-    } else {
-      setRoutes(employeRoutes);
-    }
-  }, [role]);
 
   const navigate = useNavigate();
   const {
@@ -146,10 +137,9 @@ export default function App() {
       )}
       {/*{layout === "vr" && <Configurator />}*/}
       <Routes>
-        <Route path="/profil" element={<UserProfile />} />
         {token ? (
           <>
-            {role === "SUPERVISOR" && (
+            {password_changed === "1" ? (
               <>
                 {getRoutes(routes)}
                 <Route path="/departements/:reference" element={<DepartementDetails />} />
@@ -161,42 +151,10 @@ export default function App() {
                 <Route path="/add-employe" element={<AddEmploye />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />
               </>
-            )}
-            {role === "ADMIN" && (
+            ) : (
               <>
-                {password_changed === "1" ? (
-                  <>
-                    getRoutes(routes)
-                    <Route path="/departements/:reference" element={<DepartementDetails />} />
-                    <Route path="/services/:reference" element={<ServiceDetails />} />
-                    <Route path="/fonctions/:reference" element={<FonctionDetails />} />
-                    <Route path="/employes/:matricule" element={<EmployeDetails />} />
-                    <Route path="/profil" element={<UserProfile />} />
-                    <Route path="/primes" element={<Primes />} />
-                    <Route path="/add-employe" element={<AddEmploye />} />
-                    <Route path="*" element={<Navigate to="/dashboard" />} />
-                  </>
-                ) : (
-                  <>
-                    <Route path="/change-password" element={<ChangePassword />} />
-                    <Route path="*" element={<Navigate to="/change-password" />} />
-                  </>
-                )}
-              </>
-            )}
-            {role === "EMPLOYE" && (
-              <>
-                {password_changed === "1" ? (
-                  <>
-                    getRoutes(routes)
-                    <Route path="/profil" element={<UserProfile />} />
-                  </>
-                ) : (
-                  <>
-                    <Route path="/change-password" element={<ChangePassword />} />
-                    <Route path="*" element={<Navigate to="/change-password" />} />
-                  </>
-                )}
+                <Route path="/change-password" element={<ChangePassword />} />
+                <Route path="*" element={<Navigate to="/change-password" />} />
               </>
             )}
           </>

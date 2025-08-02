@@ -23,8 +23,6 @@ class DatabaseSeeder extends Seeder
             PaiementSeeder::class,
             DocumentSeeder::class,
             PrimeSeeder::class,
-            AdminSeeder::class,
-            SupervisorSeeder::class,
         ]);
     }
 }

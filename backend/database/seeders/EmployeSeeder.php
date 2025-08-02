@@ -15,9 +15,9 @@ class EmployeSeeder extends Seeder
     public function run(): void
     {
         Employe::create([
-            'user_id' => 3,
+            'user_id' => 1,
             'fonction_id' => 1,
-            'matricule' => "003",
+            'matricule' => "001",
             'civilite' => "M",
             'nom' => "ELHAMRI",
             'prenom' => "Ahmed",
@@ -36,7 +36,7 @@ class EmployeSeeder extends Seeder
 
         $userIds = User::pluck('id')->shuffle();
 
-        for($i = 4; $i <= count($userIds); $i++) {
+        for($i = 2; $i <= count($userIds); $i++) {
             Employe::create([
                 'user_id' => $i,
                 'fonction_id' => fake()->numberBetween(1, 27),
@@ -49,7 +49,7 @@ class EmployeSeeder extends Seeder
                 'nationalite' => "Marocain",
                 'cin' => strtoupper(fake()->lexify('??') . fake()->numerify('#####')),
                 'telephone_mobile' => fake()->phoneNumber(),
-                'email' => fake()->email(),
+                'email' => fake()->safeEmail(),
                 'date_de_naissance' => fake()->date(),
                 'lieu_de_naissance' => fake()->city(),
                 'situation_familiale' => fake()->randomElement(['MARIE', 'CELIBATAIRE']),

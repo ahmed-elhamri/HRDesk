@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -14,21 +15,32 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::insert([
+        $user = User::create([
+            'email' => 'elhamri949@gmail.com',
+            'password' => Hash::make('123456'),
+            'password_changed' => true,
+            'role' => 'SUPERVISOR',
+        ]);
+        Permission::insert([
             [
-                'email' => 'supervisor@gmail.com',
-                'password' => Hash::make('123456'),
-                'role' => 'SUPERVISOR',
+                'user_id' => $user->id,
+                'entity' => 'departement',
             ],
             [
-                'email' => 'admin@gmail.com',
-                'password' => Hash::make('123456'),
-                'role' => 'ADMIN',
+                'user_id' => $user->id,
+                'entity' => 'service',
             ],
             [
-                'email' => 'elhamri949@gmail.com',
-                'password' => Hash::make('123456'),
-                'role' => 'EMPLOYE',
+                'user_id' => $user->id,
+                'entity' => 'fonction',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'employe',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'prime',
             ],
         ]);
         User::factory()->count(200)->create();

@@ -8,7 +8,7 @@ use App\Http\Controllers\API\DepartementController;
 use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\FonctionController;
 use \App\Http\Controllers\API\AuthController;
-use \App\Http\Controllers\API\AdminController;
+use \App\Http\Controllers\API\PermissionController;
 use \App\Http\Controllers\API\EmployePrimeController;
 use \App\Http\Controllers\API\ContratController;
 use \App\Http\Controllers\API\DocumentController;
@@ -18,8 +18,9 @@ use \App\Http\Controllers\API\PaiementController;
 
 //Route::middleware('api')->group(function () {
 //});
-Route::apiResource('admins', AdminController::class);
+//Route::apiResource('admins', AdminController::class);
 
+Route::apiResource('permissions', PermissionController::class);
 Route::apiResource('departements', DepartementController::class);
 Route::get('/departements/reference/{reference}', [DepartementController::class, 'getByReference']);
 

@@ -50,11 +50,12 @@ import Test from "./pages/Test";
 import Departements from "./pages/departement/Departements";
 import Services from "./pages/service/Services";
 import Fonctions from "./pages/fonction/Fonctions";
+import EmployePrimes from "./pages/EmployePrimes";
 
 const routes = [
   {
     type: "collapse",
-    name: "Dashboard",
+    name: "Tableau de bord",
     key: "dashboard",
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
@@ -95,10 +96,10 @@ const routes = [
   {
     type: "collapse",
     name: "Primes",
-    key: "primes",
+    key: "employe-primes",
     icon: <Icon fontSize="small">payment</Icon>,
-    route: "/primes",
-    component: <Primes />,
+    route: "/employe-primes",
+    component: <EmployePrimes />,
   },
   // {
   //   type: "collapse",
@@ -148,14 +149,6 @@ const routes = [
   //   route: "/authentication/sign-in",
   //   component: <SignIn />,
   // },
-  {
-    type: "collapse",
-    name: "Test",
-    key: "test",
-    icon: <Icon fontSize="small">login</Icon>,
-    route: "/test",
-    component: <Test />,
-  },
   // {
   //   type: "collapse",
   //   name: "Sign Up",

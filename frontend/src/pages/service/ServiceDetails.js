@@ -24,8 +24,10 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import DataTable from "examples/Tables/DataTable";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ServiceDetails() {
+  const { permissions } = useAuth();
   const { reference } = useParams();
   const navigate = useNavigate();
   const [service, setService] = useState(null);
@@ -137,7 +139,7 @@ export default function ServiceDetails() {
             variant="text"
             size="large"
             color="secondary"
-            onClick={() => navigate(`/fonctions/details/${row.original.reference}`)}
+            onClick={() => navigate(`/fonctions/${row.original.reference}`)}
           >
             <Icon>info</Icon>
           </Button>
@@ -179,22 +181,24 @@ export default function ServiceDetails() {
             <Card sx={{ p: 3 }}>
               <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <MDTypography variant="h4">Détails du Service</MDTypography>
-                <Tooltip
-                  title="Modifier"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: "rgba(26, 115, 232, 0.8)",
-                        color: "#fff",
-                        fontSize: "0.8rem",
+                {permissions.find((p) => p.entity === "service")?.can_update === 1 && (
+                  <Tooltip
+                    title="Modifier"
+                    componentsProps={{
+                      tooltip: {
+                        sx: {
+                          backgroundColor: "rgba(26, 115, 232, 0.8)",
+                          color: "#fff",
+                          fontSize: "0.8rem",
+                        },
                       },
-                    },
-                  }}
-                >
-                  <Button variant="contained" color="primary" onClick={handleOpen}>
-                    <Icon sx={{ color: "#fff" }}>edit</Icon>
-                  </Button>
-                </Tooltip>
+                    }}
+                  >
+                    <Button variant="contained" color="primary" onClick={handleOpen}>
+                      <Icon sx={{ color: "#fff" }}>edit</Icon>
+                    </Button>
+                  </Tooltip>
+                )}
               </MDBox>
 
               <MDTypography>
@@ -208,21 +212,22 @@ export default function ServiceDetails() {
               </MDTypography>
             </Card>
           </Grid>
-
-          <Grid item xs={12}>
-            <Card sx={{ p: 2 }}>
-              <MDTypography variant="h5" mb={2}>
-                Fonctions liées
-              </MDTypography>
-              <DataTable
-                table={{ columns, rows: service.fonctions || [] }}
-                isSorted={false}
-                entriesPerPage={false}
-                showTotalEntries={false}
-                noEndBorder
-              />
-            </Card>
-          </Grid>
+          {permissions.find((p) => p.entity === "fonction")?.can_read === 1 && (
+            <Grid item xs={12}>
+              <Card sx={{ p: 2 }}>
+                <MDTypography variant="h5" mb={2}>
+                  Fonctions liées
+                </MDTypography>
+                <DataTable
+                  table={{ columns, rows: service.fonctions || [] }}
+                  isSorted={false}
+                  entriesPerPage={false}
+                  showTotalEntries={false}
+                  noEndBorder
+                />
+              </Card>
+            </Grid>
+          )}
         </Grid>
       </MDBox>
 

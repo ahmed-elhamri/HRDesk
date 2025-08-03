@@ -160,7 +160,7 @@ material-dashboard-react
     │   │   └── tables
     │   ├── App.js
     │   ├── index.js
-    │   └── routes.js
+    │   └── useRoutes.js
     ├── .eslintrc.json
     ├── .prettierrc.json
     ├── CHANGELOG.md

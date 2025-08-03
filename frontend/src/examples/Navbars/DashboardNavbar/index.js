@@ -92,6 +92,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const handleLogout = async () => {
     await logout();
     navigate("/sign-in");
+    window.location.reload();
   };
 
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);

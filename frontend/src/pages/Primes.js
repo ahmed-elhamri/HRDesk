@@ -17,8 +17,10 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DataTable from "examples/Tables/DataTable";
 import { Alert, Snackbar } from "@mui/material";
+import { useAuth } from "../context/AuthContext";
 
 function Primes() {
+  const { permissions } = useAuth();
   const [rows, setRows] = useState([]);
   const [openForm, setOpenForm] = useState(false);
   const [form, setForm] = useState({
@@ -118,52 +120,56 @@ function Primes() {
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          <Tooltip
-            title="modifier"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(26, 115, 232, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
+          {permissions.find((p) => p.entity === "prime")?.can_update === 1 && (
+            <Tooltip
+              title="modifier"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(26, 115, 232, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
                 },
-              },
-            }}
-          >
-            <Button
-              onClick={() => handleEdit(row.original)}
-              variant="text"
-              color="primary"
-              size="large"
-            >
-              <Icon>edit</Icon>
-            </Button>
-          </Tooltip>
-          <Tooltip
-            title="supprimer"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(244, 67, 53, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
-                },
-              },
-            }}
-          >
-            <Button
-              onClick={() => {
-                setDeleteId(row.original.id);
-                setConfirmDialogOpen(true);
               }}
-              variant="text"
-              color="error"
-              size="large"
-              sx={{ ml: 1 }}
             >
-              <Icon sx={{ color: "error.main" }}>delete</Icon>
-            </Button>
-          </Tooltip>
+              <Button
+                onClick={() => handleEdit(row.original)}
+                variant="text"
+                color="primary"
+                size="large"
+              >
+                <Icon>edit</Icon>
+              </Button>
+            </Tooltip>
+          )}
+          {permissions.find((p) => p.entity === "prime")?.can_delete === 1 && (
+            <Tooltip
+              title="supprimer"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(244, 67, 53, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
+                },
+              }}
+            >
+              <Button
+                onClick={() => {
+                  setDeleteId(row.original.id);
+                  setConfirmDialogOpen(true);
+                }}
+                variant="text"
+                color="error"
+                size="large"
+                sx={{ ml: 1 }}
+              >
+                <Icon sx={{ color: "error.main" }}>delete</Icon>
+              </Button>
+            </Tooltip>
+          )}
         </>
       ),
     },
@@ -286,9 +292,13 @@ function Primes() {
                 <MDTypography variant="h6" color="white">
                   Primes Table
                 </MDTypography>
-                <Button variant="contained" color="success" onClick={handleOpenForm}>
-                  <Icon sx={{ color: "info.main" }}>add</Icon>
-                </Button>
+                {permissions.find((p) => p.entity === "prime")?.can_create === 1 && (
+                  <Tooltip title="Ajouter prime">
+                    <Button variant="contained" color="success" onClick={handleOpenForm}>
+                      <Icon sx={{ color: "info.main" }}>add</Icon>
+                    </Button>
+                  </Tooltip>
+                )}
               </MDBox>
               <MDBox px={2} pt={2} display="flex" justifyContent="flex-end" flexWrap="wrap">
                 <TextField

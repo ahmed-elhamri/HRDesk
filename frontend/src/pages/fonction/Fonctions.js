@@ -24,8 +24,10 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Fonctions() {
+  const { permissions } = useAuth();
   const [fonctions, setFonctions] = useState([]);
   const [services, setServices] = useState([]);
   const [form, setForm] = useState({ reference: "", designation: "", service_id: "", id: null });
@@ -170,49 +172,53 @@ export default function Fonctions() {
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          <Tooltip
-            title="modifier"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(26, 115, 232, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
+          {permissions.find((p) => p.entity === "fonction")?.can_update === 1 && (
+            <Tooltip
+              title="modifier"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(26, 115, 232, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
                 },
-              },
-            }}
-          >
-            <Button
-              onClick={() => handleEdit(row.original)}
-              variant="text"
-              color="primary"
-              size="large"
+              }}
             >
-              <Icon>edit</Icon>
-            </Button>
-          </Tooltip>
-          <Tooltip
-            title="supprimer"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(244, 67, 53, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
+              <Button
+                onClick={() => handleEdit(row.original)}
+                variant="text"
+                color="primary"
+                size="large"
+              >
+                <Icon>edit</Icon>
+              </Button>
+            </Tooltip>
+          )}
+          {permissions.find((p) => p.entity === "fonction")?.can_delete === 1 && (
+            <Tooltip
+              title="supprimer"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(244, 67, 53, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
                 },
-              },
-            }}
-          >
-            <Button
-              onClick={() => confirmDelete(row.original.id)}
-              variant="text"
-              size="large"
-              color="error"
-              sx={{ ml: 1 }}
+              }}
             >
-              <Icon sx={{ color: "error.main" }}>delete</Icon>
-            </Button>
-          </Tooltip>
+              <Button
+                onClick={() => confirmDelete(row.original.id)}
+                variant="text"
+                size="large"
+                color="error"
+                sx={{ ml: 1 }}
+              >
+                <Icon sx={{ color: "error.main" }}>delete</Icon>
+              </Button>
+            </Tooltip>
+          )}
           <Tooltip
             title="détails"
             componentsProps={{
@@ -287,11 +293,13 @@ export default function Fonctions() {
                 <MDTypography variant="h6" color="white">
                   Fonctions
                 </MDTypography>
-                <Tooltip title="ajouter">
-                  <Button onClick={handleOpen} variant="contained" color="success">
-                    <Icon sx={{ color: "info.main" }}>add</Icon>
-                  </Button>
-                </Tooltip>
+                {permissions.find((p) => p.entity === "fonction")?.can_create === 1 && (
+                  <Tooltip title="ajouter">
+                    <Button onClick={handleOpen} variant="contained" color="success">
+                      <Icon sx={{ color: "info.main" }}>add</Icon>
+                    </Button>
+                  </Tooltip>
+                )}
               </MDBox>
 
               <MDBox px={2} py={2} display="flex" justifyContent="flex-end" gap={2} flexWrap="wrap">

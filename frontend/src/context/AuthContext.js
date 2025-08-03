@@ -11,7 +11,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [employe, setEmploye] = useState(null);
   const [token, setToken] = useState(null);
-
+  const [role, setRole] = useState(null);
+  const [passwordChanged, setPasswordChanged] = useState(null);
+  const [permissions, setPermissions] = useState(null);
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUserId = localStorage.getItem("user_id");
@@ -31,8 +33,14 @@ export function AuthProvider({ children }) {
       axios
         .get(`/api/user`)
         .then((res) => {
-          setUser(res.data);
-          setEmploye(res.data.employe);
+          console.log(res.data);
+          const { user, employe, access_token, permissions } = res.data;
+          setUser(user);
+          setRole(user.role);
+          setPasswordChanged(user.password_changed);
+          setToken(access_token);
+          setEmploye(employe);
+          setPermissions(permissions);
         })
         .catch((err) => {
           console.error("Failed to fetch user:", err);
@@ -54,12 +62,17 @@ export function AuthProvider({ children }) {
       await getCsrfCookie();
 
       const response = await axios.post("/api/login", { email, password });
-      console.log(response);
-      const { user, employe, access_token } = response.data;
+      // console.log(response);
+      const { user, employe, access_token, permissions } = response.data;
+      console.log(response.data);
 
       setUser(user);
+      setRole(user.role);
       setEmploye(employe);
       setToken(access_token);
+      setPermissions(permissions);
+      setPasswordChanged(user.password_changed);
+      console.log(permissions);
 
       // Store token in localStorage if needed
       localStorage.setItem("token", access_token);
@@ -101,7 +114,9 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, employe, token, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, role, passwordChanged, employe, permissions, token, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

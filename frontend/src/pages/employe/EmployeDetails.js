@@ -36,6 +36,7 @@ import DashboardLayout from "../../examples/LayoutContainers/DashboardLayout";
 import MDBox from "../../components/MDBox";
 import { useNavigate, useParams } from "react-router-dom";
 import DataTable from "../../examples/Tables/DataTable";
+import { useAuth } from "../../context/AuthContext";
 const labels = {
   chemin_cin: "CIN",
   chemin_cnss: "CNSS",
@@ -49,6 +50,7 @@ const labels = {
   diplome_cinq: "Diplôme 5",
 };
 export default function EmployeDetails() {
+  const auth = useAuth();
   const [activeTab, setActiveTab] = useState("personal");
   // Data states per section
   const { matricule } = useParams();
@@ -59,7 +61,6 @@ export default function EmployeDetails() {
   const [paiement, setPaiement] = useState(null);
   const [documents, setDocuments] = useState({});
   const [permissions, setPermissions] = useState({});
-  const [permission, setPermission] = useState({});
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [fonctions, setFonctions] = useState([]);
@@ -480,59 +481,65 @@ export default function EmployeDetails() {
       <>
         <Card sx={{ p: 3 }}>
           <MDBox display="flex" justifyContent="flex-end" alignItems="center">
-            <Tooltip
-              title="Modifier"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(26, 115, 232, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
+            {auth.permissions.find((p) => p.entity === "employe")?.can_update === 1 && (
+              <>
+                <Tooltip
+                  title="Modifier"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(26, 115, 232, 0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
+                    },
+                  }}
+                >
+                  <IconButton color="info" onClick={openEditDialog}>
+                    <Icon>edit</Icon>
+                  </IconButton>
+                </Tooltip>
+                <Tooltip
+                  title="Réinitialiser mot de passe"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(123, 128, 154, 0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
+                    },
+                  }}
+                >
+                  <IconButton color="secondary" onClick={handleResetPassword}>
+                    <Icon>lock_reset</Icon>
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
+            {auth.permissions.find((p) => p.entity === "employe")?.can_delete === 1 && (
+              <Tooltip
+                title="Supprimer"
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      backgroundColor: "rgba(244, 67, 53, 0.8)",
+                      color: "#fff",
+                      fontSize: "0.8rem",
+                    },
                   },
-                },
-              }}
-            >
-              <IconButton color="info" onClick={openEditDialog}>
-                <Icon>edit</Icon>
-              </IconButton>
-            </Tooltip>
-            <Tooltip
-              title="Réinitialiser mot de passe"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(123, 128, 154, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
-                  },
-                },
-              }}
-            >
-              <IconButton color="secondary" onClick={handleResetPassword}>
-                <Icon>lock_reset</Icon>
-              </IconButton>
-            </Tooltip>
-            <Tooltip
-              title="Supprimer"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(244, 67, 53, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
-                  },
-                },
-              }}
-            >
-              <IconButton
-                variant="text"
-                size="medium"
-                color="error"
-                onClick={() => handleDelete(personal.id)}
+                }}
               >
-                <Icon>delete</Icon>
-              </IconButton>
-            </Tooltip>
+                <IconButton
+                  variant="text"
+                  size="medium"
+                  color="error"
+                  onClick={() => handleDelete(personal.id)}
+                >
+                  <Icon>delete</Icon>
+                </IconButton>
+              </Tooltip>
+            )}
           </MDBox>
           <Grid container spacing={2}>
             {displayField("Département", personal.fonction.service.departement.designation)}
@@ -570,22 +577,24 @@ export default function EmployeDetails() {
       <>
         <Card sx={{ p: 3 }}>
           <MDBox display="flex" justifyContent="flex-end" mb={2}>
-            <Tooltip
-              title="Modifier"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(26, 115, 232, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
+            {auth.permissions.find((p) => p.entity === "employe")?.can_update === 1 && (
+              <Tooltip
+                title="Modifier"
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      backgroundColor: "rgba(26, 115, 232, 0.8)",
+                      color: "#fff",
+                      fontSize: "0.8rem",
+                    },
                   },
-                },
-              }}
-            >
-              <IconButton color="info" onClick={openEditDialog}>
-                <Icon>edit</Icon>
-              </IconButton>
-            </Tooltip>
+                }}
+              >
+                <IconButton color="info" onClick={openEditDialog}>
+                  <Icon>edit</Icon>
+                </IconButton>
+              </Tooltip>
+            )}
           </MDBox>
           <Grid container spacing={2}>
             {displayField("Type contrat", contrat.type_contrat)}
@@ -612,22 +621,24 @@ export default function EmployeDetails() {
       <>
         <Card sx={{ p: 3 }}>
           <MDBox display="flex" justifyContent="flex-end" mb={2}>
-            <Tooltip
-              title="Modifier"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(26, 115, 232, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
+            {auth.permissions.find((p) => p.entity === "employe")?.can_update === 1 && (
+              <Tooltip
+                title="Modifier"
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      backgroundColor: "rgba(26, 115, 232, 0.8)",
+                      color: "#fff",
+                      fontSize: "0.8rem",
+                    },
                   },
-                },
-              }}
-            >
-              <IconButton color="info" onClick={openEditDialog}>
-                <Icon>edit</Icon>
-              </IconButton>
-            </Tooltip>
+                }}
+              >
+                <IconButton color="info" onClick={openEditDialog}>
+                  <Icon>edit</Icon>
+                </IconButton>
+              </Tooltip>
+            )}
           </MDBox>
           <Grid container spacing={2}>
             {displayField("Numéro CNSS", caisseSociale.numero_cnss)}
@@ -650,22 +661,24 @@ export default function EmployeDetails() {
       <>
         <Card sx={{ p: 3 }}>
           <MDBox display="flex" justifyContent="flex-end" mb={2}>
-            <Tooltip
-              title="Modifier"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(26, 115, 232, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
+            {auth.permissions.find((p) => p.entity === "employe")?.can_update === 1 && (
+              <Tooltip
+                title="Modifier"
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      backgroundColor: "rgba(26, 115, 232, 0.8)",
+                      color: "#fff",
+                      fontSize: "0.8rem",
+                    },
                   },
-                },
-              }}
-            >
-              <IconButton color="info" onClick={openEditDialog}>
-                <Icon>edit</Icon>
-              </IconButton>
-            </Tooltip>
+                }}
+              >
+                <IconButton color="info" onClick={openEditDialog}>
+                  <Icon>edit</Icon>
+                </IconButton>
+              </Tooltip>
+            )}
           </MDBox>
           <Grid container spacing={2}>
             {displayField("Mode paiement", paiement.mode_paiement)}
@@ -683,22 +696,24 @@ export default function EmployeDetails() {
     <Grid item xs={12}>
       <Card sx={{ p: 3 }}>
         <MDBox display="flex" justifyContent="flex-end" mb={2}>
-          <Tooltip
-            title="Modifier"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(26, 115, 232, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
+          {auth.permissions.find((p) => p.entity === "employe")?.can_update === 1 && (
+            <Tooltip
+              title="Modifier"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(26, 115, 232, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
                 },
-              },
-            }}
-          >
-            <IconButton color="info" onClick={openEditDialog}>
-              <Icon>edit</Icon>
-            </IconButton>
-          </Tooltip>
+              }}
+            >
+              <IconButton color="info" onClick={openEditDialog}>
+                <Icon>edit</Icon>
+              </IconButton>
+            </Tooltip>
+          )}
         </MDBox>
         <CardContent>
           <List>
@@ -850,697 +865,709 @@ export default function EmployeDetails() {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
-        <Box>
-          <Box>
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <Tab label="Personnel" value="personal" />
-              <Tab label="Contrat" value="contrat" />
-              <Tab label="Caisse Sociale" value="caisseSociale" />
-              <Tab label="Paiement" value="paiement" />
-              <Tab label="Documents" value="documents" />
-              <Tab label="Permissions" value="permissions" />
-            </Tabs>
-          </Box>
-          <Box sx={{ mt: 3 }}>
-            {activeTab === "personal" && renderPersonal()}
-            {activeTab === "contrat" && renderContrat()}
-            {activeTab === "caisseSociale" && renderCaisse()}
-            {activeTab === "paiement" && renderPaiement()}
-            {activeTab === "documents" && renderDocuments()}
-            {activeTab === "permissions" && renderPermissions()}
-          </Box>
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            backgroundColor: "#f0f2f5", // background of tabs bar
+            "& .MuiTab-root": {
+              fontWeight: "bold",
+              fontSize: "14px",
+              textTransform: "none",
+              minWidth: "120px",
+              padding: "12px 16px",
+            },
+            "& .Mui-selected": {
+              color: "info.main", // selected text color
+            },
+            "& .MuiTabs-indicator": {
+              backgroundColor: "info.main", // indicator color
+              height: "3px",
+              borderRadius: "2px",
+            },
+          }}
+        >
+          <Tab label="Personnel" value="personal" />
+          <Tab label="Contrat" value="contrat" />
+          <Tab label="Caisse Sociale" value="caisseSociale" />
+          <Tab label="Paiement" value="paiement" />
+          <Tab label="Documents" value="documents" />
+          {auth.role === "SUPERVISOR" && <Tab label="Permissions" value="permissions" />}
+        </Tabs>
+        <Box sx={{ mt: 3 }}>
+          {activeTab === "personal" && renderPersonal()}
+          {activeTab === "contrat" && renderContrat()}
+          {activeTab === "caisseSociale" && renderCaisse()}
+          {activeTab === "paiement" && renderPaiement()}
+          {activeTab === "documents" && renderDocuments()}
+          {activeTab === "permissions" && renderPermissions()}
+        </Box>
 
-          {/* Edit Personnal Dialog */}
-          <Dialog
-            open={editOpenPersonnal}
-            onClose={() => setEditOpenPersonnal(false)}
-            fullWidth
-            maxWidth="sm"
-          >
-            <DialogTitle>Modifier</DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                {[
-                  { name: "matricule", label: "Matricule", required: true },
-                  { name: "nom", label: "Nom", required: true },
-                  { name: "prenom", label: "Prénom", required: true },
-                  { name: "adresse", label: "Adresse", required: true },
-                  { name: "ville", label: "Ville", required: true },
-                  { name: "nationalite", label: "Nationalité", required: true },
-                  { name: "cin", label: "CIN" },
-                  { name: "sejour", label: "Sejour" },
-                  { name: "telephone_mobile", label: "Téléphone mobile", required: true },
-                  { name: "telephone_fixe", label: "Téléphone fixe" },
-                  { name: "lieu_de_naissance", label: "Date de naissance", required: true },
-                  { name: "email", label: "Email", required: true, type: "email" },
-                  { name: "nb_enfants", label: "Nombre d'enfants", type: "number", required: true },
-                  {
-                    name: "nb_deductions",
-                    label: "Nombre de deductions",
-                    type: "number",
-                    required: true,
-                  },
-                  {
-                    name: "taux_anciennete",
-                    label: "Taux d'ancienneté",
-                    type: "number",
-                    required: true,
-                  },
-                ].map((field) => (
-                  <Grid item xs={12} md={6} key={field.name}>
-                    <TextField
-                      fullWidth
-                      name={field.name}
-                      label={field.label}
-                      value={editFormPersonnal[field.name]}
-                      onChange={handlePersonnalChange}
-                      error={Boolean(errors[field.name])}
-                      helperText={errors[field.name]?.[0] || errors[field.name]}
-                      required={field.required}
-                      type={field.type || "text"}
-                    />
-                  </Grid>
-                ))}
-                <Grid item xs={12} md={6}>
+        {/* Edit Personnal Dialog */}
+        <Dialog
+          open={editOpenPersonnal}
+          onClose={() => setEditOpenPersonnal(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Modifier</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              {[
+                { name: "matricule", label: "Matricule", required: true },
+                { name: "nom", label: "Nom", required: true },
+                { name: "prenom", label: "Prénom", required: true },
+                { name: "adresse", label: "Adresse", required: true },
+                { name: "ville", label: "Ville", required: true },
+                { name: "nationalite", label: "Nationalité", required: true },
+                { name: "cin", label: "CIN" },
+                { name: "sejour", label: "Sejour" },
+                { name: "telephone_mobile", label: "Téléphone mobile", required: true },
+                { name: "telephone_fixe", label: "Téléphone fixe" },
+                { name: "lieu_de_naissance", label: "Date de naissance", required: true },
+                { name: "email", label: "Email", required: true, type: "email" },
+                { name: "nb_enfants", label: "Nombre d'enfants", type: "number", required: true },
+                {
+                  name: "nb_deductions",
+                  label: "Nombre de deductions",
+                  type: "number",
+                  required: true,
+                },
+                {
+                  name: "taux_anciennete",
+                  label: "Taux d'ancienneté",
+                  type: "number",
+                  required: true,
+                },
+              ].map((field) => (
+                <Grid item xs={12} md={6} key={field.name}>
                   <TextField
-                    label="Date de naissance"
-                    name="date_de_naissance"
-                    type="date"
-                    value={editFormPersonnal.date_de_naissance}
+                    fullWidth
+                    name={field.name}
+                    label={field.label}
+                    value={editFormPersonnal[field.name]}
                     onChange={handlePersonnalChange}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={Boolean(errors.date_de_naissance)}
-                    helperText={errors.date_de_naissance?.[0] || errors.date_de_naissance}
+                    error={Boolean(errors[field.name])}
+                    helperText={errors[field.name]?.[0] || errors[field.name]}
+                    required={field.required}
+                    type={field.type || "text"}
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Date d'embauche"
-                    name="date_embauche"
-                    type="date"
-                    value={editFormPersonnal.date_embauche}
-                    onChange={handlePersonnalChange}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={Boolean(errors.date_embauche)}
-                    helperText={errors.date_embauche?.[0] || errors.date_embauche}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Date d'entrée"
-                    name="date_entree"
-                    type="date"
-                    value={editFormPersonnal.date_entree}
-                    onChange={handlePersonnalChange}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={Boolean(errors.date_entree)}
-                    helperText={errors.date_entree?.[0] || errors.date_entree}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Civilité"
-                    name="civilite"
-                    fullWidth
-                    value={editFormPersonnal.civilite}
-                    onChange={handlePersonnalChange}
-                    error={Boolean(errors.civilite)}
-                    helperText={errors.civilite?.[0] || errors.civilite}
-                    sx={{
-                      ".MuiInputBase-root": {
-                        height: "45px",
-                      },
-                    }}
-                  >
-                    <MenuItem value="M">M</MenuItem>
-                    <MenuItem value="MME">MME</MenuItem>
-                    <MenuItem value="MLLE">MLLE</MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Situation familiale"
-                    name="situation_familiale"
-                    fullWidth
-                    value={editFormPersonnal.situation_familiale}
-                    onChange={handlePersonnalChange}
-                    error={Boolean(errors.situation_familiale)}
-                    helperText={errors.situation_familiale?.[0] || errors.situation_familiale}
-                    sx={{
-                      ".MuiInputBase-root": {
-                        height: "45px",
-                      },
-                    }}
-                  >
-                    <MenuItem value="MARIE">Marié</MenuItem>
-                    <MenuItem value="CELIBATAIRE">Célibataire</MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Autocomplete
-                    options={fonctions}
-                    getOptionLabel={(option) => option.designation}
-                    value={fonctions.find((f) => f.id === personal.fonction_id) || null}
-                    onChange={(e, val) =>
-                      setEditFormPersonnal((prev) => ({ ...prev, fonction_id: val?.id || "" }))
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Fonction"
-                        error={Boolean(errors.fonction_id)}
-                        helperText={errors.fonction_id?.[0] || errors.fonction_id}
-                        sx={{
-                          ".MuiInputBase-root": {
-                            height: "45px",
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditOpenPersonnal(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
-                Enregistrer
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Edit Contrat Dialog */}
-          <Dialog
-            open={editOpenContrat}
-            onClose={() => setEditOpenContrat(false)}
-            fullWidth
-            maxWidth="sm"
-          >
-            <DialogTitle>Modifier</DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Type contrat"
-                    name="type_contrat"
-                    fullWidth
-                    value={editFormContrat.type_contrat}
-                    onChange={handleConctratChange}
-                    error={Boolean(errors.type_contrat)}
-                    helperText={errors.type_contrat}
-                    sx={{ ".MuiInputBase-root": { height: "45px" } }}
-                  >
-                    <MenuItem value="CDI">CDI</MenuItem>
-                    <MenuItem value="CDD">CDD</MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Type rémunération"
-                    name="type_remuneration"
-                    fullWidth
-                    value={editFormContrat.type_remuneration}
-                    onChange={handleConctratChange}
-                    error={Boolean(errors.type_remuneration)}
-                    helperText={errors.type_remuneration}
-                    sx={{ ".MuiInputBase-root": { height: "45px" } }}
-                  >
-                    <MenuItem value="MENSUEL">Mensuel</MenuItem>
-                    <MenuItem value="HORAIRE">Horaire</MenuItem>
-                    <MenuItem value="QUINZAINE">Quinzaine</MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Statut"
-                    name="statut"
-                    fullWidth
-                    value={editFormContrat.statut}
-                    onChange={handleConctratChange}
-                    error={Boolean(errors.statut)}
-                    helperText={errors.statut}
-                    sx={{ ".MuiInputBase-root": { height: "45px" } }}
-                  >
-                    <MenuItem value="PERMANENT">Permanent</MenuItem>
-                    <MenuItem value="VACATAIRE">Vacataire</MenuItem>
-                    <MenuItem value="OCCASIONNEL">Occasionnel</MenuItem>
-                    <MenuItem value="STAGAIRE">Stagaire</MenuItem>
-                    <MenuItem value="TAHFIZ">Tahfiz</MenuItem>
-                    <MenuItem value="PCS">PCS</MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Date fin (optionnel)"
-                    name="date_fin"
-                    type="date"
-                    value={editFormContrat.date_fin}
-                    onChange={handleConctratChange}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={Boolean(errors.date_fin)}
-                    helperText={errors.date_fin}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Salaire de base"
-                    name="salaire_base"
-                    type="number"
-                    value={editFormContrat.salaire_base}
-                    onChange={handleConctratChange}
-                    fullWidth
-                    error={Boolean(errors.salaire_base)}
-                    helperText={errors.salaire_base}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Taux horaire"
-                    name="taux_horaire"
-                    type="number"
-                    value={editFormContrat.taux_horaire}
-                    onChange={handleConctratChange}
-                    fullWidth
-                    error={Boolean(errors.taux_horaire)}
-                    helperText={errors.taux_horaire}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Classification"
-                    name="classification"
-                    fullWidth
-                    value={editFormContrat.classification}
-                    onChange={handleConctratChange}
-                    error={Boolean(errors.classification)}
-                    helperText={errors.classification}
-                    sx={{ ".MuiInputBase-root": { height: "45px" } }}
-                  >
-                    {["NR", "SO", "DE", "IT", "IL", "AT", "CS", "MS", "MP"].map((c) => (
-                      <MenuItem key={c} value={c}>
-                        {c}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="est_avocat"
-                      checked={editFormContrat.est_avocat}
-                      onChange={handleConctratChange}
-                    />{" "}
-                    Est avocat
-                  </label>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="est_domestique"
-                      checked={editFormContrat.est_domestique}
-                      onChange={handleConctratChange}
-                    />{" "}
-                    Est domestique
-                  </label>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="est_saisonnier"
-                      checked={editFormContrat.est_saisonnier}
-                      onChange={handleConctratChange}
-                    />{" "}
-                    Est saisonnier
-                  </label>
-                </Grid>
-
-                {editFormContrat.est_saisonnier && (
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="Nombre de jours de saisonnier"
-                      name="nb_jours_saisonnier"
-                      type="number"
-                      value={editFormContrat.nb_jours_saisonnier}
-                      onChange={handleConctratChange}
-                      fullWidth
-                      error={Boolean(errors.nb_jours_saisonnier)}
-                      helperText={errors.nb_jours_saisonnier}
-                    />
-                  </Grid>
-                )}
-
-                <Grid item xs={12} md={6}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="nouveau_declarant"
-                      checked={editFormContrat.nouveau_declarant}
-                      onChange={handleConctratChange}
-                    />{" "}
-                    Nouveau déclarant
-                  </label>
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditOpenContrat(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
-                Enregistrer
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Edit Caisse Dialog */}
-          <Dialog
-            open={editOpenCaisse}
-            onClose={() => setEditOpenCaisse(false)}
-            fullWidth
-            maxWidth="sm"
-          >
-            <DialogTitle>Modifier</DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                {[
-                  { name: "numero_cnss", label: "Numéro CNSS", required: true },
-                  { name: "numero_mutuelle", label: "Numéro Mutuelle", required: true },
-                  { name: "numero_adherent_cimr", label: "Numéro Adhérent CIMR", required: true },
-                  { name: "numero_categorie_cimr", label: "Numéro Catégorie CIMR", required: true },
-                  { name: "matricule_cimr", label: "Matricule CIMR", required: true },
-                  {
-                    name: "taux_cotisation_cimr",
-                    label: "Taux cotisation CIMR",
-                    required: true,
-                    type: "number",
-                  },
-                  {
-                    name: "date_affiliation_cimr",
-                    label: "Date affiliation CIMR",
-                    required: true,
-                    type: "date",
-                  },
-                ].map((field) => (
-                  <Grid item xs={12} md={6} key={field.name}>
-                    <TextField
-                      fullWidth
-                      name={field.name}
-                      label={field.label}
-                      value={editFormCaisse[field.name]}
-                      onChange={handleCaisseChange}
-                      error={Boolean(errors[field.name])}
-                      helperText={errors[field.name]}
-                      required={field.required}
-                      type={field.type || "text"}
-                      InputLabelProps={field.type === "date" ? { shrink: true } : {}}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditOpenCaisse(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
-                Enregistrer
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Edit Paiement Dialog */}
-          <Dialog
-            open={editOpenPaiement}
-            onClose={() => setEditOpenPaiement(false)}
-            fullWidth
-            maxWidth="sm"
-          >
-            <DialogTitle>Modifier</DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                {[
-                  { name: "mode_paiement", label: "Mode paiement" },
-                  { name: "banque", label: "Banque" },
-                  { name: "numero_compte", label: "Numéro compte" },
-                  { name: "adresse_banque", label: "Adresse banque" },
-                ].map((field) => (
-                  <Grid item xs={12} md={6} key={field.name}>
-                    <TextField
-                      fullWidth
-                      name={field.name}
-                      label={field.label}
-                      value={editFormPaiement[field.name]}
-                      onChange={handlePaiementChange}
-                      error={Boolean(errors[field.name])}
-                      helperText={errors[field.name]}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditOpenPaiement(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
-                Enregistrer
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Edit Document Dialog */}
-          <Dialog
-            open={editOpenDocument}
-            onClose={() => {
-              setEditOpenDocument(false);
-              fetchDocuments();
-            }}
-            fullWidth
-            maxWidth="sm"
-          >
-            <DialogTitle>
-              Modifier <br />
-              <Typography
-                variant="caption"
-                gutterBottom
-                sx={{ color: "secondary.main", fontWeight: "bold" }}
-              >
-                Clic droit pour supprimer un fichier
-              </Typography>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                {[
-                  { name: "chemin_cin", label: "CIN" },
-                  { name: "chemin_cnss", label: "CNSS" },
-                  { name: "chemin_contrat_travail", label: "Contrat travail" },
-                  { name: "chemin_tableau_amortissement", label: "Tableau amortissement" },
-                  { name: "lettre_demission", label: "Lettre démission" },
-                  { name: "diplome_un", label: "Diplôme 1" },
-                  { name: "diplome_deux", label: "Diplôme 2" },
-                  { name: "diplome_trois", label: "Diplôme 3" },
-                  { name: "diplome_quatre", label: "Diplôme 4" },
-                  { name: "diplome_cinq", label: "Diplôme 5" },
-                ].map((field) => (
-                  <Grid item xs={12} md={6} key={field.name}>
-                    <Button
-                      variant="outlined"
-                      color="info"
-                      component="label"
-                      fullWidth
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        const updatedDocs = { ...editFormDocument, [field.name]: null };
-                        setEditFormDocument(updatedDocs);
-
-                        const input = document.querySelector(`input[name="${field.name}"]`);
-                        if (input) input.value = ""; // Clear input
-                      }}
-                      sx={
-                        editFormDocument[field.name]
-                          ? { color: "info.main" }
-                          : { color: "secondary.main" }
-                      }
-                    >
-                      {editFormDocument[field.name]
-                        ? field.label
-                        : `Choisir fichier: ${field.label}`}
-                      <input
-                        hidden
-                        type="file"
-                        name={field.name}
-                        onChange={handleDocumentChange}
-                        accept="application/pdf/*"
-                      />
-                    </Button>
-                  </Grid>
-                ))}
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditOpenDocument(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
-                Enregistrer
-              </Button>
-            </DialogActions>
-          </Dialog>
-          {/* Edit Permission Dialog */}
-          <Dialog
-            open={editOpenPermission}
-            onClose={() => setEditOpenPermission(false)}
-            fullWidth
-            maxWidth="sm"
-          >
-            <DialogTitle>Modifier</DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                {[
-                  { name: "can_create", label: "Peut créee" },
-                  { name: "can_read", label: "Peut lire" },
-                  { name: "can_update", label: "Peut modifier" },
-                  { name: "can_delete", label: "Peut supprimer" },
-                ].map((field) => (
-                  <Grid item xs={12} md={6} key={field.name}>
-                    <label>
-                      <input
-                        name={field.name}
-                        checked={editFormPermission[field.name]}
-                        onChange={handlePermissionsChange}
-                        type="checkbox"
-                      />{" "}
-                      {field.label}
-                    </label>
-                  </Grid>
-                ))}
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditOpenPermission(false)}>Annuler</Button>
-              <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
-                Enregistrer
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Preview Dialog */}
-          <Dialog
-            open={previewOpen}
-            onClose={handlePreviewClose}
-            maxWidth="lg"
-            fullWidth
-            PaperProps={{
-              sx: {
-                borderRadius: 3,
-                maxHeight: "90vh",
-              },
-            }}
-          >
-            <DialogTitle
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              Prévisualisation du fichier
-              {previewFile && (
-                <Chip
-                  label={previewFile.name}
-                  size="small"
-                  sx={{
-                    bgcolor: "white",
-                    color: "secondary.main",
-                    ml: "auto",
-                  }}
+              ))}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Date de naissance"
+                  name="date_de_naissance"
+                  type="date"
+                  value={editFormPersonnal.date_de_naissance}
+                  onChange={handlePersonnalChange}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  error={Boolean(errors.date_de_naissance)}
+                  helperText={errors.date_de_naissance?.[0] || errors.date_de_naissance}
                 />
-              )}
-            </DialogTitle>
-
-            <DialogContent dividers sx={{ p: 0 }}>
-              {previewFile ? (
-                <Box
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Date d'embauche"
+                  name="date_embauche"
+                  type="date"
+                  value={editFormPersonnal.date_embauche}
+                  onChange={handlePersonnalChange}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  error={Boolean(errors.date_embauche)}
+                  helperText={errors.date_embauche?.[0] || errors.date_embauche}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Date d'entrée"
+                  name="date_entree"
+                  type="date"
+                  value={editFormPersonnal.date_entree}
+                  onChange={handlePersonnalChange}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  error={Boolean(errors.date_entree)}
+                  helperText={errors.date_entree?.[0] || errors.date_entree}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Civilité"
+                  name="civilite"
+                  fullWidth
+                  value={editFormPersonnal.civilite}
+                  onChange={handlePersonnalChange}
+                  error={Boolean(errors.civilite)}
+                  helperText={errors.civilite?.[0] || errors.civilite}
                   sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    minHeight: 400,
-                    bgcolor: "grey.50",
+                    ".MuiInputBase-root": {
+                      height: "45px",
+                    },
                   }}
                 >
-                  <embed
-                    src={previewFile.file}
-                    type="application/pdf"
-                    width="100%"
-                    height="600px"
-                    style={{ borderRadius: 8 }}
+                  <MenuItem value="M">M</MenuItem>
+                  <MenuItem value="MME">MME</MenuItem>
+                  <MenuItem value="MLLE">MLLE</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Situation familiale"
+                  name="situation_familiale"
+                  fullWidth
+                  value={editFormPersonnal.situation_familiale}
+                  onChange={handlePersonnalChange}
+                  error={Boolean(errors.situation_familiale)}
+                  helperText={errors.situation_familiale?.[0] || errors.situation_familiale}
+                  sx={{
+                    ".MuiInputBase-root": {
+                      height: "45px",
+                    },
+                  }}
+                >
+                  <MenuItem value="MARIE">Marié</MenuItem>
+                  <MenuItem value="CELIBATAIRE">Célibataire</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Autocomplete
+                  options={fonctions}
+                  getOptionLabel={(option) => option.designation}
+                  value={fonctions.find((f) => f.id === personal.fonction_id) || null}
+                  onChange={(e, val) =>
+                    setEditFormPersonnal((prev) => ({ ...prev, fonction_id: val?.id || "" }))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Fonction"
+                      error={Boolean(errors.fonction_id)}
+                      helperText={errors.fonction_id?.[0] || errors.fonction_id}
+                      sx={{
+                        ".MuiInputBase-root": {
+                          height: "45px",
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditOpenPersonnal(false)}>Annuler</Button>
+            <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
+              Enregistrer
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Edit Contrat Dialog */}
+        <Dialog
+          open={editOpenContrat}
+          onClose={() => setEditOpenContrat(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Modifier</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Type contrat"
+                  name="type_contrat"
+                  fullWidth
+                  value={editFormContrat.type_contrat}
+                  onChange={handleConctratChange}
+                  error={Boolean(errors.type_contrat)}
+                  helperText={errors.type_contrat}
+                  sx={{ ".MuiInputBase-root": { height: "45px" } }}
+                >
+                  <MenuItem value="CDI">CDI</MenuItem>
+                  <MenuItem value="CDD">CDD</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Type rémunération"
+                  name="type_remuneration"
+                  fullWidth
+                  value={editFormContrat.type_remuneration}
+                  onChange={handleConctratChange}
+                  error={Boolean(errors.type_remuneration)}
+                  helperText={errors.type_remuneration}
+                  sx={{ ".MuiInputBase-root": { height: "45px" } }}
+                >
+                  <MenuItem value="MENSUEL">Mensuel</MenuItem>
+                  <MenuItem value="HORAIRE">Horaire</MenuItem>
+                  <MenuItem value="QUINZAINE">Quinzaine</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Statut"
+                  name="statut"
+                  fullWidth
+                  value={editFormContrat.statut}
+                  onChange={handleConctratChange}
+                  error={Boolean(errors.statut)}
+                  helperText={errors.statut}
+                  sx={{ ".MuiInputBase-root": { height: "45px" } }}
+                >
+                  <MenuItem value="PERMANENT">Permanent</MenuItem>
+                  <MenuItem value="VACATAIRE">Vacataire</MenuItem>
+                  <MenuItem value="OCCASIONNEL">Occasionnel</MenuItem>
+                  <MenuItem value="STAGAIRE">Stagaire</MenuItem>
+                  <MenuItem value="TAHFIZ">Tahfiz</MenuItem>
+                  <MenuItem value="PCS">PCS</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Date fin (optionnel)"
+                  name="date_fin"
+                  type="date"
+                  value={editFormContrat.date_fin}
+                  onChange={handleConctratChange}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  error={Boolean(errors.date_fin)}
+                  helperText={errors.date_fin}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Salaire de base"
+                  name="salaire_base"
+                  type="number"
+                  value={editFormContrat.salaire_base}
+                  onChange={handleConctratChange}
+                  fullWidth
+                  error={Boolean(errors.salaire_base)}
+                  helperText={errors.salaire_base}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Taux horaire"
+                  name="taux_horaire"
+                  type="number"
+                  value={editFormContrat.taux_horaire}
+                  onChange={handleConctratChange}
+                  fullWidth
+                  error={Boolean(errors.taux_horaire)}
+                  helperText={errors.taux_horaire}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Classification"
+                  name="classification"
+                  fullWidth
+                  value={editFormContrat.classification}
+                  onChange={handleConctratChange}
+                  error={Boolean(errors.classification)}
+                  helperText={errors.classification}
+                  sx={{ ".MuiInputBase-root": { height: "45px" } }}
+                >
+                  {["NR", "SO", "DE", "IT", "IL", "AT", "CS", "MS", "MP"].map((c) => (
+                    <MenuItem key={c} value={c}>
+                      {c}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="est_avocat"
+                    checked={editFormContrat.est_avocat}
+                    onChange={handleConctratChange}
+                  />{" "}
+                  Est avocat
+                </label>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="est_domestique"
+                    checked={editFormContrat.est_domestique}
+                    onChange={handleConctratChange}
+                  />{" "}
+                  Est domestique
+                </label>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="est_saisonnier"
+                    checked={editFormContrat.est_saisonnier}
+                    onChange={handleConctratChange}
+                  />{" "}
+                  Est saisonnier
+                </label>
+              </Grid>
+
+              {editFormContrat.est_saisonnier && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Nombre de jours de saisonnier"
+                    name="nb_jours_saisonnier"
+                    type="number"
+                    value={editFormContrat.nb_jours_saisonnier}
+                    onChange={handleConctratChange}
+                    fullWidth
+                    error={Boolean(errors.nb_jours_saisonnier)}
+                    helperText={errors.nb_jours_saisonnier}
                   />
-                </Box>
-              ) : null}
-            </DialogContent>
+                </Grid>
+              )}
 
-            <DialogActions sx={{ p: 2, bgcolor: "grey.50" }}>
-              <Button
-                onClick={handlePreviewClose}
-                variant="contained"
-                sx={{ borderRadius: 2, color: "#fff" }}
-              >
-                Fermer
-              </Button>
-            </DialogActions>
-          </Dialog>
+              <Grid item xs={12} md={6}>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="nouveau_declarant"
+                    checked={editFormContrat.nouveau_declarant}
+                    onChange={handleConctratChange}
+                  />{" "}
+                  Nouveau déclarant
+                </label>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditOpenContrat(false)}>Annuler</Button>
+            <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
+              Enregistrer
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-          {/* Confirme Delete Dialog */}
-          <Dialog
-            open={confirmDeleteOpen}
-            onClose={handleCancelDelete}
-            aria-labelledby="confirm-delete-title"
-            aria-describedby="confirm-delete-description"
+        {/* Edit Caisse Dialog */}
+        <Dialog
+          open={editOpenCaisse}
+          onClose={() => setEditOpenCaisse(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Modifier</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              {[
+                { name: "numero_cnss", label: "Numéro CNSS", required: true },
+                { name: "numero_mutuelle", label: "Numéro Mutuelle", required: true },
+                { name: "numero_adherent_cimr", label: "Numéro Adhérent CIMR", required: true },
+                { name: "numero_categorie_cimr", label: "Numéro Catégorie CIMR", required: true },
+                { name: "matricule_cimr", label: "Matricule CIMR", required: true },
+                {
+                  name: "taux_cotisation_cimr",
+                  label: "Taux cotisation CIMR",
+                  required: true,
+                  type: "number",
+                },
+                {
+                  name: "date_affiliation_cimr",
+                  label: "Date affiliation CIMR",
+                  required: true,
+                  type: "date",
+                },
+              ].map((field) => (
+                <Grid item xs={12} md={6} key={field.name}>
+                  <TextField
+                    fullWidth
+                    name={field.name}
+                    label={field.label}
+                    value={editFormCaisse[field.name]}
+                    onChange={handleCaisseChange}
+                    error={Boolean(errors[field.name])}
+                    helperText={errors[field.name]}
+                    required={field.required}
+                    type={field.type || "text"}
+                    InputLabelProps={field.type === "date" ? { shrink: true } : {}}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditOpenCaisse(false)}>Annuler</Button>
+            <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
+              Enregistrer
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Edit Paiement Dialog */}
+        <Dialog
+          open={editOpenPaiement}
+          onClose={() => setEditOpenPaiement(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Modifier</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              {[
+                { name: "mode_paiement", label: "Mode paiement" },
+                { name: "banque", label: "Banque" },
+                { name: "numero_compte", label: "Numéro compte" },
+                { name: "adresse_banque", label: "Adresse banque" },
+              ].map((field) => (
+                <Grid item xs={12} md={6} key={field.name}>
+                  <TextField
+                    fullWidth
+                    name={field.name}
+                    label={field.label}
+                    value={editFormPaiement[field.name]}
+                    onChange={handlePaiementChange}
+                    error={Boolean(errors[field.name])}
+                    helperText={errors[field.name]}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditOpenPaiement(false)}>Annuler</Button>
+            <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
+              Enregistrer
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Edit Document Dialog */}
+        <Dialog
+          open={editOpenDocument}
+          onClose={() => {
+            setEditOpenDocument(false);
+            fetchDocuments();
+          }}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>
+            Modifier <br />
+            <Typography
+              variant="caption"
+              gutterBottom
+              sx={{ color: "secondary.main", fontWeight: "bold" }}
+            >
+              Clic droit pour supprimer un fichier
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              {[
+                { name: "chemin_cin", label: "CIN" },
+                { name: "chemin_cnss", label: "CNSS" },
+                { name: "chemin_contrat_travail", label: "Contrat travail" },
+                { name: "chemin_tableau_amortissement", label: "Tableau amortissement" },
+                { name: "lettre_demission", label: "Lettre démission" },
+                { name: "diplome_un", label: "Diplôme 1" },
+                { name: "diplome_deux", label: "Diplôme 2" },
+                { name: "diplome_trois", label: "Diplôme 3" },
+                { name: "diplome_quatre", label: "Diplôme 4" },
+                { name: "diplome_cinq", label: "Diplôme 5" },
+              ].map((field) => (
+                <Grid item xs={12} md={6} key={field.name}>
+                  <Button
+                    variant="outlined"
+                    color="info"
+                    component="label"
+                    fullWidth
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      const updatedDocs = { ...editFormDocument, [field.name]: null };
+                      setEditFormDocument(updatedDocs);
+
+                      const input = document.querySelector(`input[name="${field.name}"]`);
+                      if (input) input.value = ""; // Clear input
+                    }}
+                    sx={
+                      editFormDocument[field.name]
+                        ? { color: "info.main" }
+                        : { color: "secondary.main" }
+                    }
+                  >
+                    {editFormDocument[field.name] ? field.label : `Choisir fichier: ${field.label}`}
+                    <input
+                      hidden
+                      type="file"
+                      name={field.name}
+                      onChange={handleDocumentChange}
+                      accept="application/pdf/*"
+                    />
+                  </Button>
+                </Grid>
+              ))}
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditOpenDocument(false)}>Annuler</Button>
+            <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
+              Enregistrer
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {/* Edit Permission Dialog */}
+        <Dialog
+          open={editOpenPermission}
+          onClose={() => setEditOpenPermission(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Modifier</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              {[
+                { name: "can_create", label: "Peut créee" },
+                { name: "can_read", label: "Peut lire" },
+                { name: "can_update", label: "Peut modifier" },
+                { name: "can_delete", label: "Peut supprimer" },
+              ].map((field) => (
+                <Grid item xs={12} md={6} key={field.name}>
+                  <label>
+                    <input
+                      name={field.name}
+                      checked={editFormPermission[field.name]}
+                      onChange={handlePermissionsChange}
+                      type="checkbox"
+                    />{" "}
+                    {field.label}
+                  </label>
+                </Grid>
+              ))}
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditOpenPermission(false)}>Annuler</Button>
+            <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
+              Enregistrer
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Preview Dialog */}
+        <Dialog
+          open={previewOpen}
+          onClose={handlePreviewClose}
+          maxWidth="lg"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              maxHeight: "90vh",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
           >
-            <DialogTitle id="confirm-delete-title">Confirmation</DialogTitle>
-            <DialogContent>
-              <Typography id="confirm-delete-description" sx={{ mt: 1 }}>
-                Êtes-vous sûr de vouloir supprimer cet employé ?
-              </Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCancelDelete}>Annuler</Button>
-              <Button
-                onClick={handleDeleteConfirmed}
-                variant="text"
-                color="error"
-                sx={{ color: "error.main" }}
-              >
-                Confirmer la suppression
-              </Button>
-            </DialogActions>
-          </Dialog>
+            Prévisualisation du fichier
+            {previewFile && (
+              <Chip
+                label={previewFile.name}
+                size="small"
+                sx={{
+                  bgcolor: "white",
+                  color: "secondary.main",
+                  ml: "auto",
+                }}
+              />
+            )}
+          </DialogTitle>
 
-          {/* Snackbar */}
-          <Snackbar
-            open={snackbarOpen}
-            autoHideDuration={4000}
-            onClose={() => setSnackbarOpen(false)}
-            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          >
-            <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity}>
-              {snackbarMessage}
-            </Alert>
-          </Snackbar>
-        </Box>
+          <DialogContent dividers sx={{ p: 0 }}>
+            {previewFile ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  bgcolor: "grey.50",
+                }}
+              >
+                <embed
+                  src={previewFile.file}
+                  type="application/pdf"
+                  width="100%"
+                  height="600px"
+                  style={{ borderRadius: 8 }}
+                />
+              </Box>
+            ) : null}
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2, bgcolor: "grey.50" }}>
+            <Button
+              onClick={handlePreviewClose}
+              variant="contained"
+              sx={{ borderRadius: 2, color: "#fff" }}
+            >
+              Fermer
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Confirme Delete Dialog */}
+        <Dialog
+          open={confirmDeleteOpen}
+          onClose={handleCancelDelete}
+          aria-labelledby="confirm-delete-title"
+          aria-describedby="confirm-delete-description"
+        >
+          <DialogTitle id="confirm-delete-title">Confirmation</DialogTitle>
+          <DialogContent>
+            <Typography id="confirm-delete-description" sx={{ mt: 1 }}>
+              Êtes-vous sûr de vouloir supprimer cet employé ?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCancelDelete}>Annuler</Button>
+            <Button
+              onClick={handleDeleteConfirmed}
+              variant="text"
+              color="error"
+              sx={{ color: "error.main" }}
+            >
+              Confirmer la suppression
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </MDBox>
     </DashboardLayout>
   );

@@ -31,7 +31,7 @@ import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 
 export default function Employes() {
-  const { user } = useAuth();
+  const { user, permissions } = useAuth();
   const [employes, setEmployes] = useState([]);
   const [fonctions, setFonctions] = useState([]);
   const [file, setFile] = useState(null);
@@ -202,48 +202,52 @@ export default function Employes() {
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          <Tooltip
-            title="Réinitialiser le mot de passe"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(123, 128, 154, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
+          {permissions.find((p) => p.entity === "employe")?.can_update === 1 && (
+            <Tooltip
+              title="Réinitialiser le mot de passe"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(123, 128, 154, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
                 },
-              },
-            }}
-          >
-            <Button
-              onClick={() => handleResetPassword(row.original.user_id)}
-              variant="text"
-              size="large"
-              color="info"
+              }}
             >
-              <Icon>lock_reset</Icon>
-            </Button>
-          </Tooltip>
-          <Tooltip
-            title="supprimer"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(244, 67, 53, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
+              <Button
+                onClick={() => handleResetPassword(row.original.user_id)}
+                variant="text"
+                size="large"
+                color="info"
+              >
+                <Icon>lock_reset</Icon>
+              </Button>
+            </Tooltip>
+          )}
+          {permissions.find((p) => p.entity === "employe")?.can_delete === 1 && (
+            <Tooltip
+              title="supprimer"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "rgba(244, 67, 53, 0.8)",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                  },
                 },
-              },
-            }}
-          >
-            <Button
-              onClick={() => handleDelete(row.original.id)}
-              variant="text"
-              size="large"
-              sx={{ ml: 1 }}
+              }}
             >
-              <Icon sx={{ color: "error.main" }}>delete</Icon>
-            </Button>
-          </Tooltip>
+              <Button
+                onClick={() => handleDelete(row.original.id)}
+                variant="text"
+                size="large"
+                sx={{ ml: 1 }}
+              >
+                <Icon sx={{ color: "error.main" }}>delete</Icon>
+              </Button>
+            </Tooltip>
+          )}
           <Tooltip
             title="détails"
             componentsProps={{
@@ -335,28 +339,30 @@ export default function Employes() {
                 <MDTypography variant="h6" color="white">
                   Employés
                 </MDTypography>
-                <MDBox display="flex" gap={1}>
-                  <Tooltip title="Ajouter employé">
-                    <Button
-                      variant="contained"
-                      color="success"
-                      onClick={() => navigate("/add-employe")}
-                    >
-                      <Icon sx={{ color: "info.main" }}>add</Icon>
-                    </Button>
-                  </Tooltip>
-                  <Tooltip title="importer des employés depuis Excel">
-                    <Button variant="contained" color="success" onClick={() => setOpen(true)}>
-                      <Icon sx={{ color: "info.main" }}>attach_file</Icon>
-                      <input
-                        hidden
-                        type="file"
-                        onChange={(e) => setFile(e.target.files[0])}
-                        accept=".xlsx,.xls"
-                      />
-                    </Button>
-                  </Tooltip>
-                </MDBox>
+                {permissions.find((p) => p.entity === "employe")?.can_create === 1 && (
+                  <MDBox display="flex" gap={1}>
+                    <Tooltip title="Ajouter employé">
+                      <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => navigate("/add-employe")}
+                      >
+                        <Icon sx={{ color: "info.main" }}>add</Icon>
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="importer des employés depuis Excel">
+                      <Button variant="contained" color="success" onClick={() => setOpen(true)}>
+                        <Icon sx={{ color: "info.main" }}>attach_file</Icon>
+                        <input
+                          hidden
+                          type="file"
+                          onChange={(e) => setFile(e.target.files[0])}
+                          accept=".xlsx,.xls"
+                        />
+                      </Button>
+                    </Tooltip>
+                  </MDBox>
+                )}
               </MDBox>
               {/* Dialog */}
               <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>

@@ -23,8 +23,10 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import DataTable from "examples/Tables/DataTable";
+import { useAuth } from "../../context/AuthContext";
 
 export default function DepartementDetails() {
+  const { permissions } = useAuth();
   const { reference } = useParams();
   const navigate = useNavigate();
   const [departement, setDepartement] = useState(null);
@@ -113,7 +115,7 @@ export default function DepartementDetails() {
             variant="text"
             color="secondary"
             size="large"
-            onClick={() => navigate(`/services/details/${row.original.reference}`)}
+            onClick={() => navigate(`/services/${row.original.reference}`)}
           >
             <Icon>info</Icon>
           </Button>
@@ -155,22 +157,24 @@ export default function DepartementDetails() {
             <Card sx={{ p: 3 }}>
               <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <MDTypography variant="h4">Détails du Département</MDTypography>
-                <Tooltip
-                  title="Modifier"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: "rgba(26, 115, 232, 0.8)",
-                        color: "#fff",
-                        fontSize: "0.8rem",
+                {permissions.find((p) => p.entity === "departement")?.can_update === 1 && (
+                  <Tooltip
+                    title="Modifier"
+                    componentsProps={{
+                      tooltip: {
+                        sx: {
+                          backgroundColor: "rgba(26, 115, 232, 0.8)",
+                          color: "#fff",
+                          fontSize: "0.8rem",
+                        },
                       },
-                    },
-                  }}
-                >
-                  <Button variant="contained" color="primary" onClick={handleOpen}>
-                    <Icon sx={{ color: "#fff" }}>edit</Icon>
-                  </Button>
-                </Tooltip>
+                    }}
+                  >
+                    <Button variant="contained" color="primary" onClick={handleOpen}>
+                      <Icon sx={{ color: "#fff" }}>edit</Icon>
+                    </Button>
+                  </Tooltip>
+                )}
               </MDBox>
 
               <MDTypography>
@@ -181,21 +185,22 @@ export default function DepartementDetails() {
               </MDTypography>
             </Card>
           </Grid>
-
-          <Grid item xs={12}>
-            <Card sx={{ p: 2 }}>
-              <MDTypography variant="h5" mb={2}>
-                Services liés
-              </MDTypography>
-              <DataTable
-                table={{ columns, rows: departement.services || [] }}
-                isSorted={false}
-                entriesPerPage={false}
-                showTotalEntries={false}
-                noEndBorder
-              />
-            </Card>
-          </Grid>
+          {permissions.find((p) => p.entity === "service")?.can_read === 1 && (
+            <Grid item xs={12}>
+              <Card sx={{ p: 2 }}>
+                <MDTypography variant="h5" mb={2}>
+                  Services liés
+                </MDTypography>
+                <DataTable
+                  table={{ columns, rows: departement.services || [] }}
+                  isSorted={false}
+                  entriesPerPage={false}
+                  showTotalEntries={false}
+                  noEndBorder
+                />
+              </Card>
+            </Grid>
+          )}
         </Grid>
       </MDBox>
 

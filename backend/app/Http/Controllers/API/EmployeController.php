@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Imports\EmployesImport;
 use App\Models\Employe;
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -19,7 +20,6 @@ class EmployeController extends Controller implements HasMiddleware
     {
         return [
             'auth:sanctum',
-            new Middleware('role:SUPERVISOR,ADMIN', except: ['show', 'update']),
         ];
     }
     public function index()
@@ -77,6 +77,29 @@ class EmployeController extends Controller implements HasMiddleware
         $employeData['user_id'] = $user->id;
 
         $employe = Employe::create($employeData);
+
+        Permission::insert([
+            [
+                'user_id' => $user->id,
+                'entity' => 'departement',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'service',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'fonction',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'employe',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'prime',
+            ],
+        ]);
 
         return response()->json($employe, 201);
     }

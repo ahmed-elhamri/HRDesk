@@ -14,7 +14,6 @@ class DepartementController extends Controller implements HasMiddleware
     {
         return [
             'auth:sanctum',
-            new Middleware('role:SUPERVISOR,ADMIN'),
         ];
     }
     public function index()

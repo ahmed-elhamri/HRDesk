@@ -104,20 +104,21 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        if ($user->role == 'EMPLOYE') {
-            $employe = $user->employe;
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-                'user' => $user,
-                'employe' => $employe,
-            ]);
-        }
+//        if ($user->role == 'EMPLOYE') {
+//            $employe = $user->employe;
+//            return response()->json([
+//                'access_token' => $token,
+//                'token_type' => 'Bearer',
+//                'user' => $user,
+//                'employe' => $employe,
+//            ]);
+//        }
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
             'permissions' => $user->permissions,
+            'employe' => $user->employe,
         ]);
     }
 
@@ -130,6 +131,11 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user();
+        return response()->json([
+            'user' => $user,
+            'permissions' => $user->permissions,
+            'employe' => $user->employe,
+        ]);
     }
 }

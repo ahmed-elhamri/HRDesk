@@ -7,12 +7,11 @@ use App\Models\Contrat;
 use App\Models\Document;
 use App\Models\Employe;
 use App\Models\Paiement;
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\OnEachRow;
-use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Row;
 
 class EmployesImport implements OnEachRow, WithHeadingRow
@@ -24,6 +23,30 @@ class EmployesImport implements OnEachRow, WithHeadingRow
             'password' => Hash::make('123456'),
             'role' => 'EMPLOYE'
         ]);
+
+        Permission::insert([
+            [
+                'user_id' => $user->id,
+                'entity' => 'departement',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'service',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'fonction',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'employe',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'prime',
+            ],
+        ]);
+
         $employe = Employe::create([
             'user_id' => $user->id,
             'fonction_id' => (int) trim($row['fonction_id']),

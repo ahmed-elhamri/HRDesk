@@ -16,7 +16,7 @@ import themeDark from "assets/theme-dark";
 import supervisorRoutes from "./routes/supervisorRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import employeRoutes from "./routes/employeRoutes";
-import routes from "./routes";
+import routes, { useRoutes } from "./useRoutes";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import brandWhite from "assets/images/HRDesk_logo_dark.png";
 import brandDark from "assets/images/HRDesk_logo_light.png";
@@ -29,14 +29,16 @@ import ChangePassword from "./pages/authentication/ChangePassword";
 import UserProfile from "./pages/UserProfile";
 import Primes from "./pages/Primes";
 import AddEmploye from "./pages/employe/AddEmploye";
+import { useAuth } from "./context/AuthContext";
 export default function App() {
+  const routes = useRoutes();
   const [controller, dispatch] = useMaterialUIController();
   const token = localStorage.getItem("token");
   const user_id = localStorage.getItem("user_id");
   const role = localStorage.getItem("user_role");
   const password_changed = localStorage.getItem("password_changed");
-
   const navigate = useNavigate();
+  const { permissions } = useAuth();
   const {
     miniSidenav,
     layout,
@@ -142,13 +144,29 @@ export default function App() {
             {password_changed === "1" ? (
               <>
                 {getRoutes(routes)}
-                <Route path="/departements/:reference" element={<DepartementDetails />} />
-                <Route path="/services/:reference" element={<ServiceDetails />} />
-                <Route path="/fonctions/:reference" element={<FonctionDetails />} />
-                <Route path="/employes/:matricule" element={<EmployeDetails />} />
-                <Route path="/primes" element={<Primes />} />
+                {permissions && (
+                  <>
+                    {permissions.find((p) => p.entity === "departement")?.can_read === 1 && (
+                      <Route path="/departements/:reference" element={<DepartementDetails />} />
+                    )}
+                    {permissions.find((p) => p.entity === "service")?.can_read === 1 && (
+                      <Route path="/services/:reference" element={<ServiceDetails />} />
+                    )}
+                    {permissions.find((p) => p.entity === "fonction")?.can_read === 1 && (
+                      <Route path="/fonctions/:reference" element={<FonctionDetails />} />
+                    )}
+                    {permissions.find((p) => p.entity === "employe")?.can_read === 1 && (
+                      <Route path="/employes/:matricule" element={<EmployeDetails />} />
+                    )}
+                    {permissions.find((p) => p.entity === "prime")?.can_read === 1 && (
+                      <Route path="/primes" element={<Primes />} />
+                    )}
+                    {permissions.find((p) => p.entity === "employe")?.can_create === 1 && (
+                      <Route path="/add-employe" element={<AddEmploye />} />
+                    )}
+                  </>
+                )}
                 <Route path="/profil" element={<UserProfile />} />
-                <Route path="/add-employe" element={<AddEmploye />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />
               </>
             ) : (

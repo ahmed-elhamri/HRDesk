@@ -24,8 +24,10 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import DataTable from "../../examples/Tables/DataTable";
+import { useAuth } from "../../context/AuthContext";
 
 export default function FonctionDetails() {
+  const { permissions } = useAuth();
   const { reference } = useParams();
   const [fonction, setFonction] = useState(null);
   const [services, setServices] = useState([]);
@@ -139,7 +141,7 @@ export default function FonctionDetails() {
             variant="text"
             color="secondary"
             size="large"
-            onClick={() => navigate(`/employes/details/${row.original.matricule}`)}
+            onClick={() => navigate(`/employes/${row.original.matricule}`)}
           >
             <Icon>info</Icon>
           </Button>
@@ -181,22 +183,24 @@ export default function FonctionDetails() {
             <Card sx={{ p: 3 }}>
               <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <MDTypography variant="h4">Détails du Fonction</MDTypography>
-                <Tooltip
-                  title="Modifier"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: "rgba(26, 115, 232, 0.8)",
-                        color: "#fff",
-                        fontSize: "0.8rem",
+                {permissions.find((p) => p.entity === "fonction")?.can_update === 1 && (
+                  <Tooltip
+                    title="Modifier"
+                    componentsProps={{
+                      tooltip: {
+                        sx: {
+                          backgroundColor: "rgba(26, 115, 232, 0.8)",
+                          color: "#fff",
+                          fontSize: "0.8rem",
+                        },
                       },
-                    },
-                  }}
-                >
-                  <Button variant="contained" color="primary" onClick={handleOpen}>
-                    <Icon sx={{ color: "#fff" }}>edit</Icon>
-                  </Button>
-                </Tooltip>
+                    }}
+                  >
+                    <Button variant="contained" color="primary" onClick={handleOpen}>
+                      <Icon sx={{ color: "#fff" }}>edit</Icon>
+                    </Button>
+                  </Tooltip>
+                )}
               </MDBox>
               <MDTypography>
                 <strong>Référence:</strong> {fonction.reference}
@@ -213,21 +217,22 @@ export default function FonctionDetails() {
               </MDTypography>
             </Card>
           </Grid>
-
-          <Grid item xs={12}>
-            <Card sx={{ p: 2 }}>
-              <MDTypography variant="h5" mb={2}>
-                Employés liés
-              </MDTypography>
-              <DataTable
-                table={{ columns, rows: fonction.employes || [] }}
-                isSorted={false}
-                entriesPerPage={false}
-                showTotalEntries={false}
-                noEndBorder
-              />
-            </Card>
-          </Grid>
+          {permissions.find((p) => p.entity === "employe")?.can_read === 1 && (
+            <Grid item xs={12}>
+              <Card sx={{ p: 2 }}>
+                <MDTypography variant="h5" mb={2}>
+                  Employés liés
+                </MDTypography>
+                <DataTable
+                  table={{ columns, rows: fonction.employes || [] }}
+                  isSorted={false}
+                  entriesPerPage={false}
+                  showTotalEntries={false}
+                  noEndBorder
+                />
+              </Card>
+            </Grid>
+          )}
         </Grid>
       </MDBox>
 

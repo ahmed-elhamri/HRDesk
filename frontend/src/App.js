@@ -30,6 +30,7 @@ import UserProfile from "./pages/UserProfile";
 import Primes from "./pages/Primes";
 import AddEmploye from "./pages/employe/AddEmploye";
 import { useAuth } from "./context/AuthContext";
+import Parametres from "./pages/parametre/Parametres";
 export default function App() {
   const routes = useRoutes();
   const [controller, dispatch] = useMaterialUIController();
@@ -53,10 +54,8 @@ export default function App() {
   const { pathname } = useLocation();
 
   // useEffect(() => {
-  //   if (token) {
-  //     navigate("/test");
-  //   }
-  // }, [user, navigate]);
+  //   document.body.style.zoom = "90%"; // or "1.2"
+  // }, []);
 
   // Open sidenav when mouse enter on mini sidenav
   const handleOnMouseEnter = () => {
@@ -167,7 +166,12 @@ export default function App() {
                   </>
                 )}
                 <Route path="/profil" element={<UserProfile />} />
-                <Route path="*" element={<Navigate to="/dashboard" />} />
+                <Route path="/parametres" element={<Parametres />} />
+                {role === "SUPERVISOR" ? (
+                  <Route path="*" element={<Navigate to="/dashboard" />} />
+                ) : (
+                  <Route path="*" element={<Navigate to="/profil" />} />
+                )}
               </>
             ) : (
               <>

@@ -9,26 +9,20 @@ import Fonctions from "./pages/fonction/Fonctions";
 import Employes from "./pages/employe/Employes";
 import EmployePrimes from "./pages/EmployePrimes";
 import PersonalInformations from "./pages/employe/PersonalInformations";
+import UserProfile from "./pages/UserProfile";
 
 export function useRoutes() {
   const { permissions } = useAuth();
+  const role = localStorage.getItem("user_role");
   const [allRoutes, setAllRoutes] = useState([
     {
       type: "collapse",
-      name: "Tableau de bord",
-      key: "dashboard",
-      icon: <Icon fontSize="small">dashboard</Icon>,
-      route: "/dashboard",
-      component: <Dashboard />,
+      name: "Profil",
+      key: "profil",
+      icon: <Icon fontSize="small">person4</Icon>,
+      route: "/profil",
+      component: <UserProfile />,
     },
-    // {
-    //   type: "collapse",
-    //   name: "Mes Informations",
-    //   key: "personal-informations",
-    //   icon: <Icon fontSize="small">person4</Icon>,
-    //   route: "/personal-informations",
-    //   component: <PersonalInformations />,
-    // },
   ]);
   // const [allRoutes, setAllRoutes] = useState([{}]);
 
@@ -36,48 +30,8 @@ export function useRoutes() {
     if (!permissions) return;
 
     const newRoutes = [];
-    if (permissions.find((p) => p.entity === "departement")?.can_read) {
-      newRoutes.push({
-        type: "collapse",
-        name: "Départements",
-        key: "departements",
-        icon: <Icon fontSize="small">apartment</Icon>,
-        route: "/departements",
-        component: <Departements />,
-      });
-    }
-    if (permissions.find((p) => p.entity === "service")?.can_read) {
-      newRoutes.push({
-        type: "collapse",
-        name: "Services",
-        key: "services",
-        icon: <Icon fontSize="small">location_city</Icon>,
-        route: "/services",
-        component: <Services />,
-      });
-    }
-    if (permissions.find((p) => p.entity === "fonction")?.can_read) {
-      newRoutes.push({
-        type: "collapse",
-        name: "Fonctions",
-        key: "fonctions",
-        icon: <Icon fontSize="small">work</Icon>,
-        route: "/fonctions",
-        component: <Fonctions />,
-      });
-    }
-    if (permissions.find((p) => p.entity === "employe")?.can_read) {
-      newRoutes.push({
-        type: "collapse",
-        name: "Employés",
-        key: "employes",
-        icon: <Icon fontSize="small">group</Icon>,
-        route: "/employes",
-        component: <Employes />,
-      });
-    }
     if (permissions.find((p) => p.entity === "prime")?.can_read) {
-      newRoutes.push({
+      newRoutes.unshift({
         type: "collapse",
         name: "Primes",
         key: "employe-primes",
@@ -86,8 +40,58 @@ export function useRoutes() {
         component: <EmployePrimes />,
       });
     }
-
-    setAllRoutes((prev) => [...prev, ...newRoutes]);
+    if (permissions.find((p) => p.entity === "employe")?.can_read) {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Employés",
+        key: "employes",
+        icon: <Icon fontSize="small">group</Icon>,
+        route: "/employes",
+        component: <Employes />,
+      });
+    }
+    if (permissions.find((p) => p.entity === "fonction")?.can_read) {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Fonctions",
+        key: "fonctions",
+        icon: <Icon fontSize="small">work</Icon>,
+        route: "/fonctions",
+        component: <Fonctions />,
+      });
+    }
+    if (permissions.find((p) => p.entity === "service")?.can_read) {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Services",
+        key: "services",
+        icon: <Icon fontSize="small">location_city</Icon>,
+        route: "/services",
+        component: <Services />,
+      });
+    }
+    if (permissions.find((p) => p.entity === "departement")?.can_read) {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Départements",
+        key: "departements",
+        icon: <Icon fontSize="small">apartment</Icon>,
+        route: "/departements",
+        component: <Departements />,
+      });
+    }
+    if (role === "SUPERVISOR") {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Tableau de bord",
+        key: "dashboard",
+        icon: <Icon fontSize="small">dashboard</Icon>,
+        route: "/dashboard",
+        component: <Dashboard />,
+      });
+    }
+    // setAllRoutes((prev) => [...prev, ...newRoutes]);
+    setAllRoutes((prev) => [...newRoutes, ...prev]);
   }, [permissions]);
 
   return allRoutes;

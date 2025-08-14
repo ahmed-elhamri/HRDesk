@@ -99,9 +99,9 @@ function Primes() {
     },
     { Header: "Impôt", accessor: "impot" },
     { Header: "Plafond IR", accessor: "plafond_ir" },
-    { Header: "Plafond CNSS", accessor: "plafond_cnss" },
+    { Header: "Plafond CnssCotisations", accessor: "plafond_cnss" },
     {
-      Header: "Soumis CNSS/AMO/CIMR",
+      Header: "Soumis CnssCotisations/AMO/CIMR",
       accessor: "soumis_cotisation_cnss_amo_cimr",
       Cell: ({ value }) => (value ? "Oui" : "Non"),
     },
@@ -357,7 +357,7 @@ function Primes() {
             onChange={(e) => setForm({ ...form, plafond_ir: e.target.value })}
           />
           <TextField
-            label="Plafond CNSS"
+            label="Plafond CnssCotisations"
             type="number"
             fullWidth
             margin="normal"
@@ -375,7 +375,7 @@ function Primes() {
                     setForm({ ...form, soumis_cotisation_cnss_amo_cimr: e.target.checked })
                   }
                 />{" "}
-                Soumis CNSS/AMO/CIMR
+                Soumis CnssCotisations/AMO/CIMR
               </label>
             </Grid>
             <Grid item xs={12} sm={6}>

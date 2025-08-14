@@ -258,7 +258,7 @@ export default function AddEmploye() {
   // Validate Caisse Sociale slide
   const validateCaisse = () => {
     let errs = {};
-    if (!isRequired(caisse.numero_cnss)) errs.numero_cnss = "Numéro CNSS est requis";
+    if (!isRequired(caisse.numero_cnss)) errs.numero_cnss = "Numéro CnssCotisations est requis";
     if (!isRequired(caisse.numero_mutuelle)) errs.numero_mutuelle = "Numéro Mutuelle est requis";
     if (!isRequired(caisse.numero_adherent_cimr))
       errs.numero_adherent_cimr = "Numéro Adhérent CIMR est requis";
@@ -776,7 +776,7 @@ export default function AddEmploye() {
       </Typography>
       <Grid container spacing={2}>
         {[
-          { name: "numero_cnss", label: "Numéro CNSS", required: true },
+          { name: "numero_cnss", label: "Numéro CnssCotisations", required: true },
           { name: "numero_mutuelle", label: "Numéro Mutuelle", required: true },
           { name: "numero_adherent_cimr", label: "Numéro Adhérent CIMR", required: true },
           { name: "numero_categorie_cimr", label: "Numéro Catégorie CIMR", required: true },
@@ -856,7 +856,7 @@ export default function AddEmploye() {
       <Grid container spacing={2}>
         {[
           { name: "chemin_cin", label: "CIN" },
-          { name: "chemin_cnss", label: "CNSS" },
+          { name: "chemin_cnss", label: "CnssCotisations" },
           { name: "chemin_contrat_travail", label: "Contrat travail" },
           { name: "chemin_tableau_amortissement", label: "Tableau amortissement" },
           { name: "lettre_demission", label: "Lettre démission" },
@@ -1101,7 +1101,7 @@ export default function AddEmploye() {
                   }}
                 >
                   {/*{JSON.stringify(caisse, null, 2)}*/}
-                  {displayField("Numéro CNSS", caisse.numero_cnss)}
+                  {displayField("Numéro CnssCotisations", caisse.numero_cnss)}
                   {displayField("Numéro Mutuelle", caisse.numero_mutuelle)}
                   {displayField("Numéro Adhérent CIMR", caisse.numero_adherent_cimr)}
                   {displayField("Numéro Catégorie CIMR", caisse.numero_categorie_cimr)}

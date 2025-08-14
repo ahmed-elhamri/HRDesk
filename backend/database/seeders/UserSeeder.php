@@ -21,28 +21,48 @@ class UserSeeder extends Seeder
             'password_changed' => true,
             'role' => 'SUPERVISOR',
         ]);
-        Permission::insert([
-            [
-                'user_id' => $user->id,
-                'entity' => 'departement',
-            ],
-            [
-                'user_id' => $user->id,
-                'entity' => 'service',
-            ],
-            [
-                'user_id' => $user->id,
-                'entity' => 'fonction',
-            ],
-            [
-                'user_id' => $user->id,
-                'entity' => 'employe',
-            ],
-            [
-                'user_id' => $user->id,
-                'entity' => 'prime',
-            ],
-        ]);
+//        Permission::insert([
+//            [
+//                'user_id' => $user->id,
+//                'entity' => 'departement',
+//                'can_create' => true,
+//                'can_read' => true,
+//                'can_update' => true,
+//                'can_delete' => true,
+//            ],
+//            [
+//                'user_id' => $user->id,
+//                'entity' => 'service',
+//                'can_create' => true,
+//                'can_read' => true,
+//                'can_update' => true,
+//                'can_delete' => true,
+//            ],
+//            [
+//                'user_id' => $user->id,
+//                'entity' => 'fonction',
+//                'can_create' => true,
+//                'can_read' => true,
+//                'can_update' => true,
+//                'can_delete' => true,
+//            ],
+//            [
+//                'user_id' => $user->id,
+//                'entity' => 'employe',
+//                'can_create' => true,
+//                'can_read' => true,
+//                'can_update' => true,
+//                'can_delete' => true,
+//            ],
+//            [
+//                'user_id' => $user->id,
+//                'entity' => 'prime',
+//                'can_create' => true,
+//                'can_read' => true,
+//                'can_update' => true,
+//                'can_delete' => true,
+//            ],
+//        ]);
         User::factory()->count(200)->create();
     }
 }

@@ -68,6 +68,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
 });
 
+Route::apiResource('frais-professionnels', \App\Http\Controllers\API\FraisProfessionnelController::class);
+Route::apiResource('amo-cotisations', \App\Http\Controllers\API\AmoCotisationController::class);
+Route::apiResource('cnss-cotisations', \App\Http\Controllers\API\CnssCotisationController::class);
+Route::apiResource('ir-tranches', \App\Http\Controllers\API\IrTrancheController::class);
+Route::apiResource('family-charges', \App\Http\Controllers\API\FamilyChargeController::class);
+
+
+
+
 // Example protected route
 //Route::middleware('auth:sanctum')->get('/dashboard', function (Request $request) {
 //    return response()->json([

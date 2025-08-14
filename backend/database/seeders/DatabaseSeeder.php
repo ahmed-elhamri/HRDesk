@@ -23,6 +23,12 @@ class DatabaseSeeder extends Seeder
             PaiementSeeder::class,
             DocumentSeeder::class,
             PrimeSeeder::class,
+            PermissionSeeder::class,
+            AmoCotisationSeeder::class,
+            CnssCotisationSeeder::class,
+            FamilyChargeSeeder::class,
+            FraisProfessionnelSeeder::class,
+            IrTrancheSeeder::class,
         ]);
     }
 }

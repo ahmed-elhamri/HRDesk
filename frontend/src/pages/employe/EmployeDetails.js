@@ -39,7 +39,7 @@ import DataTable from "../../examples/Tables/DataTable";
 import { useAuth } from "../../context/AuthContext";
 const labels = {
   chemin_cin: "CIN",
-  chemin_cnss: "CNSS",
+  chemin_cnss: "CnssCotisations",
   chemin_contrat_travail: "Contrat de travail",
   chemin_tableau_amortissement: "Tableau d'amortissement",
   lettre_demission: "Lettre de demission",
@@ -641,7 +641,7 @@ export default function EmployeDetails() {
             )}
           </MDBox>
           <Grid container spacing={2}>
-            {displayField("Numéro CNSS", caisseSociale.numero_cnss)}
+            {displayField("Numéro CnssCotisations", caisseSociale.numero_cnss)}
             {displayField("Numéro Mutuelle", caisseSociale.numero_mutuelle)}
             {displayField("Numéro Adhérent CIMR", caisseSociale.numero_adherent_cimr)}
             {displayField("Numéro Catégorie CIMR", caisseSociale.numero_categorie_cimr)}
@@ -1271,7 +1271,7 @@ export default function EmployeDetails() {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               {[
-                { name: "numero_cnss", label: "Numéro CNSS", required: true },
+                { name: "numero_cnss", label: "Numéro CnssCotisations", required: true },
                 { name: "numero_mutuelle", label: "Numéro Mutuelle", required: true },
                 { name: "numero_adherent_cimr", label: "Numéro Adhérent CIMR", required: true },
                 { name: "numero_categorie_cimr", label: "Numéro Catégorie CIMR", required: true },
@@ -1376,7 +1376,7 @@ export default function EmployeDetails() {
             <Grid container spacing={2} sx={{ mt: 1 }}>
               {[
                 { name: "chemin_cin", label: "CIN" },
-                { name: "chemin_cnss", label: "CNSS" },
+                { name: "chemin_cnss", label: "CnssCotisations" },
                 { name: "chemin_contrat_travail", label: "Contrat travail" },
                 { name: "chemin_tableau_amortissement", label: "Tableau amortissement" },
                 { name: "lettre_demission", label: "Lettre démission" },

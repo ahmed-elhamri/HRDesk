@@ -18,16 +18,19 @@ import {
   Alert,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-export default function CNSS() {
-  const [departements, setDepartements] = useState([]);
-  const [form, setForm] = useState({ reference: "", designation: "", id: null });
+export default function FamilyCharges() {
+  const [items, setItems] = useState([]);
+  const [form, setForm] = useState({
+    id: null,
+    nbr_enfants: "",
+    mensuel: "",
+    annuel: "",
+  });
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -41,19 +44,21 @@ export default function CNSS() {
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
   const { permissions } = useAuth();
-
   const navigate = useNavigate();
+
   const token = localStorage.getItem("token");
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-  const fetchDepartements = async () => {
+  const baseUrl = "http://localhost:8000/api/family-charges";
+
+  const fetchItems = async () => {
     setLoading(true);
     setLoadError(false);
     try {
-      const res = await axios.get("http://localhost:8000/api/departements");
-      setDepartements(res.data);
+      const res = await axios.get(baseUrl);
+      setItems(res.data || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des départements :", error);
+      console.error("Erreur lors du chargement :", error);
       setLoadError(true);
     } finally {
       setLoading(false);
@@ -61,47 +66,61 @@ export default function CNSS() {
   };
 
   useEffect(() => {
-    fetchDepartements();
+    fetchItems();
   }, []);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
-    setForm({ reference: "", designation: "", id: null });
+    setForm({ id: null, nbr_enfants: "", mensuel: "", annuel: "" });
     setErrors({});
     setOpen(false);
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
   };
 
   const handleSubmit = async () => {
     try {
       if (form.id) {
-        await axios.put(`http://localhost:8000/api/departements/${form.id}`, form);
-        setSnackbarMessage("Département modifié avec succès !");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
+        await axios.put(`${baseUrl}/${form.id}`, {
+          nbr_enfants: form.nbr_enfants,
+          mensuel: form.mensuel,
+          annuel: form.annuel,
+        });
+        setSnackbarMessage("Élément modifié avec succès !");
       } else {
-        await axios.post("http://localhost:8000/api/departements", form);
-        setSnackbarMessage("Département ajouté avec succès !");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
+        await axios.post(baseUrl, {
+          nbr_enfants: form.nbr_enfants,
+          mensuel: form.mensuel,
+          annuel: form.annuel,
+        });
+        setSnackbarMessage("Élément ajouté avec succès !");
       }
-      fetchDepartements();
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      fetchItems();
       handleClose();
     } catch (err) {
       if (err.response?.status === 422) {
-        setErrors(err.response.data.errors);
-        setSnackbarMessage(form.id ? "Erreur lors de la modification !" : "Erreur lors d'ajout !");
+        setErrors(err.response.data.errors || {});
+        setSnackbarMessage(
+          form.id ? "Erreur lors de la modification !" : "Erreur lors de l'ajout !"
+        );
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
     }
   };
 
-  const handleEdit = (dep) => {
-    setForm(dep);
+  const handleEdit = (row) => {
+    setForm({
+      id: row.id,
+      nbr_enfants: row.nbr_enfants ?? "",
+      mensuel: row.mensuel ?? "",
+      annuel: row.annuel ?? "",
+    });
     setOpen(true);
   };
 
@@ -112,9 +131,9 @@ export default function CNSS() {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/departements/${selectedDeleteId}`);
-      fetchDepartements();
-      setSnackbarMessage("Département supprimé avec succès !");
+      await axios.delete(`${baseUrl}/${selectedDeleteId}`);
+      fetchItems();
+      setSnackbarMessage("Élément supprimé avec succès !");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
@@ -127,76 +146,31 @@ export default function CNSS() {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchText(e.target.value);
-  };
+  const handleSearchChange = (e) => setSearchText(e.target.value);
 
-  const filteredDepartements = departements.filter(
-    (dep) =>
-      dep.reference.toLowerCase().includes(searchText.toLowerCase()) ||
-      dep.designation.toLowerCase().includes(searchText.toLowerCase())
+  const textMatch = (val) =>
+    (val ?? "").toString().toLowerCase().includes(searchText.toLowerCase());
+
+  const filteredRows = items.filter(
+    (r) => textMatch(r.nbr_enfants) || textMatch(r.mensuel) || textMatch(r.annuel)
   );
 
   const columns = [
-    { Header: "Référence", accessor: "reference" },
-    { Header: "Désignation", accessor: "designation" },
+    { Header: "Nbr enfants", accessor: "nbr_enfants" },
+    { Header: "Mensuel", accessor: "mensuel" },
+    { Header: "Annuel", accessor: "annuel" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          {permissions.find((p) => p.entity === "departement")?.can_update === 1 && (
-            <Tooltip
-              title="modifier"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(26, 115, 232, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
-                  },
-                },
-              }}
-            >
-              <Button
-                onClick={() => handleEdit(row.original)}
-                variant="text"
-                color="primary"
-                size="large"
-              >
-                <Icon>edit</Icon>
-              </Button>
-            </Tooltip>
-          )}
-          {permissions.find((p) => p.entity === "departement")?.can_delete === 1 && (
-            <Tooltip
-              title="supprimer"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(244, 67, 53, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
-                  },
-                },
-              }}
-            >
-              <Button
-                onClick={() => handleDeleteClick(row.original.id)}
-                variant="text"
-                size="large"
-                sx={{ ml: 1 }}
-              >
-                <Icon sx={{ color: "error.main" }}>delete</Icon>
-              </Button>
-            </Tooltip>
-          )}
+          {/*{permissions.find((p) => p.entity === "family_charge")?.can_update === 1 && (*/}
           <Tooltip
-            title="details"
+            title="modifier"
             componentsProps={{
               tooltip: {
                 sx: {
-                  backgroundColor: "rgba(123, 128, 154, 0.8)",
+                  backgroundColor: "rgba(26, 115, 232, 0.8)",
                   color: "#fff",
                   fontSize: "0.8rem",
                 },
@@ -204,15 +178,60 @@ export default function CNSS() {
             }}
           >
             <Button
-              onClick={() => navigate(`/departements/${row.original.reference}`)}
+              onClick={() => handleEdit(row.original)}
               variant="text"
-              color="secondary"
+              color="primary"
               size="large"
-              sx={{ ml: 1 }}
             >
-              <Icon>info</Icon>
+              <Icon>edit</Icon>
             </Button>
           </Tooltip>
+          {/*)}*/}
+          {/*{permissions.find((p) => p.entity === "family_charge")?.can_delete === 1 && (*/}
+          {/*  <Tooltip*/}
+          {/*    title="supprimer"*/}
+          {/*    componentsProps={{*/}
+          {/*      tooltip: {*/}
+          {/*        sx: {*/}
+          {/*          backgroundColor: "rgba(244, 67, 53, 0.8)",*/}
+          {/*          color: "#fff",*/}
+          {/*          fontSize: "0.8rem",*/}
+          {/*        },*/}
+          {/*      },*/}
+          {/*    }}*/}
+          {/*  >*/}
+          {/*    <Button*/}
+          {/*      onClick={() => handleDeleteClick(row.original.id)}*/}
+          {/*      variant="text"*/}
+          {/*      size="large"*/}
+          {/*      sx={{ ml: 1 }}*/}
+          {/*    >*/}
+          {/*      <Icon sx={{ color: "error.main" }}>delete</Icon>*/}
+          {/*    </Button>*/}
+          {/*  </Tooltip>*/}
+          {/*)}*/}
+          {/*<Tooltip*/}
+          {/*  title="details"*/}
+          {/*  componentsProps={{*/}
+          {/*    tooltip: {*/}
+          {/*      sx: {*/}
+          {/*        backgroundColor: "rgba(123, 128, 154, 0.8)",*/}
+          {/*        color: "#fff",*/}
+          {/*        fontSize: "0.8rem",*/}
+          {/*      },*/}
+          {/*    },*/}
+          {/*  }}*/}
+          {/*>*/}
+          {/*  <Button*/}
+          {/*    onClick={() => navigate(`/family-charges/${row.original.id}`)}*/}
+          {/*    variant="text"*/}
+          {/*    color="secondary"*/}
+          {/*    size="large"*/}
+          {/*    sx={{ ml: 1 }}*/}
+          {/*  >*/}
+          {/*    <Icon>info</Icon>*/}
+          {/*  </Button>*/}
+          {/*</Tooltip>*/}
         </>
       ),
     },
@@ -226,7 +245,7 @@ export default function CNSS() {
     );
   }
 
-  if (loadError || departements.length === 0) {
+  if (loadError || items.length === 0) {
     return (
       <MDBox pt={6} pb={3} textAlign="center">
         <Typography variant="h6" color="error">
@@ -238,7 +257,7 @@ export default function CNSS() {
 
   return (
     <Grid item xs={6}>
-      <Card>
+      <Card sx={{ height: "100%" }}>
         <MDBox
           mx={2}
           mt={-3}
@@ -253,15 +272,15 @@ export default function CNSS() {
           alignItems="center"
         >
           <MDTypography variant="h6" color="white">
-            Départements
+            Charges Familiales
           </MDTypography>
-          {permissions.find((p) => p.entity === "departement")?.can_create === 1 && (
-            <Tooltip title="ajouter">
-              <Button onClick={handleOpen} variant="contained" color="success">
-                <Icon sx={{ color: "info.main" }}>add</Icon>
-              </Button>
-            </Tooltip>
-          )}
+          {/*{permissions.find((p) => p.entity === "family_charge")?.can_create === 1 && (*/}
+          {/*  <Tooltip title="ajouter">*/}
+          {/*    <Button onClick={handleOpen} variant="contained" color="success">*/}
+          {/*      <Icon sx={{ color: "info.main" }}>add</Icon>*/}
+          {/*    </Button>*/}
+          {/*  </Tooltip>*/}
+          {/*)}*/}
         </MDBox>
 
         <MDBox px={2} pt={2} display="flex" justifyContent="flex-end">
@@ -277,7 +296,7 @@ export default function CNSS() {
 
         <MDBox pt={3}>
           <DataTable
-            table={{ columns, rows: filteredDepartements }}
+            table={{ columns, rows: filteredRows }}
             isSorted={false}
             entriesPerPage={false}
             showTotalEntries={false}
@@ -287,19 +306,25 @@ export default function CNSS() {
       </Card>
 
       <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle>{form.id ? "Modifier Département" : "Ajouter Département"}</DialogTitle>
+        <DialogTitle>{form.id ? "Modifier" : "Ajouter"}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 0.1 }}>
-            {["reference", "designation"].map((field) => (
-              <Grid item xs={12} key={field} sx={{ mb: 2 }}>
+            {[
+              { name: "nbr_enfants", label: "NBR_ENFANTS", type: "number", step: "1" },
+              { name: "mensuel", label: "MENSUEL", type: "number", step: "0.01" },
+              { name: "annuel", label: "ANNUEL", type: "number", step: "0.01" },
+            ].map((f) => (
+              <Grid item xs={12} key={f.name} sx={{ mb: 2 }}>
                 <TextField
                   fullWidth
-                  name={field}
-                  label={field.toUpperCase()}
-                  value={form[field]}
+                  type={f.type}
+                  name={f.name}
+                  label={f.label}
+                  value={form[f.name]}
                   onChange={handleChange}
-                  error={Boolean(errors[field])}
-                  helperText={errors[field]?.[0] || ""}
+                  error={Boolean(errors[f.name])}
+                  helperText={errors[f.name]?.[0] || ""}
+                  inputProps={{ step: f.step }}
                 />
               </Grid>
             ))}
@@ -316,10 +341,9 @@ export default function CNSS() {
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
         <DialogTitle>Confirmation</DialogTitle>
         <DialogContent>
-          <Typography>Êtes-vous sûr de vouloir supprimer ce département ?</Typography>
+          <Typography>Êtes-vous sûr de vouloir supprimer cet élément ?</Typography>
           <Typography sx={{ color: "error.main", fontSize: "medium" }} variant="caption">
-            Si vous supprimez ce département. Les services, fonctions et employés associés seront
-            également supprimés.
+            Cette action est irréversible.
           </Typography>
         </DialogContent>
         <DialogActions>

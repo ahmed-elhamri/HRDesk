@@ -29,6 +29,7 @@ import FraisProfessionnels from "./FraisProfessionnels";
 import FamilyCharges from "./FamilyCharges";
 import AmoCotisations from "./AmoCotisations";
 import IrTranches from "./IrTranches";
+import TauxHeuresSupplementaires from "./TauxHeuresSupplementaires";
 
 export default function Parametres() {
   return (
@@ -41,6 +42,7 @@ export default function Parametres() {
           <AmoCotisations />
           <CnssCotisations />
           <IrTranches />
+          <TauxHeuresSupplementaires />
         </Grid>
       </MDBox>
     </DashboardLayout>

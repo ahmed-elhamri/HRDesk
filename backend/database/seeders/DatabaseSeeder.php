@@ -18,17 +18,21 @@ class DatabaseSeeder extends Seeder
             FonctionSeeder::class,
             UserSeeder::class,
             EmployeSeeder::class,
+            AbsenceSeeder::class,
+            HeureSupplementaireSeeder::class,
             ContratSeeder::class,
             CaisseSocialeSeeder::class,
             PaiementSeeder::class,
             DocumentSeeder::class,
             PrimeSeeder::class,
+            EmployePrimeSeeder::class,
             PermissionSeeder::class,
             AmoCotisationSeeder::class,
             CnssCotisationSeeder::class,
             FamilyChargeSeeder::class,
             FraisProfessionnelSeeder::class,
             IrTrancheSeeder::class,
+            TauxHeuresSupplementairesSeeder::class,
         ]);
     }
 }

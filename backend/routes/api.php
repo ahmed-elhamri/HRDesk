@@ -73,6 +73,11 @@ Route::apiResource('amo-cotisations', \App\Http\Controllers\API\AmoCotisationCon
 Route::apiResource('cnss-cotisations', \App\Http\Controllers\API\CnssCotisationController::class);
 Route::apiResource('ir-tranches', \App\Http\Controllers\API\IrTrancheController::class);
 Route::apiResource('family-charges', \App\Http\Controllers\API\FamilyChargeController::class);
+Route::apiResource('taux-heures-supplementaires', \App\Http\Controllers\API\TauxHeuresSupplementairesController::class);
+Route::apiResource('heures-supplementaires', \App\Http\Controllers\API\HeureSupplementaireController::class);
+Route::apiResource('absences', \App\Http\Controllers\API\AbsenceController::class);
+
+
 
 
 

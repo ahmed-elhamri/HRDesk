@@ -49,6 +49,22 @@ class PermissionSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
+                'entity' => 'absence',
+                'can_create' => true,
+                'can_read' => true,
+                'can_update' => true,
+                'can_delete' => true,
+            ],
+            [
+                'user_id' => 1,
+                'entity' => 'heure_supplementaire',
+                'can_create' => true,
+                'can_read' => true,
+                'can_update' => true,
+                'can_delete' => true,
+            ],
+            [
+                'user_id' => 1,
                 'entity' => 'prime',
                 'can_create' => true,
                 'can_read' => true,
@@ -82,6 +98,14 @@ class PermissionSeeder extends Seeder
                 [
                     'user_id' => $i,
                     'entity' => 'employe',
+                ],
+                [
+                    'user_id' => $i,
+                    'entity' => 'absence',
+                ],
+                [
+                    'user_id' => $i,
+                    'entity' => 'heure_supplementaire',
                 ],
                 [
                     'user_id' => $i,

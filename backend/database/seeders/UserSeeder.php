@@ -63,6 +63,6 @@ class UserSeeder extends Seeder
 //                'can_delete' => true,
 //            ],
 //        ]);
-        User::factory()->count(200)->create();
+        User::factory()->count(20)->create();
     }
 }

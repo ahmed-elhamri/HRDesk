@@ -11,11 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('absences', function (Blueprint $table) {
+        Schema::create('heures_supplementaires', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('employe_id');
             $table->date('date');
+            $table->enum('jour', ['OUVRABLE', 'FERIES']);
+            $table->time('heure_debut');                     // Exemple : 06:00
+            $table->time('heure_fin');
             $table->timestamps();
+
             $table->foreign('employe_id')->references('id')->on('employes')->onDelete('cascade');
         });
     }
@@ -25,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('absences');
+        Schema::dropIfExists('heures_supplementaires');
     }
 };

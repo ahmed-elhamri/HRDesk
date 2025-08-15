@@ -56,6 +56,16 @@ return new class extends Migration
             $table->decimal('annuel', 10, 2);
             $table->timestamps();
         });
+
+        Schema::create('taux_heures_supplementaires', function (Blueprint $table) {
+            $table->id();
+            $table->enum('periode', ['JOUR', 'NUIT']);       // Jour / Nuit
+            $table->time('heure_debut');                     // Exemple : 06:00
+            $table->time('heure_fin');                       // Exemple : 21:00 (peut dépasser minuit)
+            $table->decimal('taux_jours_ouvres', 5, 2);      // % ex : 25.00
+            $table->decimal('taux_jours_feries', 5, 2);      // % ex : 50.00
+            $table->timestamps();
+        });
     }
 
     /**
@@ -68,5 +78,6 @@ return new class extends Migration
         Schema::dropIfExists('cnss_cotisations');
         Schema::dropIfExists('ir_tranches');
         Schema::dropIfExists('family_charges');
+        Schema::dropIfExists('taux_heures_supplementaires');
     }
 };

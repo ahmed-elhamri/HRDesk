@@ -351,7 +351,7 @@ export default function EmployePrimes() {
             <Grid item xs={12}>
               <Autocomplete
                 options={primes}
-                getOptionLabel={(option) => `${option.motif} (Plafond: ${option.plafond})`}
+                getOptionLabel={(option) => option.motif}
                 value={primes.find((p) => p.id === form.prime_id) || null}
                 onChange={(e, newValue) =>
                   setForm({ ...form, prime_id: newValue ? newValue.id : "" })

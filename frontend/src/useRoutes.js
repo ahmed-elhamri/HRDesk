@@ -10,6 +10,8 @@ import Employes from "./pages/employe/Employes";
 import EmployePrimes from "./pages/EmployePrimes";
 import PersonalInformations from "./pages/employe/PersonalInformations";
 import UserProfile from "./pages/UserProfile";
+import Absences from "./pages/Absences";
+import HeuresSupplementaires from "./pages/HeuresSupplementaires";
 
 export function useRoutes() {
   const { permissions } = useAuth();
@@ -38,6 +40,26 @@ export function useRoutes() {
         icon: <Icon fontSize="small">payment</Icon>,
         route: "/employe-primes",
         component: <EmployePrimes />,
+      });
+    }
+    if (permissions.find((p) => p.entity === "heure_supplementaire")?.can_read) {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Heures supplémentaires",
+        key: "heure_supplementaire",
+        icon: <Icon fontSize="small">more_time</Icon>,
+        route: "/heure-supplementaire",
+        component: <HeuresSupplementaires />,
+      });
+    }
+    if (permissions.find((p) => p.entity === "absence")?.can_read) {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Absences",
+        key: "absence",
+        icon: <Icon fontSize="small">person_off</Icon>,
+        route: "/absence",
+        component: <Absences />,
       });
     }
     if (permissions.find((p) => p.entity === "employe")?.can_read) {

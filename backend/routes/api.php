@@ -76,6 +76,7 @@ Route::apiResource('family-charges', \App\Http\Controllers\API\FamilyChargeContr
 Route::apiResource('taux-heures-supplementaires', \App\Http\Controllers\API\TauxHeuresSupplementairesController::class);
 Route::apiResource('heures-supplementaires', \App\Http\Controllers\API\HeureSupplementaireController::class);
 Route::apiResource('absences', \App\Http\Controllers\API\AbsenceController::class);
+Route::post('/calculer-salaire-net', [\App\Http\Controllers\API\BulletinDePaieController::class, 'calculerSalaireNet']);
 
 
 

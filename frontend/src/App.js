@@ -31,6 +31,7 @@ import Primes from "./pages/Primes";
 import AddEmploye from "./pages/employe/AddEmploye";
 import { useAuth } from "./context/AuthContext";
 import Parametres from "./pages/parametre/Parametres";
+import Date from "./pages/Date";
 export default function App() {
   const routes = useRoutes();
   const [controller, dispatch] = useMaterialUIController();
@@ -138,6 +139,7 @@ export default function App() {
       )}
       {/*{layout === "vr" && <Configurator />}*/}
       <Routes>
+        <Route path="/date" element={<Date />} />
         {token ? (
           <>
             {password_changed === "1" ? (

@@ -63,8 +63,8 @@ class HeureSupplementaireController extends Controller implements HasMiddleware
             'employe_id'  => ['sometimes', 'exists:employes,id'],
             'date'       => ['sometimes', 'date'],
             'jour'        => ['sometimes', Rule::in(['OUVRABLE','FERIES'])],
-            'heure_debut' => ['sometimes', 'date_format:H:i:s'],
-            'heure_fin'   => ['sometimes', 'date_format:H:i:s'],
+            'heure_debut' => ['sometimes', 'date_format:H:i'],
+            'heure_fin'   => ['sometimes', 'date_format:H:i'],
         ]);
         $heureSupplementaire = HeureSupplementaire::findOrFail($id);
 

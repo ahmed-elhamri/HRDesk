@@ -171,8 +171,16 @@ export default function AmoCotisations() {
 
   const columns = [
     { Header: "Cotisation", accessor: "cotisation" },
-    { Header: "Part salariale (%)", accessor: "part_salariale" },
-    { Header: "Part patronale (%)", accessor: "part_patronale" },
+    {
+      Header: "Part salariale (%)",
+      accessor: "part_salariale",
+      Cell: ({ value }) => (value ? value : "-"),
+    },
+    {
+      Header: "Part patronale (%)",
+      accessor: "part_patronale",
+      Cell: ({ value }) => (value ? value : "-"),
+    },
     {
       Header: "Plafond",
       accessor: "plafond",

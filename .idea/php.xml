@@ -251,6 +251,12 @@
       <path value="$PROJECT_DIR$/backend/vendor/markbaker/complex" />
       <path value="$PROJECT_DIR$/backend/vendor/phpoffice/phpspreadsheet" />
       <path value="$PROJECT_DIR$/backend/vendor/maatwebsite/excel" />
+      <path value="$PROJECT_DIR$/backend/vendor/masterminds/html5" />
+      <path value="$PROJECT_DIR$/backend/vendor/dompdf/dompdf" />
+      <path value="$PROJECT_DIR$/backend/vendor/dompdf/php-svg-lib" />
+      <path value="$PROJECT_DIR$/backend/vendor/dompdf/php-font-lib" />
+      <path value="$PROJECT_DIR$/backend/vendor/sabberworm/php-css-parser" />
+      <path value="$PROJECT_DIR$/backend/vendor/barryvdh/laravel-dompdf" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />

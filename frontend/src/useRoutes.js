@@ -12,6 +12,7 @@ import PersonalInformations from "./pages/employe/PersonalInformations";
 import UserProfile from "./pages/UserProfile";
 import Absences from "./pages/Absences";
 import HeuresSupplementaires from "./pages/HeuresSupplementaires";
+import BulletinSalaire from "./pages/BulletinSalaire";
 
 export function useRoutes() {
   const { permissions } = useAuth();
@@ -32,6 +33,16 @@ export function useRoutes() {
     if (!permissions) return;
 
     const newRoutes = [];
+    if (permissions.find((p) => p.entity === "bulltein")?.can_read) {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Bultein de paie",
+        key: "bultein",
+        icon: <Icon fontSize="small">account_balance_wallet</Icon>,
+        route: "/bultein",
+        component: <BulletinSalaire />,
+      });
+    }
     if (permissions.find((p) => p.entity === "prime")?.can_read) {
       newRoutes.unshift({
         type: "collapse",

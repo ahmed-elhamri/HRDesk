@@ -79,6 +79,14 @@ class PermissionSeeder extends Seeder
                 'can_update' => true,
                 'can_delete' => true,
             ],
+            [
+                'user_id' => 1,
+                'entity' => 'bulltein',
+                'can_create' => true,
+                'can_read' => true,
+                'can_update' => true,
+                'can_delete' => true,
+            ],
         ]);
         $employeIds = User::pluck('id')->shuffle();
         for($i = 2; $i <= count($employeIds); $i++) {
@@ -114,6 +122,10 @@ class PermissionSeeder extends Seeder
                 [
                     'user_id' => $i,
                     'entity' => 'parametre',
+                ],
+                [
+                    'user_id' => $i,
+                    'entity' => 'bulltein',
                 ],
             ]);
         }

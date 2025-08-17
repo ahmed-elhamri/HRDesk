@@ -33,7 +33,6 @@ export function AuthProvider({ children }) {
       axios
         .get(`/api/user`)
         .then((res) => {
-          console.log(res.data);
           const { user, employe, access_token, permissions } = res.data;
           setUser(user);
           setRole(user.role);

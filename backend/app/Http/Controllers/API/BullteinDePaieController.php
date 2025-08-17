@@ -11,17 +11,53 @@ use App\Models\EmployePrime;
 use App\Models\FraisProfessionnel;
 use App\Models\HeureSupplementaire;
 use App\Models\IrTranche;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
-class BulletinDePaieController extends Controller
+class BullteinDePaieController extends Controller
 {
     public function calculerSalaireNet(Request $request)
     {
-        return response()->json($this->salaireNetPermanant($request->mois, $request->employe_id));
+        $request->validate([
+            'mois' => ['required', 'regex:/^\d{4}\-\d{2}$/'], // yyyy-mm
+            'employe_id' => ['required', 'exists:employes,id'],
+        ]);
+
+        $data = $this->salaireNetPermanant($request->mois, $request->employe_id);
+
+        // Generate and attach PDF URL
+        $pdfUrl = $this->generatePdf($request->mois, $data[0]['employe'], $data[0]['bulletin'], $data[0]['cumuls']);
+
+        return response()->json([
+            'bulletin' => $data[0]['bulletin'],
+            'cumuls'   => $data[0]['cumuls'],
+            'employe'  => $data[0]['employe'],
+            'pdf_url'  => $pdfUrl,
+        ]);
+    }
+
+    private function generatePdf(string $mois, $employe, array $bulletin, array $cumuls): string
+    {
+        $pdf = Pdf::loadView('bulletin', [
+            'mois'     => $mois,
+            'employe'  => $employe,
+            'bulletin' => $bulletin,
+            'cumuls'   => $cumuls,
+        ])->setPaper('A4');
+
+        $safeRef = $employe->matricule ?? ('emp_'.$employe->id);
+        $filename = "bulletins/bulletin_{$safeRef}_{$mois}.pdf";
+
+        Storage::disk('public')->put($filename, $pdf->output());
+
+        // Public URL (requires `php artisan storage:link`)
+        return Storage::url($filename);
     }
     private function salaireNetPermanant($mois, $employe_id)
     {
+        $employe = Employe::findOrFail($employe_id);
         $response = [];
         $bulletin = [];
         [$year, $month] = explode('-', $mois);
@@ -180,6 +216,7 @@ class BulletinDePaieController extends Controller
         }
 
         $arrondi = (double) number_format(ceil($salaire_net) - $salaire_net, 2, '.', '');
+        $salaire_net = ceil($salaire_net);
         $bulletin[] = [
             "libele" => "Arrondi",
             "base" => 0.00,
@@ -187,8 +224,21 @@ class BulletinDePaieController extends Controller
             "gain" => $arrondi,
             "retenue" => 0.00,
         ];
-        $response[] = ["bulletin" => $bulletin];
-        $response[] = ["net_a_payer" => ceil($salaire_net)];
+        $cumuls = [
+            "Jrs trav" => 26,
+            "Hrs trav" => 26 * 8,
+            "Hrs sup" => $hs,
+            "Brut" => $salaire_base,
+            "CNSS" => $retenu_cnss,
+            "AMO" => $retenu_amo,
+            "IGR" => $retenu_ir,
+            "Net a payer" => $salaire_net,
+        ];
+        $response[] = [
+            "bulletin" => $bulletin,
+            "cumuls" => $cumuls,
+            "employe" => $employe,
+        ];
         return $response;
 
 

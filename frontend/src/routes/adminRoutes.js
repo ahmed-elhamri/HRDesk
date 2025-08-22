@@ -46,11 +46,11 @@ import SignUp from "layouts/authentication/sign-up";
 import Icon from "@mui/material/Icon";
 import Employes from "../pages/employe/Employes";
 import Primes from "../pages/Primes";
-import Test from "../pages/Test";
+import Test from "../pages/EmployePrimes";
 import Departements from "../pages/departement/Departements";
 import Services from "../pages/service/Services";
 import Fonctions from "../pages/fonction/Fonctions";
-import EmployePrimes from "../pages/EmployePrimes";
+import EmployePrimesOld from "../pages/EmployePrimesOld";
 
 const adminRoutes = [
   {
@@ -99,7 +99,7 @@ const adminRoutes = [
     key: "employe-primes",
     icon: <Icon fontSize="small">payment</Icon>,
     route: "/employe-primes",
-    component: <EmployePrimes />,
+    component: <EmployePrimesOld />,
   },
   // {
   //   type: "collapse",

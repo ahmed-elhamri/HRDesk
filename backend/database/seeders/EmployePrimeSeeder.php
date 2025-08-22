@@ -17,13 +17,13 @@ class EmployePrimeSeeder extends Seeder
             [
                 'employe_id' => 2,
                 'prime_id' => 1,
-                'montant' => 2000,
+                'montant' => 1000,
                 'date_attribution' => '2025-08-05',
             ],
             [
                 'employe_id' => 2,
                 'prime_id' => 2,
-                'montant' => 500,
+                'montant' => 1600,
                 'date_attribution' => '2025-08-09',
             ],
         ]);

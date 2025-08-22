@@ -14,8 +14,10 @@ import {
   Icon,
   CircularProgress,
   Typography,
+  MenuItem,
   Snackbar,
   Alert,
+  Autocomplete,
 } from "@mui/material";
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -23,42 +25,63 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { setAuthToken } from "../http";
+import { useAuth } from "../context/AuthContext";
 
-export default function Departements() {
-  const [departements, setDepartements] = useState([]);
-  const [form, setForm] = useState({ reference: "", designation: "", id: null });
+export default function EmployePrimesOld({ employe_id }) {
+  const { permissions } = useAuth();
+  const [employePrimes, setEmployePrimes] = useState([]);
+  const [employes, setEmployes] = useState([]);
+  const [primes, setPrimes] = useState([]);
+  const [form, setForm] = useState({
+    employe_id: 2,
+    prime_id: "",
+    montant: "",
+    date_attribution: "",
+    id: null,
+  });
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(false);
-  const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [expandedMotifs, setExpandedMotifs] = useState({});
+  const navigate = useNavigate();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
+  // Confirmation delete state
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
 
-  const { permissions } = useAuth();
+  const token = localStorage.getItem("token");
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-  const navigate = useNavigate();
-  // const token = localStorage.getItem("token");
-  // axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  const toggleMotif = (id) => {
+    setExpandedMotifs((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
-  useEffect(() => {
-    setAuthToken(localStorage.getItem("token") || null);
-  }, []);
+  const truncateText = (text, maxLength = 30) => {
+    if (!text) return "";
+    return text.length <= maxLength ? text : text.slice(0, maxLength) + "...";
+  };
 
-  const fetchDepartements = async () => {
+  const fetchData = async () => {
     setLoading(true);
     setLoadError(false);
     try {
-      const res = await axios.get("http://localhost:8000/api/departements");
-      setDepartements(res.data);
+      const [epRes, empRes, primesRes] = await Promise.all([
+        axios.get("http://localhost:8000/api/employe-primes", { params: { employe_id: 2 } }),
+        axios.get("http://localhost:8000/api/employes"),
+        axios.get("http://localhost:8000/api/primes"),
+      ]);
+      setEmployePrimes(epRes.data);
+      setEmployes(empRes.data);
+      setPrimes(primesRes.data);
     } catch (error) {
-      console.error("Erreur lors du chargement des départements :", error);
+      console.error("Erreur de chargement :", error);
       setLoadError(true);
     } finally {
       setLoading(false);
@@ -66,12 +89,12 @@ export default function Departements() {
   };
 
   useEffect(() => {
-    fetchDepartements();
+    fetchData();
   }, []);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
-    setForm({ reference: "", designation: "", id: null });
+    setForm({ employe_id: "", prime_id: "", montant: "", date_attribution: "", id: null });
     setErrors({});
     setOpen(false);
   };
@@ -83,74 +106,98 @@ export default function Departements() {
   const handleSubmit = async () => {
     try {
       if (form.id) {
-        await axios.put(`http://localhost:8000/api/departements/${form.id}`, form);
-        setSnackbarMessage("Département modifié avec succès !");
+        await axios.put(`http://localhost:8000/api/employe-primes/${form.id}`, form);
+        setSnackbarMessage("Prime modifié avec succès !");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
       } else {
-        await axios.post("http://localhost:8000/api/departements", form);
-        setSnackbarMessage("Département ajouté avec succès !");
+        await axios.post("http://localhost:8000/api/employe-primes", form);
+        setSnackbarMessage("Prime ajouté avec succès !");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
       }
-      fetchDepartements();
+      fetchData();
       handleClose();
     } catch (err) {
       if (err.response?.status === 422) {
-        setErrors(err.response.data.errors);
-        setSnackbarMessage(form.id ? "Erreur lors de la modification !" : "Erreur lors d'ajout !");
+        setErrors(err.response.data.errors || {});
+        setSnackbarMessage("Erreur lors de l'ajout !");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
+        // if (err.response.data.message?.includes("plafond")) {
+        //   setSnackbarMessage("Montant dépasse le plafond autorisé pour ce prime");
+        //   setSnackbarSeverity("warning");
+        //   setSnackbarOpen(true);
+        // }
       }
     }
   };
 
-  const handleEdit = (dep) => {
-    setForm(dep);
+  const handleEdit = (item) => {
+    setForm({ ...item });
     setOpen(true);
   };
 
-  const handleDeleteClick = (id) => {
-    setSelectedDeleteId(id);
+  const confirmDelete = (id) => {
+    setDeleteId(id);
     setConfirmDeleteOpen(true);
   };
 
-  const confirmDelete = async () => {
+  const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/departements/${selectedDeleteId}`);
-      fetchDepartements();
-      setSnackbarMessage("Département supprimé avec succès !");
+      await axios.delete(`http://localhost:8000/api/employe-primes/${deleteId}`);
+      fetchData();
+      setSnackbarMessage("Prime supprimé avec succès !");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-    } catch (error) {
+    } catch (err) {
+      console.error("Erreur de suppression :", err);
       setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
       setConfirmDeleteOpen(false);
-      setSelectedDeleteId(null);
+      setDeleteId(null);
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchText(e.target.value);
-  };
-
-  const filteredDepartements = departements.filter(
-    (dep) =>
-      dep.reference.toLowerCase().includes(searchText.toLowerCase()) ||
-      dep.designation.toLowerCase().includes(searchText.toLowerCase())
-  );
-
   const columns = [
-    { Header: "Référence", accessor: "reference" },
-    { Header: "Désignation", accessor: "designation" },
+    {
+      Header: "Employé",
+      accessor: (row) => `${row.employe.nom} ${row.employe.prenom}`,
+    },
+    {
+      Header: "Motif",
+      accessor: "prime.motif",
+      Cell: ({ row }) => {
+        const id = row.original.id;
+        const fullText = row.original.prime.motif || "";
+        const isExpanded = expandedMotifs[id];
+        return (
+          <div>
+            {isExpanded ? fullText : truncateText(fullText)}
+            {fullText.length > 30 && (
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => toggleMotif(id)}
+                sx={{ ml: 1, textTransform: "none" }}
+              >
+                {isExpanded ? "Lire moins" : "Lire plus"}
+              </Button>
+            )}
+          </div>
+        );
+      },
+    },
+    { Header: "Montant", accessor: "montant" },
+    { Header: "Date Attribution", accessor: "date_attribution" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          {permissions.find((p) => p.entity === "departement")?.can_update === 1 && (
+          {permissions.find((p) => p.entity === "prime")?.can_update === 1 && (
             <Tooltip
               title="modifier"
               componentsProps={{
@@ -173,7 +220,7 @@ export default function Departements() {
               </Button>
             </Tooltip>
           )}
-          {permissions.find((p) => p.entity === "departement")?.can_delete === 1 && (
+          {permissions.find((p) => p.entity === "prime")?.can_delete === 1 && (
             <Tooltip
               title="supprimer"
               componentsProps={{
@@ -187,7 +234,7 @@ export default function Departements() {
               }}
             >
               <Button
-                onClick={() => handleDeleteClick(row.original.id)}
+                onClick={() => confirmDelete(row.original.id)}
                 variant="text"
                 size="large"
                 sx={{ ml: 1 }}
@@ -196,28 +243,6 @@ export default function Departements() {
               </Button>
             </Tooltip>
           )}
-          <Tooltip
-            title="details"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(123, 128, 154, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
-                },
-              },
-            }}
-          >
-            <Button
-              onClick={() => navigate(`/departements/${row.original.reference}`)}
-              variant="text"
-              color="secondary"
-              size="large"
-              sx={{ ml: 1 }}
-            >
-              <Icon>info</Icon>
-            </Button>
-          </Tooltip>
         </>
       ),
     },
@@ -234,7 +259,7 @@ export default function Departements() {
     );
   }
 
-  if (loadError || departements.length === 0) {
+  if (loadError) {
     return (
       <DashboardLayout>
         <DashboardNavbar />
@@ -268,9 +293,9 @@ export default function Departements() {
                 alignItems="center"
               >
                 <MDTypography variant="h6" color="white">
-                  Départements
+                  Employés Primes
                 </MDTypography>
-                {permissions.find((p) => p.entity === "departement")?.can_create === 1 && (
+                {permissions.find((p) => p.entity === "prime")?.can_create === 1 && (
                   <Tooltip title="ajouter">
                     <Button onClick={handleOpen} variant="contained" color="success">
                       <Icon sx={{ color: "info.main" }}>add</Icon>
@@ -279,20 +304,15 @@ export default function Departements() {
                 )}
               </MDBox>
 
-              <MDBox px={2} pt={2} display="flex" justifyContent="flex-end">
-                <TextField
-                  label="Rechercher"
-                  variant="outlined"
-                  size="small"
-                  value={searchText}
-                  onChange={handleSearchChange}
-                  sx={{ width: 250 }}
-                />
-              </MDBox>
-
               <MDBox pt={3}>
+                <Button onClick={() => navigate("/primes")} variant="text" color="success">
+                  <MDBox sx={{ color: "info.main" }} display="flex" align_items="center" gap={0.5}>
+                    la liste des primes
+                    <Icon>chevron_right</Icon>
+                  </MDBox>
+                </Button>
                 <DataTable
-                  table={{ columns, rows: filteredDepartements }}
+                  table={{ columns, rows: employePrimes }}
                   isSorted={false}
                   entriesPerPage={false}
                   showTotalEntries={false}
@@ -304,23 +324,64 @@ export default function Departements() {
         </Grid>
       </MDBox>
 
+      {/* Form Dialog */}
       <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle>{form.id ? "Modifier Département" : "Ajouter Département"}</DialogTitle>
+        <DialogTitle>{form.id ? "Modifier" : "Ajouter"} Prime</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 0.1 }}>
-            {["reference", "designation"].map((field) => (
-              <Grid item xs={12} key={field} sx={{ mb: 2 }}>
-                <TextField
-                  fullWidth
-                  name={field}
-                  label={field.toUpperCase()}
-                  value={form[field]}
-                  onChange={handleChange}
-                  error={Boolean(errors[field])}
-                  helperText={errors[field]?.[0] || ""}
-                />
-              </Grid>
-            ))}
+            <Grid item xs={12}>
+              <TextField
+                label="Employé"
+                value={employes.find((e) => e.id === form.employe_id).nom || null}
+                error={Boolean(errors.employe_id)}
+                helperText={errors.employe_id?.[0]}
+                disabled
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Autocomplete
+                options={primes}
+                getOptionLabel={(option) => option.motif}
+                value={primes.find((p) => p.id === form.prime_id) || null}
+                onChange={(e, newValue) =>
+                  setForm({ ...form, prime_id: newValue ? newValue.id : "" })
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Prime"
+                    error={Boolean(errors.prime_id)}
+                    helperText={errors.prime_id?.[0]}
+                  />
+                )}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="montant"
+                label="Montant"
+                value={form.montant}
+                onChange={handleChange}
+                error={Boolean(errors.montant)}
+                helperText={errors.montant?.[0]}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="date_attribution"
+                label="Date Attribution"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={form.date_attribution}
+                onChange={handleChange}
+                error={Boolean(errors.date_attribution)}
+                helperText={errors.date_attribution?.[0]}
+              />
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
@@ -331,18 +392,20 @@ export default function Departements() {
         </DialogActions>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
         <DialogTitle>Confirmation</DialogTitle>
         <DialogContent>
-          <Typography>Êtes-vous sûr de vouloir supprimer ce département ?</Typography>
-          <Typography sx={{ color: "error.main", fontSize: "medium" }} variant="caption">
-            Si vous supprimez ce département. Les services, fonctions et employés associés seront
-            également supprimés.
-          </Typography>
+          <Typography>Êtes-vous sûr de vouloir supprimer cette prime ?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteOpen(false)}>Annuler</Button>
-          <Button onClick={confirmDelete} color="error" variant="text" sx={{ color: "error.main" }}>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="text"
+            color="error"
+            sx={{ color: "error.main" }}
+          >
             Supprimer
           </Button>
         </DialogActions>

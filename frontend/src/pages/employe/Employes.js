@@ -29,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
+import { setAuthToken } from "../http";
 
 export default function Employes() {
   const { user, permissions } = useAuth();
@@ -46,6 +47,7 @@ export default function Employes() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
+  const navigate = useNavigate();
 
   // New state for delete confirmation dialog
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -54,9 +56,9 @@ export default function Employes() {
   useEffect(() => {
     console.log(user);
   }, []);
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("token") || null);
+  }, []);
 
   const fetchEmployes = async () => {
     try {

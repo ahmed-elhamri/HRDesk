@@ -13,9 +13,6 @@ import Configurator from "examples/Configurator";
 import theme from "assets/theme";
 import themeDark from "assets/theme-dark";
 // import routes from "./routes";
-import supervisorRoutes from "./routes/supervisorRoutes";
-import adminRoutes from "./routes/adminRoutes";
-import employeRoutes from "./routes/employeRoutes";
 import routes, { useRoutes } from "./useRoutes";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 import brandWhite from "assets/images/HRDesk_logo_dark.png";
@@ -139,7 +136,6 @@ export default function App() {
       )}
       {/*{layout === "vr" && <Configurator />}*/}
       <Routes>
-        <Route path="/date" element={<Date />} />
         {token ? (
           <>
             {password_changed === "1" ? (
@@ -159,9 +155,9 @@ export default function App() {
                     {permissions.find((p) => p.entity === "employe")?.can_read === 1 && (
                       <Route path="/employes/:matricule" element={<EmployeDetails />} />
                     )}
-                    {permissions.find((p) => p.entity === "prime")?.can_read === 1 && (
-                      <Route path="/primes" element={<Primes />} />
-                    )}
+                    {/*{permissions.find((p) => p.entity === "prime")?.can_read === 1 && (*/}
+                    {/*  <Route path="/primes" element={<Primes />} />*/}
+                    {/*)}*/}
                     {permissions.find((p) => p.entity === "employe")?.can_create === 1 && (
                       <Route path="/add-employe" element={<AddEmploye />} />
                     )}

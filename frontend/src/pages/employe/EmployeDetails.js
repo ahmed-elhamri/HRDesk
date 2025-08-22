@@ -37,6 +37,7 @@ import MDBox from "../../components/MDBox";
 import { useNavigate, useParams } from "react-router-dom";
 import DataTable from "../../examples/Tables/DataTable";
 import { useAuth } from "../../context/AuthContext";
+import { setAuthToken } from "../http";
 const labels = {
   chemin_cin: "CIN",
   chemin_cnss: "CnssCotisations",
@@ -91,8 +92,9 @@ export default function EmployeDetails() {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   // Helper: API base url + auth token
-  const token = localStorage.getItem("token");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("token") || null);
+  }, []);
   const API_BASE = "http://localhost:8000/api";
 
   // Fetch function per section

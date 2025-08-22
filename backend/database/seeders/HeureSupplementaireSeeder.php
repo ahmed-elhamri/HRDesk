@@ -15,10 +15,8 @@ class HeureSupplementaireSeeder extends Seeder
     {
         $samples = [
             // employe_id sera choisi aléatoirement
-            ['2025-08-01', 'OUVRABLE', '08:00', '10:00'],  // 2h HS jour ouvrable
-            ['2025-08-02', 'OUVRABLE', '18:30', '20:00'],  // 1h30
-            ['2025-08-04', 'FERIES',   '21:00', '23:00'],  // 2h férié soir
-            ['2025-08-09', 'FERIES',   '09:00', '12:00'],  // 3h jour férié
+            ['2025-08-01', 'OUVRABLE', '08:00', '12:00'],  // 2h HS jour ouvrable
+            ['2025-08-02', 'OUVRABLE', '14:00', '18:00'],  // 1h30
         ];
 
         foreach ($samples as [$date, $jour, $debut, $fin]) {

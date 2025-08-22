@@ -79,7 +79,7 @@ class Employe extends Model
         return $this->hasMany(Pret::class);
     }
 
-    public function bulletinsSalaire() {
-        return $this->hasMany(BulletinSalaire::class);
+    public function bulletins() {
+        return $this->hasMany(Bulletin::class);
     }
 }

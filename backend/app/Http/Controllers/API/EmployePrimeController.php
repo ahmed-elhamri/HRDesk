@@ -19,9 +19,9 @@ class EmployePrimeController extends Controller implements HasMiddleware
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return EmployePrime::with(['employe', 'prime'])->get();
+        return EmployePrime::where('employe_id', $request->employe_id)->with(['employe', 'prime'])->get();
     }
 
     public function store(Request $request)
@@ -43,12 +43,12 @@ class EmployePrimeController extends Controller implements HasMiddleware
 
         $plafond = Prime::findOrFail($request->get('prime_id'))->plafond;
 
-        if ($request->montant > $plafond) {
-            return response()->json([
-                'message' => 'Montant dépasse le plafond autorisé pour ce prime.',
-                'plafond' => $plafond,
-            ], 422);
-        }
+//        if ($request->montant > $plafond) {
+//            return response()->json([
+//                'message' => 'Montant dépasse le plafond autorisé pour ce prime.',
+//                'plafond' => $plafond,
+//            ], 422);
+//        }
 
         $employePrime = EmployePrime::create($request->all());
         return response()->json($employePrime, 201);
@@ -72,12 +72,12 @@ class EmployePrimeController extends Controller implements HasMiddleware
 
         $plafond = Prime::findOrFail($request->get('prime_id'))->plafond;
 
-        if ($request->montant > $plafond) {
-            return response()->json([
-                'message' => 'Montant dépasse le plafond autorisé pour ce prime.',
-                'plafond' => $plafond,
-            ], 422);
-        }
+//        if ($request->montant > $plafond) {
+//            return response()->json([
+//                'message' => 'Montant dépasse le plafond autorisé pour ce prime.',
+//                'plafond' => $plafond,
+//            ], 422);
+//        }
 
         $employePrime = EmployePrime::findOrFail($id);
         $employePrime->update($request->all());

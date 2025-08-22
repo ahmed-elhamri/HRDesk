@@ -7,12 +7,12 @@ import Departements from "./pages/departement/Departements";
 import Services from "./pages/service/Services";
 import Fonctions from "./pages/fonction/Fonctions";
 import Employes from "./pages/employe/Employes";
-import EmployePrimes from "./pages/EmployePrimes";
 import PersonalInformations from "./pages/employe/PersonalInformations";
 import UserProfile from "./pages/UserProfile";
 import Absences from "./pages/Absences";
 import HeuresSupplementaires from "./pages/HeuresSupplementaires";
 import BulletinSalaire from "./pages/BulletinSalaire";
+import Primes from "./pages/Primes";
 
 export function useRoutes() {
   const { permissions } = useAuth();
@@ -47,10 +47,10 @@ export function useRoutes() {
       newRoutes.unshift({
         type: "collapse",
         name: "Primes",
-        key: "employe-primes",
+        key: "primes",
         icon: <Icon fontSize="small">payment</Icon>,
-        route: "/employe-primes",
-        component: <EmployePrimes />,
+        route: "/primes",
+        component: <Primes />,
       });
     }
     if (permissions.find((p) => p.entity === "heure_supplementaire")?.can_read) {

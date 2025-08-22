@@ -18,6 +18,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DataTable from "examples/Tables/DataTable";
 import { Alert, Snackbar } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
+import { setAuthToken } from "./http";
 
 function Primes() {
   const { permissions } = useAuth();
@@ -27,8 +28,8 @@ function Primes() {
     id: null,
     motif: "",
     impot: "IMPOSABLE",
-    plafond_ir: "",
-    plafond_cnss: "",
+    plafond_ir: "0.00",
+    plafond_cnss: "0.00",
   });
   const [searchText, setSearchText] = useState("");
   const [expandedMotifs, setExpandedMotifs] = useState({});
@@ -38,8 +39,9 @@ function Primes() {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
-  const token = localStorage.getItem("token");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("token") || null);
+  }, []);
 
   const toggleMotif = (id) => {
     setExpandedMotifs((prev) => ({
@@ -98,8 +100,6 @@ function Primes() {
       },
     },
     { Header: "Impôt", accessor: "impot" },
-    { Header: "Plafond IR", accessor: "plafond_ir" },
-    { Header: "Plafond CnssCotisations", accessor: "plafond_cnss" },
     {
       Header: "Soumis CnssCotisations/AMO/CIMR",
       accessor: "soumis_cotisation_cnss_amo_cimr",
@@ -109,6 +109,12 @@ function Primes() {
       Header: "Soumis IR",
       accessor: "soumis_ir",
       Cell: ({ value }) => (value ? "Oui" : "Non"),
+    },
+    { Header: "Plafond IR", accessor: "plafond_ir", Cell: ({ value }) => (value ? value : "-") },
+    {
+      Header: "Plafond CnssCotisations",
+      accessor: "plafond_cnss",
+      Cell: ({ value }) => (value ? value : "-"),
     },
     {
       Header: "Calcul proportionnel",
@@ -327,14 +333,6 @@ function Primes() {
         <DialogTitle>{form.id ? "Modifier Prime" : "Ajouter Prime"}</DialogTitle>
         <DialogContent>
           <TextField
-            label="Motif"
-            fullWidth
-            margin="normal"
-            name="motif"
-            value={form.motif}
-            onChange={(e) => setForm({ ...form, motif: e.target.value })}
-          />
-          <TextField
             label="Impôt"
             fullWidth
             margin="normal"
@@ -342,29 +340,26 @@ function Primes() {
             select
             SelectProps={{ native: true }}
             value={form.impot}
-            onChange={(e) => setForm({ ...form, impot: e.target.value })}
+            onChange={(e) => {
+              const value = e.target.value;
+              setForm((prev) => {
+                let updated = { ...prev, impot: value };
+                if (value === "NON IMPOSABLE") {
+                  updated = {
+                    ...updated,
+                    soumis_cotisation_cnss_amo_cimr: false,
+                    soumis_ir: false,
+                    plafond_ir: "0.00",
+                    plafond_cnss: "0.00",
+                  };
+                }
+                return updated;
+              });
+            }}
           >
             <option value="IMPOSABLE">IMPOSABLE</option>
             <option value="NON IMPOSABLE">NON IMPOSABLE</option>
           </TextField>
-          <TextField
-            label="Plafond IR"
-            type="number"
-            fullWidth
-            margin="normal"
-            name="plafond_ir"
-            value={form.plafond_ir}
-            onChange={(e) => setForm({ ...form, plafond_ir: e.target.value })}
-          />
-          <TextField
-            label="Plafond CnssCotisations"
-            type="number"
-            fullWidth
-            margin="normal"
-            name="plafond_cnss"
-            value={form.plafond_cnss}
-            onChange={(e) => setForm({ ...form, plafond_cnss: e.target.value })}
-          />
           <Grid container spacing={2} mt={1}>
             <Grid item xs={12} sm={6}>
               <label>
@@ -374,6 +369,7 @@ function Primes() {
                   onChange={(e) =>
                     setForm({ ...form, soumis_cotisation_cnss_amo_cimr: e.target.checked })
                   }
+                  disabled={form.impot === "NON IMPOSABLE"}
                 />{" "}
                 Soumis CnssCotisations/AMO/CIMR
               </label>
@@ -384,10 +380,41 @@ function Primes() {
                   type="checkbox"
                   checked={form.soumis_ir}
                   onChange={(e) => setForm({ ...form, soumis_ir: e.target.checked })}
+                  disabled={form.impot === "NON IMPOSABLE"}
                 />{" "}
                 Soumis IR
               </label>
             </Grid>
+          </Grid>
+          <TextField
+            label="Motif"
+            fullWidth
+            margin="normal"
+            name="motif"
+            value={form.motif}
+            onChange={(e) => setForm({ ...form, motif: e.target.value })}
+          />
+          <TextField
+            label="Plafond IR"
+            type="number"
+            fullWidth
+            margin="normal"
+            name="plafond_ir"
+            value={form.plafond_ir}
+            onChange={(e) => setForm({ ...form, plafond_ir: e.target.value })}
+            disabled={!form.soumis_ir}
+          />
+          <TextField
+            label="Plafond CnssCotisations"
+            type="number"
+            fullWidth
+            margin="normal"
+            name="plafond_cnss"
+            value={form.plafond_cnss}
+            onChange={(e) => setForm({ ...form, plafond_cnss: e.target.value })}
+            disabled={!form.soumis_cotisation_cnss_amo_cimr}
+          />
+          <Grid container spacing={2} mt={1}>
             <Grid item xs={12}>
               <label>
                 <input
@@ -397,7 +424,7 @@ function Primes() {
                     setForm({ ...form, calcul_proportionnel_jours: e.target.checked })
                   }
                 />{" "}
-                Calcul proportionnel par jours
+                En fonction du nombre de jours travaillé
               </label>
             </Grid>
           </Grid>

@@ -17,7 +17,11 @@ import {
   Tooltip,
   Typography,
   Autocomplete,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import DataTable from "examples/Tables/DataTable";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -25,16 +29,22 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useAuth } from "../context/AuthContext";
-
+import EmployePrimes from "./EmployePrimes";
+import { setAuthToken } from "./http";
 export default function BulletinSalaire() {
-  const [mois, setMois] = useState(""); // yyyy-MM
+  const [mois, setMois] = useState(() => {
+    const now = new Date();
+    return now.toISOString().slice(0, 7);
+  });
   const [employes, setEmployes] = useState([]);
   const [selectedEmploye, setSelectedEmploye] = useState(null);
   const [loading, setLoading] = useState(false);
   const [calcLoading, setCalcLoading] = useState(false);
+  const [key, setKey] = useState("");
 
   const [bulletin, setBulletin] = useState([]);
   const [cumuls, setCumuls] = useState(null);
+  const [cumulsAnnee, setCumulsAnnee] = useState(null);
   const [employeInfo, setEmployeInfo] = useState(null);
   const [pdfUrl, setPdfUrl] = useState("");
 
@@ -45,8 +55,9 @@ export default function BulletinSalaire() {
   const [loadError, setLoadError] = useState(false);
   const { permissions } = useAuth();
 
-  const token = localStorage.getItem("token");
-  axios.defaults.headers.common["Authorization"] = token ? `Bearer ${token}` : undefined;
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("token") || null);
+  }, []);
 
   const canCalculate = useMemo(() => {
     // If you have a specific permission name, swap "departement" with e.g. "paie" or "bulletin"
@@ -98,9 +109,10 @@ export default function BulletinSalaire() {
 
       setBulletin(res.data.bulletin || []);
       setCumuls(res.data.cumuls || null);
+      setCumulsAnnee(res.data.cumuls_annee || null);
       setEmployeInfo(res.data.employe || null);
       setPdfUrl(res.data.pdf_url || "");
-      console.log(pdfUrl);
+      setKey(selectedEmploye.id);
 
       setSnackbarMessage("Calcul effectué avec succès.");
       setSnackbarSeverity("success");
@@ -173,17 +185,23 @@ export default function BulletinSalaire() {
   ];
 
   const cumulsColumns = [
-    { Header: "Clé", accessor: "key" },
-    { Header: "Valeur", accessor: "value" },
+    { Header: "Cumuls", accessor: "key" },
+    { Header: "Période", accessor: "value1" },
+    { Header: "Année", accessor: "value2" },
   ];
 
   const cumulsRows = useMemo(() => {
-    if (!cumuls) return [];
-    return Object.entries(cumuls).map(([key, value]) => ({
+    if (!cumuls || !cumulsAnnee) return [];
+
+    // collect all keys from both objects
+    const keys = Array.from(new Set([...Object.keys(cumuls), ...Object.keys(cumulsAnnee)]));
+
+    return keys.map((key) => ({
       key,
-      value: Number(value).toFixed(2),
+      value1: cumuls[key] != null ? Number(cumuls[key]).toFixed(2) : "",
+      value2: cumulsAnnee[key] != null ? Number(cumulsAnnee[key]).toFixed(2) : "",
     }));
-  }, [cumuls]);
+  }, [cumuls, cumulsAnnee]);
 
   if (loading) {
     return (
@@ -284,70 +302,106 @@ export default function BulletinSalaire() {
                 <MDBox px={2} pt={2} pb={3}>
                   {/* Employe Info */}
                   {employeInfo && (
-                    <Card style={{ padding: 16, marginBottom: 16 }}>
-                      <MDTypography variant="subtitle1" fontWeight="bold" mb={1}>
-                        Informations Employé
-                      </MDTypography>
-                      <Grid container spacing={1}>
-                        <Grid item xs={12} md={3}>
-                          <strong>Matricule:</strong> {employeInfo?.matricule || "-"}
-                        </Grid>
-                        <Grid item xs={12} md={3}>
-                          <strong>Nom:</strong>{" "}
-                          {[employeInfo?.prenom, employeInfo?.nom].filter(Boolean).join(" ")}
-                        </Grid>
-                        <Grid item xs={12} md={3}>
-                          <strong>Service:</strong>{" "}
-                          {employeInfo?.fonction?.service?.designation || "-"}
-                        </Grid>
-                        <Grid item xs={12} md={3}>
-                          <strong>Fonction:</strong> {employeInfo?.fonction?.designation || "-"}
-                        </Grid>
-                      </Grid>
+                    <Card style={{ marginBottom: 16 }}>
+                      <Accordion sx={{ boxShadow: "none" }}>
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          aria-controls="panel1a-content"
+                          id="panel1a-header"
+                        >
+                          <MDTypography variant="subtitle1" fontWeight="bold">
+                            Informations Employé
+                          </MDTypography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid container spacing={1} fontSize="1rem">
+                            <Grid item xs={12} md={3}>
+                              <strong>Matricule:</strong> {employeInfo?.matricule || "-"}
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                              <strong>Nom:</strong>{" "}
+                              {[employeInfo?.prenom, employeInfo?.nom].filter(Boolean).join(" ")}
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                              <strong>Service:</strong>{" "}
+                              {employeInfo?.fonction?.service?.designation || "-"}
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                              <strong>Fonction:</strong> {employeInfo?.fonction?.designation || "-"}
+                            </Grid>
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
                     </Card>
                   )}
+                  <Card style={{ marginBottom: 16 }}>
+                    <Accordion sx={{ boxShadow: "none" }}>
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                      >
+                        <MDTypography variant="subtitle1" fontWeight="bold">
+                          Primes
+                        </MDTypography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <EmployePrimes key={`${key || "none"}`} employe_id={key} mois={mois} />
+                      </AccordionDetails>
+                    </Accordion>
+                  </Card>
 
                   <Grid container spacing={2}>
                     <Grid item xs={12} md={7}>
-                      <Card style={{ padding: 8 }}>
-                        <MDTypography
-                          variant="subtitle1"
-                          fontWeight="bold"
-                          mb={1}
-                          sx={{ px: 1, pt: 1 }}
-                        >
-                          Bulletin
-                        </MDTypography>
-                        <MDBox pt={1}>
-                          <DataTable
-                            table={{ columns: bulletinColumns, rows: bulletin }}
-                            isSorted={false}
-                            entriesPerPage={false}
-                            showTotalEntries={false}
-                            noEndBorder
-                          />
-                        </MDBox>
+                      <Card style={{ marginBottom: 16 }}>
+                        <Accordion sx={{ boxShadow: "none" }} defaultExpanded>
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                          >
+                            <MDTypography variant="subtitle1" fontWeight="bold">
+                              Bulletin
+                            </MDTypography>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <MDBox pt={1}>
+                              <DataTable
+                                table={{ columns: bulletinColumns, rows: bulletin }}
+                                isSorted={false}
+                                entriesPerPage={false}
+                                showTotalEntries={false}
+                                noEndBorder
+                              />
+                            </MDBox>
+                          </AccordionDetails>
+                        </Accordion>
                       </Card>
                     </Grid>
                     <Grid item xs={12} md={5}>
-                      <Card style={{ padding: 8, height: "100%" }}>
-                        <MDTypography
-                          variant="subtitle1"
-                          fontWeight="bold"
-                          mb={1}
-                          sx={{ px: 1, pt: 1 }}
-                        >
-                          Cumuls
-                        </MDTypography>
-                        <MDBox pt={1}>
-                          <DataTable
-                            table={{ columns: cumulsColumns, rows: cumulsRows }}
-                            isSorted={false}
-                            entriesPerPage={false}
-                            showTotalEntries={false}
-                            noEndBorder
-                          />
-                        </MDBox>
+                      <Card style={{ marginBottom: 16 }}>
+                        <Accordion sx={{ boxShadow: "none" }} defaultExpanded>
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                          >
+                            <MDTypography variant="subtitle1" fontWeight="bold">
+                              Cumuls
+                            </MDTypography>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <MDBox pt={1}>
+                              <DataTable
+                                table={{ columns: cumulsColumns, rows: cumulsRows }}
+                                isSorted={false}
+                                entriesPerPage={false}
+                                showTotalEntries={false}
+                                noEndBorder
+                              />
+                            </MDBox>
+                          </AccordionDetails>
+                        </Accordion>
                       </Card>
                     </Grid>
                     {/* Download PDF */}

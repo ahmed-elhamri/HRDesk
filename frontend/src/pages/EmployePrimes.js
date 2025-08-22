@@ -26,14 +26,15 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { setAuthToken } from "./http";
 
-export default function EmployePrimes() {
+export default function EmployePrimes({ employe_id }) {
   const { permissions } = useAuth();
   const [employePrimes, setEmployePrimes] = useState([]);
   const [employes, setEmployes] = useState([]);
   const [primes, setPrimes] = useState([]);
   const [form, setForm] = useState({
-    employe_id: "",
+    employe_id: employe_id,
     prime_id: "",
     montant: "",
     date_attribution: "",
@@ -53,8 +54,9 @@ export default function EmployePrimes() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
-  const token = localStorage.getItem("token");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("token") || null);
+  }, []);
 
   const toggleMotif = (id) => {
     setExpandedMotifs((prev) => ({
@@ -68,17 +70,17 @@ export default function EmployePrimes() {
     return text.length <= maxLength ? text : text.slice(0, maxLength) + "...";
   };
 
-  const fetchData = async () => {
+  const fetchData = async (id) => {
     setLoading(true);
     setLoadError(false);
     try {
-      const [epRes, empRes, primesRes] = await Promise.all([
-        axios.get("http://localhost:8000/api/employe-primes"),
-        axios.get("http://localhost:8000/api/employes"),
+      const [epRes, primesRes] = await Promise.all([
+        axios.get("http://localhost:8000/api/employe-primes", {
+          params: { employe_id: id },
+        }),
         axios.get("http://localhost:8000/api/primes"),
       ]);
       setEmployePrimes(epRes.data);
-      setEmployes(empRes.data);
       setPrimes(primesRes.data);
     } catch (error) {
       console.error("Erreur de chargement :", error);
@@ -87,14 +89,23 @@ export default function EmployePrimes() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    fetchData();
+    if (!employe_id) return;
+    let ignore = false;
+    const controller = new AbortController();
+    fetchData(employe_id);
+    return () => {
+      ignore = true;
+      controller.abort();
+    };
+  }, [employe_id]);
+  useEffect(() => {
+    fetchData(employe_id);
   }, []);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
-    setForm({ employe_id: "", prime_id: "", montant: "", date_attribution: "", id: null });
+    setForm({ employe_id: employe_id, prime_id: "", montant: "", date_attribution: "", id: null });
     setErrors({});
     setOpen(false);
   };
@@ -116,7 +127,7 @@ export default function EmployePrimes() {
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
       }
-      fetchData();
+      fetchData(employe_id);
       handleClose();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -124,11 +135,11 @@ export default function EmployePrimes() {
         setSnackbarMessage("Erreur lors de l'ajout !");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
-        if (err.response.data.message?.includes("plafond")) {
-          setSnackbarMessage("Montant dépasse le plafond autorisé pour ce prime");
-          setSnackbarSeverity("warning");
-          setSnackbarOpen(true);
-        }
+        // if (err.response.data.message?.includes("plafond")) {
+        //   setSnackbarMessage("Montant dépasse le plafond autorisé pour ce prime");
+        //   setSnackbarSeverity("warning");
+        //   setSnackbarOpen(true);
+        // }
       }
     }
   };
@@ -146,7 +157,7 @@ export default function EmployePrimes() {
   const handleDeleteConfirm = async () => {
     try {
       await axios.delete(`http://localhost:8000/api/employe-primes/${deleteId}`);
-      fetchData();
+      fetchData(employe_id);
       setSnackbarMessage("Prime supprimé avec succès !");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
@@ -162,10 +173,6 @@ export default function EmployePrimes() {
   };
 
   const columns = [
-    {
-      Header: "Employé",
-      accessor: (row) => `${row.employe.nom} ${row.employe.prenom}`,
-    },
     {
       Header: "Motif",
       accessor: "prime.motif",
@@ -250,67 +257,38 @@ export default function EmployePrimes() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <DashboardNavbar />
-        <MDBox pt={6} pb={3} textAlign="center">
-          <CircularProgress />
-        </MDBox>
-      </DashboardLayout>
+      <MDBox pt={6} pb={3} textAlign="center">
+        <CircularProgress />
+      </MDBox>
     );
   }
 
-  if (loadError || employePrimes.length === 0) {
+  if (loadError) {
     return (
-      <DashboardLayout>
-        <DashboardNavbar />
-        <MDBox pt={6} pb={3} textAlign="center">
-          <Typography variant="h6" color="error">
-            Aucune donnée trouvée ou une erreur est survenue.
-          </Typography>
-        </MDBox>
-      </DashboardLayout>
+      <MDBox pt={6} pb={3} textAlign="center">
+        <Typography variant="h6" color="error">
+          Aucune donnée trouvée ou une erreur est survenue.
+        </Typography>
+      </MDBox>
     );
   }
 
   return (
-    <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox pt={6} pb={3}>
+    <Grid>
+      <MDBox>
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card>
-              <MDBox
-                mx={2}
-                mt={-3}
-                py={3}
-                px={2}
-                variant="gradient"
-                bgColor="info"
-                borderRadius="lg"
-                coloredShadow="info"
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <MDTypography variant="h6" color="white">
-                  Employés Primes
-                </MDTypography>
-                {permissions.find((p) => p.entity === "prime")?.can_create === 1 && (
-                  <Tooltip title="ajouter">
-                    <Button onClick={handleOpen} variant="contained" color="success">
-                      <Icon sx={{ color: "info.main" }}>add</Icon>
-                    </Button>
-                  </Tooltip>
-                )}
-              </MDBox>
-
-              <MDBox pt={3}>
-                <Button onClick={() => navigate("/primes")} variant="text" color="success">
-                  <MDBox sx={{ color: "info.main" }} display="flex" align_items="center" gap={0.5}>
-                    la liste des primes
-                    <Icon>chevron_right</Icon>
-                  </MDBox>
-                </Button>
+              <MDBox py={1}>
+                <MDBox sx={{ display: "flex", justifyContent: "flex-end", margin: 1 }}>
+                  {permissions.find((p) => p.entity === "prime")?.can_create === 1 && (
+                    <Tooltip title="ajouter">
+                      <Button onClick={handleOpen} variant="contained" color="info">
+                        <Icon sx={{ color: "info.main" }}>add</Icon>
+                      </Button>
+                    </Tooltip>
+                  )}
+                </MDBox>
                 <DataTable
                   table={{ columns, rows: employePrimes }}
                   isSorted={false}
@@ -329,25 +307,6 @@ export default function EmployePrimes() {
         <DialogTitle>{form.id ? "Modifier" : "Ajouter"} Prime</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 0.1 }}>
-            <Grid item xs={12}>
-              <Autocomplete
-                options={employes}
-                getOptionLabel={(option) => `${option.nom} ${option.prenom}`}
-                value={employes.find((e) => e.id === form.employe_id) || null}
-                onChange={(e, newValue) =>
-                  setForm({ ...form, employe_id: newValue ? newValue.id : "" })
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Employé"
-                    error={Boolean(errors.employe_id)}
-                    helperText={errors.employe_id?.[0]}
-                  />
-                )}
-                fullWidth
-              />
-            </Grid>
             <Grid item xs={12}>
               <Autocomplete
                 options={primes}
@@ -434,6 +393,6 @@ export default function EmployePrimes() {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </DashboardLayout>
+    </Grid>
   );
 }

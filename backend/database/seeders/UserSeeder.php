@@ -20,6 +20,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('123456'),
             'password_changed' => true,
             'role' => 'SUPERVISOR',
+            'periode' => now()->format('Y-m').'-01',
         ]);
 //        Permission::insert([
 //            [
@@ -63,6 +64,6 @@ class UserSeeder extends Seeder
 //                'can_delete' => true,
 //            ],
 //        ]);
-        User::factory()->count(20)->create();
+        User::factory()->count(24)->create();
     }
 }

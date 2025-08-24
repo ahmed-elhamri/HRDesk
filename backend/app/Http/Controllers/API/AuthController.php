@@ -50,7 +50,7 @@ class AuthController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
-        $user = User::where('email', $request->user()->email)->first();
+        $user = User::where('email', $request->user()->email)->where('periode', now()->format('Y-m').'-01')->first();
         $user->password = Hash::make($request->new_password);
         $user->password_changed = true;
         $user->save();
@@ -71,7 +71,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('email', $request->user()->email)->first();
+        $user = User::where('email', $request->user()->email)->where('periode', now()->format('Y-m').'-01')->first();
 //        dd($user);
 
         if (!Hash::check($request->old_password, $user->password)) {
@@ -96,7 +96,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->where('periode', now()->format('Y-m').'-01')->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);

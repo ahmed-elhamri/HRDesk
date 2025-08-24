@@ -32,6 +32,7 @@ class Employe extends Model
         'date_embauche',
         'date_entree',
         'taux_anciennete',
+        'periode'
     ];
 
     public function user()
@@ -42,7 +43,7 @@ class Employe extends Model
     public function primes()
     {
         return $this->belongsToMany(Prime::class, "employe_prime")
-            ->withPivot('montant', 'date_attribution')
+            ->withPivot('montant', 'periode')
             ->withTimestamps();
     }
 

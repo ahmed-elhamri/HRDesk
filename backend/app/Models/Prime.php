@@ -22,7 +22,7 @@ class Prime extends Model
     public function employes()
     {
         return $this->belongsToMany(Employe::class, "employe_prime")
-            ->withPivot('montant', 'date_attribution')
+            ->withPivot('montant', 'periode')
             ->withTimestamps();
     }
 }

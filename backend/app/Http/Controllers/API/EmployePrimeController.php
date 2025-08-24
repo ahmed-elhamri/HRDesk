@@ -31,7 +31,6 @@ class EmployePrimeController extends Controller implements HasMiddleware
             'employe_id' => 'required|exists:employes,id',
             'prime_id' => 'required|exists:primes,id',
             'montant' => 'required|numeric',
-            'date_attribution' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -60,7 +59,6 @@ class EmployePrimeController extends Controller implements HasMiddleware
             'employe_id' => 'required|exists:employes,id',
             'prime_id' => 'required|exists:primes,id',
             'montant' => 'required|numeric',
-            'date_attribution' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -70,7 +68,7 @@ class EmployePrimeController extends Controller implements HasMiddleware
             ], 422);
         }
 
-        $plafond = Prime::findOrFail($request->get('prime_id'))->plafond;
+//        $plafond = Prime::findOrFail($request->get('prime_id'))->plafond;
 
 //        if ($request->montant > $plafond) {
 //            return response()->json([

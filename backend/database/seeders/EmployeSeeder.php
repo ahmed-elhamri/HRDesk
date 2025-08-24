@@ -32,6 +32,7 @@ class EmployeSeeder extends Seeder
             'situation_familiale' => "CELIBATAIRE",
             'date_embauche' => fake()->date(),
             'date_entree' => fake()->date(),
+            'periode' => now()->format('Y-m').'-01',
         ]);
 
         $userIds = User::pluck('id')->shuffle();
@@ -55,6 +56,7 @@ class EmployeSeeder extends Seeder
                 'situation_familiale' => fake()->randomElement(['MARIE', 'CELIBATAIRE']),
                 'date_embauche' => fake()->date(),
                 'date_entree' => fake()->date(),
+                'periode' => now()->format('Y-m').'-01',
             ]);
         }
 

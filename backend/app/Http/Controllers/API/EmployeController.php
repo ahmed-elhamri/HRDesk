@@ -29,7 +29,7 @@ class EmployeController extends Controller implements HasMiddleware
             ->with(['fonction:id,service_id,designation',
                 'fonction.service:id,departement_id,designation',
                 'fonction.service.departement:id,designation'
-                ])
+                ])->where('periode', now()->format('Y-m').'-01')
             ->get());
     }
 

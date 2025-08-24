@@ -37,7 +37,6 @@ export default function EmployePrimes({ employe_id }) {
     employe_id: employe_id,
     prime_id: "",
     montant: "",
-    date_attribution: "",
     id: null,
   });
   const [errors, setErrors] = useState({});
@@ -105,7 +104,7 @@ export default function EmployePrimes({ employe_id }) {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
-    setForm({ employe_id: employe_id, prime_id: "", montant: "", date_attribution: "", id: null });
+    setForm({ employe_id: employe_id, prime_id: "", montant: "", id: null });
     setErrors({});
     setOpen(false);
   };
@@ -198,7 +197,6 @@ export default function EmployePrimes({ employe_id }) {
       },
     },
     { Header: "Montant", accessor: "montant" },
-    { Header: "Date Attribution", accessor: "date_attribution" },
     {
       Header: "Actions",
       accessor: "actions",
@@ -335,19 +333,6 @@ export default function EmployePrimes({ employe_id }) {
                 onChange={handleChange}
                 error={Boolean(errors.montant)}
                 helperText={errors.montant?.[0]}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                name="date_attribution"
-                label="Date Attribution"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={form.date_attribution}
-                onChange={handleChange}
-                error={Boolean(errors.date_attribution)}
-                helperText={errors.date_attribution?.[0]}
               />
             </Grid>
           </Grid>

@@ -12,7 +12,7 @@ class EmployePrime extends Model
         'employe_id',
         'prime_id',
         'montant',
-        'date_attribution',
+        'periode',
     ];
 
     public function employe() {

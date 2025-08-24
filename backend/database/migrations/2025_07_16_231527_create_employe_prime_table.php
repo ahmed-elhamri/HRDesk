@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedBigInteger('employe_id');
             $table->unsignedBigInteger('prime_id');
             $table->decimal('montant');
-            $table->date('date_attribution');
             $table->timestamps();
 
             $table->foreign('employe_id')->references('id')->on('employes')->onDelete('cascade');

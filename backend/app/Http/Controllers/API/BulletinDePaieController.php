@@ -150,7 +150,7 @@ class BulletinDePaieController extends Controller
         }
 
         // Les primes
-        $primes = EmployePrime::whereBetween('date_attribution', [$start, $end])->where('employe_id', $employe_id)->get();
+        $primes = EmployePrime::where('employe_id', $employe_id)->get();
         $primes_imposables = [];
         $primes_non_imposables = [];
         if ($primes->isNotEmpty()) {
@@ -368,7 +368,7 @@ class BulletinDePaieController extends Controller
         }
         $brut_total +=  (double) number_format($brut_total + $salaire_base, 2, '.', '');
         // Les primes
-        $primes = EmployePrime::whereBetween('date_attribution', [$start, $end])->where('employe_id', $employe_id)->get();
+        $primes = EmployePrime::where('employe_id', $employe_id)->get();
 //        dd($primes[0]->prime);
         $total_primes_non_imposables = 0;
         $total_primes_soumis_cnss_amo = 0;

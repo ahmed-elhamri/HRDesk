@@ -234,7 +234,7 @@ export default function Departements() {
     );
   }
 
-  if (loadError || departements.length === 0) {
+  if (loadError) {
     return (
       <DashboardLayout>
         <DashboardNavbar />

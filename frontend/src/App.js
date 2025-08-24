@@ -29,6 +29,7 @@ import AddEmploye from "./pages/employe/AddEmploye";
 import { useAuth } from "./context/AuthContext";
 import Parametres from "./pages/parametre/Parametres";
 import Date from "./pages/Date";
+import GlobalScheduler from "./GlobalScheduler";
 export default function App() {
   const routes = useRoutes();
   const [controller, dispatch] = useMaterialUIController();
@@ -135,6 +136,7 @@ export default function App() {
         </>
       )}
       {/*{layout === "vr" && <Configurator />}*/}
+      <GlobalScheduler />
       <Routes>
         {token ? (
           <>

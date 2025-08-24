@@ -16,7 +16,7 @@ import MDTypography from "components/MDTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import DataTable from "examples/Tables/DataTable";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, CircularProgress, Snackbar, Typography } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 import { setAuthToken } from "./http";
 
@@ -31,6 +31,8 @@ function Primes() {
     plafond_ir: "0.00",
     plafond_cnss: "0.00",
   });
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [expandedMotifs, setExpandedMotifs] = useState({});
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -56,12 +58,17 @@ function Primes() {
   };
 
   const fetchPrimes = async () => {
+    setLoading(true);
+    setLoadError(false);
     try {
       const res = await axios.get("http://localhost:8000/api/primes");
       setRows(res.data || []);
     } catch (error) {
       console.error("Erreur de chargement des primes:", error);
       setRows([]);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -273,6 +280,29 @@ function Primes() {
     setOpenForm(true);
   };
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <CircularProgress />
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} textAlign="center">
+          <Typography variant="h6" color="error">
+            Aucune donnée trouvée ou une erreur est survenue.
+          </Typography>
+        </MDBox>
+      </DashboardLayout>
+    );
+  }
   return (
     <DashboardLayout>
       <DashboardNavbar />

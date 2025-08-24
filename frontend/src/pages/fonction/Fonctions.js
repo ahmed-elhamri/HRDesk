@@ -50,33 +50,36 @@ export default function Fonctions() {
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
   const fetchFonctions = async () => {
+    setLoading(true);
+    setLoadError(false);
     try {
       const res = await axios.get("http://localhost:8000/api/fonctions");
       setFonctions(res.data);
     } catch (error) {
       console.error("Erreur lors du chargement des fonctions :", error);
       setLoadError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchServices = async () => {
+    setLoading(true);
+    setLoadError(false);
     try {
       const res = await axios.get("http://localhost:8000/api/services");
       setServices(res.data);
     } catch (error) {
       console.error("Erreur lors du chargement des services :", error);
       setLoadError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      setLoadError(false);
-      await Promise.all([fetchFonctions(), fetchServices()]);
-      setLoading(false);
-    };
-    loadData();
+    fetchFonctions();
+    fetchServices();
   }, []);
 
   const handleOpen = () => setOpen(true);
@@ -257,7 +260,7 @@ export default function Fonctions() {
     );
   }
 
-  if (loadError || fonctions.length === 0) {
+  if (loadError) {
     return (
       <DashboardLayout>
         <DashboardNavbar />

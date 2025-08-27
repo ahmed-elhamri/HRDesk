@@ -15,17 +15,17 @@ class HeureSupplementaireSeeder extends Seeder
     {
         $samples = [
             // employe_id sera choisi aléatoirement
-            ['2025-08-01', 'OUVRABLE', '08:00', '12:00'],  // 2h HS jour ouvrable
-            ['2025-08-02', 'OUVRABLE', '14:00', '18:00'],  // 1h30
+            ['2025-08-01', 'OUVRABLE', 'JOUR', 4],  // 2h HS jour ouvrable
+            ['2025-08-02', 'OUVRABLE', 'JOUR', 4],  // 1h30
         ];
 
-        foreach ($samples as [$date, $jour, $debut, $fin]) {
+        foreach ($samples as [$date, $jour, $periode, $nombre]) {
             HeureSupplementaire::create([
                 'employe_id'  => 2,
                 'date' => $date,
                 'jour'        => $jour,
-                'heure_debut' => $debut,
-                'heure_fin'   => $fin,
+                'periode' => $periode,
+                'nombre'   => $nombre,
             ]);
         }
     }

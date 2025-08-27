@@ -330,8 +330,8 @@ class BulletinDePaieController extends Controller
         [$year, $month] = explode('-', $mois);
         $start = Carbon::create((int)$year, (int)$month, 1)->startOfMonth()->toDateString(); // 2025-08-01
         $end   = Carbon::create((int)$year, (int)$month, 1)->endOfMonth()->toDateString();   // 2025-08-31
-        $salaire_base = Contrat::where('employe_id', $employe_id)->value('salaire_base');
-
+//        $salaire_base = (double) number_format(($employe->jours_travailles / 26) * Contrat::where('employe_id', $employe_id)->value('salaire_base'), 2, '.', '');
+        $salaire_base = (double) number_format((Contrat::where('employe_id', $employe_id)->value('salaire_base') / 26) * $employe->jours_travailles, 2, '.', '');
 //        (double) number_format(, 2, '.', '');
         $brut_total = 0;
         $bulletin[] = [
@@ -348,13 +348,7 @@ class BulletinDePaieController extends Controller
         $gain_hs = 0;
         if ($heures_supplementaire->isNotEmpty()) {
             foreach ($heures_supplementaire as $heure) {
-                $startDT = Carbon::parse($heure->heure_debut);
-                $endDT   = Carbon::parse($heure->heure_fin);
-
-                if ($endDT->lessThanOrEqualTo($startDT)) {
-                    $endDT->addDay();
-                }
-                $hs += $startDT->floatDiffInHours($endDT);
+                $hs += $heure->nombre;
             }
             $gain_hs = (double) number_format(($salaire_base / 26 / 8) * $hs, 2, '.', '');
             $salaire_base = (double) number_format($salaire_base + $gain_hs, 2, '.', '');

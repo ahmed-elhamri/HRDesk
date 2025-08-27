@@ -118,7 +118,6 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
             'user' => $user,
             'permissions' => $user->permissions,
-            'employe' => $user->employe,
         ]);
     }
 
@@ -135,7 +134,6 @@ class AuthController extends Controller
         return response()->json([
             'user' => $user,
             'permissions' => $user->permissions,
-            'employe' => $user->employe,
         ]);
     }
 }

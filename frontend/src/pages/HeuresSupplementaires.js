@@ -25,6 +25,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import DashboardNavbar from "../examples/Navbars/DashboardNavbar";
 import DashboardLayout from "../examples/LayoutContainers/DashboardLayout";
+import { setAuthToken } from "./http";
 
 export default function HeuresSupplementaires() {
   const [items, setItems] = useState([]);
@@ -34,8 +35,8 @@ export default function HeuresSupplementaires() {
     employe_id: "",
     date: "",
     jour: "",
-    heure_debut: "",
-    heure_fin: "",
+    periode: "",
+    nombre: "",
   });
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(false);
@@ -53,8 +54,9 @@ export default function HeuresSupplementaires() {
   const { permissions } = useAuth();
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("token") || null);
+  }, []);
 
   const baseUrl = "http://localhost:8000/api/heures-supplementaires";
   const employesUrl = "http://localhost:8000/api/employes";
@@ -85,8 +87,8 @@ export default function HeuresSupplementaires() {
       employe_id: "",
       date: "",
       jour: "",
-      heure_debut: "",
-      heure_fin: "",
+      periode: "",
+      nombre: "",
     });
     setErrors({});
     setOpen(false);
@@ -103,8 +105,8 @@ export default function HeuresSupplementaires() {
         employe_id: form.employe_id,
         date: form.date,
         jour: form.jour,
-        heure_debut: form.heure_debut,
-        heure_fin: form.heure_fin,
+        periode: form.periode,
+        nombre: form.nombre,
       };
 
       if (form.id) {
@@ -136,8 +138,8 @@ export default function HeuresSupplementaires() {
       employe_id: row.employe_id ?? "",
       date: row.date ?? "",
       jour: row.jour ?? "",
-      heure_debut: row.heure_debut ?? "",
-      heure_fin: row.heure_fin ?? "",
+      periode: row.periode ?? "",
+      nombre: row.nombre ?? "",
     });
     setOpen(true);
   };
@@ -185,8 +187,8 @@ export default function HeuresSupplementaires() {
     },
     { Header: "Date", accessor: "date" },
     { Header: "Jour", accessor: "jour" },
-    { Header: "Heure début", accessor: "heure_debut" },
-    { Header: "Heure fin", accessor: "heure_fin" },
+    { Header: "Période", accessor: "periode" },
+    { Header: "Nombre", accessor: "nombre" },
     {
       Header: "Actions",
       accessor: "actions",
@@ -384,24 +386,35 @@ export default function HeuresSupplementaires() {
                   </TextField>
                 </Grid>
 
-                {[
-                  { name: "heure_debut", label: "Heure début" },
-                  { name: "heure_fin", label: "Heure fin" },
-                ].map((f) => (
-                  <Grid item xs={12} key={f.name} sx={{ mb: 2 }}>
-                    <TextField
-                      fullWidth
-                      type="time"
-                      name={f.name}
-                      label={f.label}
-                      value={form[f.name]}
-                      onChange={handleChange}
-                      error={Boolean(errors[f.name])}
-                      helperText={errors[f.name]?.[0] || ""}
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                ))}
+                <Grid item xs={12} sx={{ mb: 2 }}>
+                  <TextField
+                    select
+                    fullWidth
+                    name="periode"
+                    label="Période"
+                    value={form.periode}
+                    onChange={handleChange}
+                    error={Boolean(errors.periode)}
+                    helperText={errors.periode?.[0] || ""}
+                    sx={{ ".MuiInputBase-root": { height: "45px" } }}
+                  >
+                    <MenuItem value="JOUR">JOUR</MenuItem>
+                    <MenuItem value="NUIT">NUIT</MenuItem>
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    name="nombre"
+                    label="Nombre"
+                    value={form.nombre}
+                    onChange={handleChange}
+                    error={Boolean(errors.nombre)}
+                    helperText={errors.nombre?.[0] || ""}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Grid>
               </Grid>
             </DialogContent>
             <DialogActions>

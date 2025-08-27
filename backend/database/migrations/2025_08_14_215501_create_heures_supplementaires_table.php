@@ -16,8 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('employe_id');
             $table->date('date');
             $table->enum('jour', ['OUVRABLE', 'FERIES']);
-            $table->time('heure_debut');                     // Exemple : 06:00
-            $table->time('heure_fin');
+            $table->enum('periode', ['JOUR', 'NUIT']);
+            $table->double('nombre');                     // Exemple : 06:00
             $table->timestamps();
 
             $table->foreign('employe_id')->references('id')->on('employes')->onDelete('cascade');

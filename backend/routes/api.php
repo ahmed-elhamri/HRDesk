@@ -18,7 +18,7 @@ use \App\Http\Controllers\API\PaiementController;
 
 //Route::middleware('api')->group(function () {
 //});
-//Route::apiResource('admins', AdminController::class);
+Route::apiResource('admins', \App\Http\Controllers\API\AdminController::class);
 Route::get('merge-employes', [\App\Http\Controllers\API\MergeEmployesController::class, 'run']);
 Route::apiResource('permissions', PermissionController::class);
 Route::apiResource('departements', DepartementController::class);
@@ -33,6 +33,7 @@ Route::get('/fonctions/reference/{reference}', [FonctionController::class, 'getB
 Route::apiResource('employes', EmployeController::class);
 Route::get('/employes/matricule/{matricule}', [EmployeController::class, 'getByMatricule']);
 Route::post('/import-employes', [EmployeController::class, 'import']);
+Route::post('/jours-trav/{id}', [EmployeController::class, 'joursTrav']);
 
 Route::get('/contrats', [ContratController::class, 'show']);
 Route::post('/contrats', [ContratController::class, 'store']);

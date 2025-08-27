@@ -30,6 +30,7 @@ import { useAuth } from "./context/AuthContext";
 import Parametres from "./pages/parametre/Parametres";
 import Date from "./pages/Date";
 import GlobalScheduler from "./GlobalScheduler";
+import UserPermissions from "./pages/UserPermissions";
 export default function App() {
   const routes = useRoutes();
   const [controller, dispatch] = useMaterialUIController();
@@ -140,6 +141,7 @@ export default function App() {
       <Routes>
         {token ? (
           <>
+            <Route path="/admins/:id" element={<UserPermissions />} />
             {password_changed === "1" ? (
               <>
                 {getRoutes(routes)}

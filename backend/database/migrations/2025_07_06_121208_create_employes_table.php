@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('employes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('fonction_id');
             $table->string('matricule');
             $table->enum('civilite', ['M', 'MME', 'MLLE'])->default('M');
@@ -36,9 +35,9 @@ return new class extends Migration
             $table->date('date_entree');
             $table->integer('taux_anciennete')->default(0);
             $table->date('periode');
+            $table->integer('jours_travailles')->default(26);
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('fonction_id')->references('id')->on('fonctions')->onDelete('cascade');
         });
 

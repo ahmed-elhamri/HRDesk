@@ -13,6 +13,7 @@ import Absences from "./pages/Absences";
 import HeuresSupplementaires from "./pages/HeuresSupplementaires";
 import BulletinSalaire from "./pages/BulletinSalaire";
 import Primes from "./pages/Primes";
+import Admins from "./pages/Admins";
 
 export function useRoutes() {
   const { permissions } = useAuth();
@@ -57,7 +58,7 @@ export function useRoutes() {
       newRoutes.unshift({
         type: "collapse",
         name: "Heures supplémentaires",
-        key: "heure_supplementaire",
+        key: "heure-supplementaire",
         icon: <Icon fontSize="small">more_time</Icon>,
         route: "/heure-supplementaire",
         component: <HeuresSupplementaires />,
@@ -114,6 +115,14 @@ export function useRoutes() {
       });
     }
     if (role === "SUPERVISOR") {
+      newRoutes.unshift({
+        type: "collapse",
+        name: "Admins",
+        key: "admins",
+        icon: <Icon fontSize="small">supervisor_account</Icon>,
+        route: "/admins",
+        component: <Admins />,
+      });
       newRoutes.unshift({
         type: "collapse",
         name: "Tableau de bord",

@@ -12,10 +12,10 @@ class HeureSupplementaire extends Model
 
     protected $fillable = [
         'employe_id',
-        'jour',          // OUVRABLE | FERIES
-        'heure_debut',   // HH:MM
-        'heure_fin',     // HH:MM
         'date',
+        'jour',          // OUVRABLE | FERIES
+        'perdiode',   // HH:MM
+        'nombre',     // HH:MM
     ];
 
     public function employe()

@@ -44,7 +44,7 @@ class AbsenceController extends Controller implements HasMiddleware
      */
     public function show(string $id)
     {
-        $absence = Absence::with('employe')->findOrFail($id);
+        $absence = Absence::with('employe')->where('employe_id', $id)->get();
         return response()->json($absence);
     }
 

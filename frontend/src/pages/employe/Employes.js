@@ -164,20 +164,6 @@ export default function Employes() {
     setDeleteId(null);
   };
 
-  const handleResetPassword = async (id) => {
-    try {
-      await axios.put(`http://localhost:8000/api/reset-password/${id}`);
-      setSnackbarMessage("Mot de passe réinitialisé avec succès !");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (err) {
-      setSnackbarMessage("Erreur lors de la réinitialisation du mot de passe.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-      console.error("Erreur de réinitialisation:", err);
-    }
-  };
-
   const columns = [
     { Header: "Matricule", accessor: "matricule" },
     {
@@ -204,29 +190,6 @@ export default function Employes() {
       accessor: "actions",
       Cell: ({ row }) => (
         <>
-          {permissions.find((p) => p.entity === "employe")?.can_update === 1 && (
-            <Tooltip
-              title="Réinitialiser le mot de passe"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: "rgba(123, 128, 154, 0.8)",
-                    color: "#fff",
-                    fontSize: "0.8rem",
-                  },
-                },
-              }}
-            >
-              <Button
-                onClick={() => handleResetPassword(row.original.user_id)}
-                variant="text"
-                size="large"
-                color="info"
-              >
-                <Icon>lock_reset</Icon>
-              </Button>
-            </Tooltip>
-          )}
           {permissions.find((p) => p.entity === "employe")?.can_delete === 1 && (
             <Tooltip
               title="supprimer"

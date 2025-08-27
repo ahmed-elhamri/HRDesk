@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import DashboardNavbar from "../examples/Navbars/DashboardNavbar";
 import DashboardLayout from "../examples/LayoutContainers/DashboardLayout";
+import { setAuthToken } from "./http";
 
 export default function Absences() {
   const [items, setItems] = useState([]);
@@ -49,8 +50,9 @@ export default function Absences() {
   const { permissions } = useAuth();
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("token") || null);
+  }, []);
 
   const baseUrl = "http://localhost:8000/api/absences";
   const employesUrl = "http://localhost:8000/api/employes";

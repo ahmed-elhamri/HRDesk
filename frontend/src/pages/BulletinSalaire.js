@@ -29,7 +29,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useAuth } from "../context/AuthContext";
-import EmployePrimes from "./EmployePrimes";
+import Rubriques from "./Rubriques";
 import { setAuthToken } from "./http";
 export default function BulletinSalaire() {
   const [mois, setMois] = useState(() => {
@@ -329,6 +329,29 @@ export default function BulletinSalaire() {
                             <Grid item xs={12} md={3}>
                               <strong>Fonction:</strong> {employeInfo?.fonction?.designation || "-"}
                             </Grid>
+                            {/*<Grid item xs={12} md={2}>*/}
+                            {/*  <Tooltip*/}
+                            {/*    title="détails"*/}
+                            {/*    componentsProps={{*/}
+                            {/*      tooltip: {*/}
+                            {/*        sx: {*/}
+                            {/*          backgroundColor: "rgba(123, 128, 154, 0.8)",*/}
+                            {/*          color: "#fff",*/}
+                            {/*          fontSize: "0.8rem",*/}
+                            {/*        },*/}
+                            {/*      },*/}
+                            {/*    }}*/}
+                            {/*  >*/}
+                            {/*    <Button*/}
+                            {/*      onClick={() => navigate(`/employes/${employeInfo?.matricule}`)}*/}
+                            {/*      variant="text"*/}
+                            {/*      color="secondary"*/}
+                            {/*      size="large"*/}
+                            {/*    >*/}
+                            {/*      <Icon>info</Icon>*/}
+                            {/*    </Button>*/}
+                            {/*  </Tooltip>*/}
+                            {/*</Grid>*/}
                           </Grid>
                         </AccordionDetails>
                       </Accordion>
@@ -342,17 +365,17 @@ export default function BulletinSalaire() {
                         id="panel1a-header"
                       >
                         <MDTypography variant="subtitle1" fontWeight="bold">
-                          Primes
+                          Rubriques
                         </MDTypography>
                       </AccordionSummary>
                       <AccordionDetails>
-                        <EmployePrimes key={`${key || "none"}`} employe_id={key} mois={mois} />
+                        <Rubriques key={`${key || "none"}`} employe_id={key} />
                       </AccordionDetails>
                     </Accordion>
                   </Card>
 
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={7}>
+                    <Grid item xs={12} md={8}>
                       <Card style={{ marginBottom: 16 }}>
                         <Accordion sx={{ boxShadow: "none" }} defaultExpanded>
                           <AccordionSummary
@@ -378,7 +401,7 @@ export default function BulletinSalaire() {
                         </Accordion>
                       </Card>
                     </Grid>
-                    <Grid item xs={12} md={5}>
+                    <Grid item xs={12} md={4}>
                       <Card style={{ marginBottom: 16 }}>
                         <Accordion sx={{ boxShadow: "none" }} defaultExpanded>
                           <AccordionSummary

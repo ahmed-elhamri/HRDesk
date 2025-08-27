@@ -17,13 +17,12 @@ use Illuminate\Support\Facades\Log;
 class MergeEmployesController extends Controller
 {
     public function run(){
-        $users = User::where('periode', now()->format('Y-m').'-01')->get();
-        foreach ($users as $user) {
-            $newUser = $user->replicate();
+        $employes = Employe::where('periode', now()->format('Y-m').'-01')->get();
+        foreach ($employes as $employe) {
+            $newUser = $employe->replicate();
             $newUser->periode = now()->format('Y-m').'-01';
             $newUser->save();
 
-            $employe = $user->employe;
             $newEmploye = $employe->replicate();
             $newEmploye->periode = now()->format('Y-m').'-01';
             $newEmploye->save();

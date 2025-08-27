@@ -34,11 +34,11 @@ class HeureSupplementaireController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
         $data = $request->validate([
-            'employe_id'  => ['required', 'exists:employes,id'],
-            'date'       =>  ['required', 'date'],
-            'jour'        => ['required', Rule::in(['OUVRABLE','FERIES'])],
-            'heure_debut' => ['required', 'date_format:H:i'],
-            'heure_fin'   => ['required', 'date_format:H:i'],
+            'employe_id' => ['required', 'exists:employes,id'],
+            'date' => ['required', 'date'],
+            'jour' => ['required', Rule::in(['OUVRABLE','FERIES'])],
+            'periode' => ['required', Rule::in(['JOUR','NUIT'])],
+            'nombre' => ['required', 'numeric'],
         ]);
 
         $row = HeureSupplementaire::create($data);
@@ -50,7 +50,7 @@ class HeureSupplementaireController extends Controller implements HasMiddleware
      */
     public function show(string $id)
     {
-        $heureSupplementaire = HeureSupplementaire::with('employe')->findOrFail($id);
+        $heureSupplementaire = HeureSupplementaire::with('employe')->where('employe_id', $id)->get();
         return response()->json($heureSupplementaire);
     }
 
@@ -63,8 +63,8 @@ class HeureSupplementaireController extends Controller implements HasMiddleware
             'employe_id'  => ['sometimes', 'exists:employes,id'],
             'date'       => ['sometimes', 'date'],
             'jour'        => ['sometimes', Rule::in(['OUVRABLE','FERIES'])],
-            'heure_debut' => ['sometimes', 'date_format:H:i'],
-            'heure_fin'   => ['sometimes', 'date_format:H:i'],
+            'periode' => ['sometimes', Rule::in(['JOUR','NUIT'])],
+            'nombre'   => ['sometimes', 'numeric'],
         ]);
         $heureSupplementaire = HeureSupplementaire::findOrFail($id);
 

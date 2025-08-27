@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('password');
             $table->boolean("password_changed")->default(false);
-            $table->enum('role', ['SUPERVISOR', 'EMPLOYE']);
+            $table->enum('role', ['SUPERVISOR', 'ADMIN']);
             $table->date('periode');
             $table->timestamps();
         });

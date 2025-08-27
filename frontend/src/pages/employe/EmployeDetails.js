@@ -61,7 +61,6 @@ export default function EmployeDetails() {
   const [caisseSociale, setCaisseSociale] = useState(null);
   const [paiement, setPaiement] = useState(null);
   const [documents, setDocuments] = useState({});
-  const [permissions, setPermissions] = useState({});
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [fonctions, setFonctions] = useState([]);
@@ -76,13 +75,11 @@ export default function EmployeDetails() {
   const [editOpenCaisse, setEditOpenCaisse] = useState(false);
   const [editOpenPaiement, setEditOpenPaiement] = useState(false);
   const [editOpenDocument, setEditOpenDocument] = useState(false);
-  const [editOpenPermission, setEditOpenPermission] = useState(false);
   const [editFormPersonnal, setEditFormPersonnal] = useState({});
   const [editFormContrat, setEditFormContrat] = useState({});
   const [editFormCaisse, setEditFormCaisse] = useState({});
   const [editFormPaiement, setEditFormPaiement] = useState({});
   const [editFormDocument, setEditFormDocument] = useState({});
-  const [editFormPermission, setEditFormPermission] = useState({});
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
 
@@ -192,50 +189,6 @@ export default function EmployeDetails() {
     }
   };
 
-  const fetchPermissions = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE}/permissions`, {
-        params: { employe_id: personal?.id },
-      });
-      setPermissions(res.data || {});
-    } catch (err) {
-      console.error("Error fetching Permissions", err);
-      setSnackbarMessage("Erreur lors du chargement des permissions.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPermission = async (entity) => {
-    try {
-      await axios
-        .get(`${API_BASE}/permissions/${personal?.id}`, {
-          params: { entity: entity },
-        })
-        .then((res) => {
-          setEditFormPermission({
-            entity: entity,
-            can_create: res.data[0].can_create,
-            can_read: res.data[0].can_read,
-            can_update: res.data[0].can_update,
-            can_delete: res.data[0].can_delete,
-          });
-          setEditOpenPermission(true);
-        });
-    } catch (err) {
-      console.error("Error fetching documents", err);
-      setSnackbarMessage("Erreur lors du chargement des documents.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load initial data for personal on mount
   useEffect(() => {
     fetchPersonal();
     fetchFonctions();
@@ -256,9 +209,6 @@ export default function EmployeDetails() {
         break;
       case "documents":
         if (Object.keys(documents).length === 0) fetchDocuments();
-        break;
-      case "permissions":
-        if (Object.keys(permissions).length === 0) fetchPermissions();
         break;
       default:
         break;
@@ -322,13 +272,6 @@ export default function EmployeDetails() {
     const { name, files } = e.target;
     setEditFormDocument((prev) => ({ ...prev, [name]: files.length > 0 ? files[0] : null }));
   };
-  const handlePermissionsChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEditFormPermission((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
   // Save update handler (generic)
   const handleSave = async () => {
     try {
@@ -360,12 +303,6 @@ export default function EmployeDetails() {
         payload.employe_id = personal.id;
         await axios.put(url, payload);
         setEditOpenPaiement(false);
-      } else if (activeTab === "permissions") {
-        url = `${API_BASE}/permissions/${personal.id}`;
-        let payload = { ...editFormPermission };
-        // console.log(payload);
-        await axios.put(url, payload);
-        setEditOpenPermission(false);
       } else {
         url = `${API_BASE}/documents/${personal.id}`;
         let payload = { ...editFormDocument };
@@ -397,9 +334,6 @@ export default function EmployeDetails() {
           break;
         case "documents":
           fetchDocuments();
-          break;
-        case "permissions":
-          fetchPermissions();
           break;
       }
     } catch (err) {
@@ -443,21 +377,6 @@ export default function EmployeDetails() {
     setConfirmDeleteOpen(false);
     setDeleteId(null);
   };
-
-  // Reset password handler (personal tab)
-  const handleResetPassword = async () => {
-    try {
-      await axios.put(`${API_BASE}/reset-password/${personal.id}`);
-      setSnackbarMessage("Mot de passe réinitialisé avec succès !");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (err) {
-      setSnackbarMessage("Erreur lors de la réinitialisation du mot de passe.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    }
-  };
-
   // Document file preview handlers
   const handlePreviewOpen = (name, file) => {
     setPreviewFile({ name: name, file: `http://localhost:8000/storage/documents/${file}` });
@@ -499,22 +418,6 @@ export default function EmployeDetails() {
                 >
                   <IconButton color="info" onClick={openEditDialog}>
                     <Icon>edit</Icon>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip
-                  title="Réinitialiser mot de passe"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: "rgba(123, 128, 154, 0.8)",
-                        color: "#fff",
-                        fontSize: "0.8rem",
-                      },
-                    },
-                  }}
-                >
-                  <IconButton color="secondary" onClick={handleResetPassword}>
-                    <Icon>lock_reset</Icon>
                   </IconButton>
                 </Tooltip>
               </>
@@ -794,75 +697,6 @@ export default function EmployeDetails() {
     </Grid>
   );
 
-  // Contrat tab UI
-  const renderPermissions = () => {
-    const columns = [
-      { Header: "Entité", accessor: "entity" },
-      {
-        Header: "Peut créer",
-        accessor: "can_create",
-        Cell: ({ value }) => (value ? "Oui" : "Non"),
-      },
-      {
-        Header: "Peut lire",
-        accessor: "can_read",
-        Cell: ({ value }) => (value ? "Oui" : "Non"),
-      },
-      {
-        Header: "Peut modifier",
-        accessor: "can_update",
-        Cell: ({ value }) => (value ? "Oui" : "Non"),
-      },
-      {
-        Header: "Peut supprimer",
-        accessor: "can_delete",
-        Cell: ({ value }) => (value ? "Oui" : "Non"),
-      },
-      {
-        Header: "Actions",
-        accessor: "actions",
-        Cell: ({ row }) => (
-          <Tooltip
-            title="modifier"
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: "rgba(26, 115, 232, 0.8)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
-                },
-              },
-            }}
-          >
-            <Button
-              onClick={() => fetchPermission(row.original.entity)}
-              variant="text"
-              color="primary"
-              size="large"
-            >
-              <Icon>edit</Icon>
-            </Button>
-          </Tooltip>
-        ),
-      },
-    ];
-    if (Object.keys(permissions).length === 0)
-      return <Typography>Aucun permissions trouvé.</Typography>;
-    return (
-      <>
-        <Card sx={{ p: 3 }}>
-          <DataTable
-            table={{ columns, rows: permissions }}
-            isSorted={false}
-            entriesPerPage={false}
-            showTotalEntries={false}
-            noEndBorder
-          />
-        </Card>
-      </>
-    );
-  };
-
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -896,7 +730,6 @@ export default function EmployeDetails() {
           <Tab label="Caisse Sociale" value="caisseSociale" />
           <Tab label="Paiement" value="paiement" />
           <Tab label="Documents" value="documents" />
-          {auth.role === "SUPERVISOR" && <Tab label="Permissions" value="permissions" />}
         </Tabs>
         <Box sx={{ mt: 3 }}>
           {activeTab === "personal" && renderPersonal()}
@@ -904,7 +737,6 @@ export default function EmployeDetails() {
           {activeTab === "caisseSociale" && renderCaisse()}
           {activeTab === "paiement" && renderPaiement()}
           {activeTab === "documents" && renderDocuments()}
-          {activeTab === "permissions" && renderPermissions()}
         </Box>
 
         {/* Edit Personnal Dialog */}
@@ -1423,43 +1255,6 @@ export default function EmployeDetails() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setEditOpenDocument(false)}>Annuler</Button>
-            <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
-              Enregistrer
-            </Button>
-          </DialogActions>
-        </Dialog>
-        {/* Edit Permission Dialog */}
-        <Dialog
-          open={editOpenPermission}
-          onClose={() => setEditOpenPermission(false)}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Modifier</DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              {[
-                { name: "can_create", label: "Peut créee" },
-                { name: "can_read", label: "Peut lire" },
-                { name: "can_update", label: "Peut modifier" },
-                { name: "can_delete", label: "Peut supprimer" },
-              ].map((field) => (
-                <Grid item xs={12} md={6} key={field.name}>
-                  <label>
-                    <input
-                      name={field.name}
-                      checked={editFormPermission[field.name]}
-                      onChange={handlePermissionsChange}
-                      type="checkbox"
-                    />{" "}
-                    {field.label}
-                  </label>
-                </Grid>
-              ))}
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEditOpenPermission(false)}>Annuler</Button>
             <Button onClick={handleSave} variant="contained" sx={{ color: "#fff" }}>
               Enregistrer
             </Button>

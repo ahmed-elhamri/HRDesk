@@ -25,6 +25,7 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { setAuthToken } from "../http";
 
 export default function Fonctions() {
   const { permissions } = useAuth();
@@ -46,8 +47,9 @@ export default function Fonctions() {
   const [selectedIdToDelete, setSelectedIdToDelete] = useState(null);
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  useEffect(() => {
+    setAuthToken(localStorage.getItem("token") || null);
+  }, []);
 
   const fetchFonctions = async () => {
     setLoading(true);

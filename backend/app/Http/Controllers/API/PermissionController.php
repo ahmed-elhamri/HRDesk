@@ -22,8 +22,7 @@ class PermissionController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        $employe = Employe::where('id', $request->employe_id)->firstOrFail();
-        $permissions = Permission::where('user_id', $employe->user->id)->get();
+        $permissions = Permission::where('user_id', $request->id)->get();
         return response()->json($permissions);
     }
 
@@ -38,10 +37,9 @@ class PermissionController extends Controller implements HasMiddleware
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, $permission)
+    public function show(Request $request, $id)
     {
-        $employe = Employe::where('id', $permission)->firstOrFail();
-        $permission = Permission::where('user_id', $employe->user->id)->where('entity', $request->entity)->get();
+        $permission = Permission::where('user_id', $id)->where('entity', $request->entity)->get();
         return response()->json($permission);
     }
 

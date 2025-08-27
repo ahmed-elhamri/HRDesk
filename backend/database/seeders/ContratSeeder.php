@@ -14,8 +14,23 @@ class ContratSeeder extends Seeder
      */
     public function run(): void
     {
+        Contrat::create([
+            'employe_id' => 1,
+            'type_contrat' => 'CDI',
+            'type_remuneration' => 'MENSUEL',
+            'statut' => 'PERMANENT',
+            'salaire_base' => 4288.26,
+            'taux_horaire' => 7.33,
+            'classification' => 'NR',
+            'est_avocat' => 0,
+            'est_domestique' => 0,
+            'est_saisonnier' => 0,
+            'nb_jours_saisonnier' => 0,
+            'nouveau_declarant' => 0,
+        ]);
+
         $employeIds = Employe::pluck('id')->shuffle();
-        for($i = 1; $i <= count($employeIds); $i++) {
+        for($i = 2; $i <= count($employeIds); $i++) {
             Contrat::create([
                 'employe_id' => $i,
                 'type_contrat' => fake()->randomElement(['CDI', 'CDD']),

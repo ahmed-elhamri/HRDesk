@@ -337,7 +337,7 @@ class BulletinDePaieController extends Controller
         $bulletin[] = [
             "libele" => "Salaire de base",
             "base" => $salaire_base,
-            "taux" => 26,
+            "taux" => $employe->jours_travailles,
             "gain" => $salaire_base,
             "retenue" => 0.00,
         ];

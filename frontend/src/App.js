@@ -29,7 +29,6 @@ import AddEmploye from "./pages/employe/AddEmploye";
 import { useAuth } from "./context/AuthContext";
 import Parametres from "./pages/parametre/Parametres";
 import Date from "./pages/Date";
-import GlobalScheduler from "./GlobalScheduler";
 import UserPermissions from "./pages/UserPermissions";
 export default function App() {
   const routes = useRoutes();
@@ -52,10 +51,6 @@ export default function App() {
 
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { pathname } = useLocation();
-
-  // useEffect(() => {
-  //   document.body.style.zoom = "90%"; // or "1.2"
-  // }, []);
 
   // Open sidenav when mouse enter on mini sidenav
   const handleOnMouseEnter = () => {
@@ -137,7 +132,6 @@ export default function App() {
         </>
       )}
       {/*{layout === "vr" && <Configurator />}*/}
-      <GlobalScheduler />
       <Routes>
         {token ? (
           <>

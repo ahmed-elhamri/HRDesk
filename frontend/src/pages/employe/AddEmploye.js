@@ -53,6 +53,7 @@ export default function AddEmploye() {
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
+  const periode = localStorage.getItem("periode");
 
   // States for data
   const [fonctions, setFonctions] = useState([]);
@@ -104,6 +105,7 @@ export default function AddEmploye() {
     date_embauche: "",
     date_entree: "",
     taux_anciennete: "",
+    periode: periode + "-01",
   });
 
   // 2. Contrat

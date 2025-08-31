@@ -33,7 +33,7 @@ class EmployeFactory extends Factory
             'situation_familiale' => fake()->randomElement(['MARIE', 'CELIBATAIRE']),
             'date_embauche' => fake()->date(),
             'date_entree' => fake()->date(),
-            'periode' => now()->format('Y-m').'-01',
+            'periode' => '2025-01-01',
             'jours_travailles' => 26
         ];
     }

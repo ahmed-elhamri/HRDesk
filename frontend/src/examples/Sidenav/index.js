@@ -22,6 +22,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
+  const periode = localStorage.getItem("periode");
 
   let textColor = "white";
 
@@ -30,7 +31,17 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   } else if (whiteSidenav && darkMode) {
     textColor = "inherit";
   }
-
+  const getFrenchMonthName = (m) => {
+    if (m) {
+      const date = new Date(`${m}-01T00:00:00`); // pad a day
+      return new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" }).format(date);
+    } else {
+      const date = new Date();
+      console.log(date); // pad a day
+      return new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" }).format(date);
+    }
+    // "août"
+  };
   const closeSidenav = () => setMiniSidenav(dispatch, true);
 
   useEffect(() => {
@@ -116,39 +127,71 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
       variant="permanent"
       ownerState={{ transparentSidenav, whiteSidenav, miniSidenav, darkMode }}
     >
-      <MDBox pt={3} pb={1} px={4} textAlign="center">
-        <MDBox
-          display={{ xs: "block", xl: "none" }}
-          position="absolute"
-          top={0}
-          right={0}
-          p={1.625}
-          onClick={closeSidenav}
-          sx={{ cursor: "pointer" }}
-        >
-          <MDTypography variant="h6" color="secondary">
-            <Icon sx={{ fontWeight: "bold" }}>close</Icon>
-          </MDTypography>
-        </MDBox>
-        <MDBox component={NavLink} to="/" display="flex" alignItems="center">
-          {brand && <MDBox component="img" src={brand} alt="Brand" width="1.5rem" />}
+      {/* Make the whole drawer a column */}
+      <MDBox display="flex" flexDirection="column" height="100%">
+        {/* Top brand/header */}
+        <MDBox pt={3} pb={1} px={4} textAlign="center">
           <MDBox
-            width={!brandName && "100%"}
-            sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
+            display={{ xs: "block", xl: "none" }}
+            position="absolute"
+            top={0}
+            right={0}
+            p={1.625}
+            onClick={closeSidenav}
+            sx={{ cursor: "pointer" }}
           >
-            <MDTypography component="h6" variant="button" fontWeight="medium" color={textColor}>
-              {brandName}
+            <MDTypography variant="h6" color="secondary">
+              <Icon sx={{ fontWeight: "bold" }}>close</Icon>
             </MDTypography>
           </MDBox>
+
+          <MDBox component={NavLink} to="/" display="flex" alignItems="center">
+            {brand && <MDBox component="img" src={brand} alt="Brand" width="1.5rem" />}
+            <MDBox
+              width={!brandName && "100%"}
+              sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
+            >
+              <MDTypography component="h6" variant="button" fontWeight="medium" color={textColor}>
+                {brandName}
+              </MDTypography>
+            </MDBox>
+          </MDBox>
+        </MDBox>
+
+        <Divider
+          light={
+            (!darkMode && !whiteSidenav && !transparentSidenav) ||
+            (darkMode && !transparentSidenav && whiteSidenav)
+          }
+        />
+
+        {/* Middle: routes; flexes to fill */}
+        <MDBox flex={1} overflow="auto">
+          <List>{renderRoutes}</List>
+        </MDBox>
+
+        {/* Bottom: your word/footer */}
+        <MDBox
+          px={3}
+          py={1}
+          textAlign="center"
+          sx={(theme) => ({
+            borderTop:
+              (!darkMode && !whiteSidenav && !transparentSidenav) ||
+              (darkMode && !transparentSidenav && whiteSidenav)
+                ? `1px solid ${theme.palette.grey[800]}`
+                : `1px solid ${theme.palette.grey[300]}`,
+          })}
+        >
+          <MDTypography
+            variant="caption"
+            color={textColor}
+            sx={{ opacity: miniSidenav ? 0 : 0.85, transition: "opacity 200ms" }}
+          >
+            Période : {getFrenchMonthName(periode)}
+          </MDTypography>
         </MDBox>
       </MDBox>
-      <Divider
-        light={
-          (!darkMode && !whiteSidenav && !transparentSidenav) ||
-          (darkMode && !transparentSidenav && whiteSidenav)
-        }
-      />
-      <List>{renderRoutes}</List>
     </SidenavRoot>
   );
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
@@ -46,7 +47,43 @@ class AdminController extends Controller
             'email' => $request->email,
             'password' => Hash::make('123456'),
             'password_changed' => false,
-            'role' => 'ADMIN'
+            'role' => 'ADMIN',
+            'periode' => now()->format('Y-m').'-01',
+        ]);
+
+        Permission::insert([
+            [
+                'user_id' => $user->id,
+                'entity' => 'departement',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'service',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'fonction',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'employe',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'absence',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'heure_supplementaire',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'prime',
+            ],
+            [
+                'user_id' => $user->id,
+                'entity' => 'bulltein',
+            ],
         ]);
         return response()->json($user, 201);
     }
@@ -74,6 +111,13 @@ class AdminController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+        $permissions = Permission::where('user_id', $user->id)->get();
+        if($permissions->isNotEmpty()){
+            foreach($permissions as $permission){
+                $permission->delete();
+            }
+        }
+        
         $user->delete();
         return response()->json(['message' => 'Admin deleted successfully']);
     }

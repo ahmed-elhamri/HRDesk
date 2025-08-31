@@ -22,7 +22,7 @@ class EmployeController extends Controller implements HasMiddleware
             'auth:sanctum',
         ];
     }
-    public function index()
+    public function index(Request $request)
     {
         return response()->json(
             Employe::select('id', 'fonction_id', 'matricule', 'nom', 'prenom')
@@ -31,7 +31,7 @@ class EmployeController extends Controller implements HasMiddleware
                 'fonction.service:id,departement_id,designation',
                 'fonction.service.departement:id,designation'
                 ])
-            ->where('periode', now()->format('Y-m').'-01')
+            ->where('periode', $request->periode.'-01')
             ->get());
     }
 
@@ -68,7 +68,7 @@ class EmployeController extends Controller implements HasMiddleware
             ], 422);
         }
         $employeData = $request->all();
-        $employeData['periode'] = now()->format('Y-m').'-01';
+//        $employeData['periode'] = now()->format('Y-m').'-01';
         $employe = Employe::create($employeData);
 
         return response()->json($employe, 201);
@@ -145,6 +145,7 @@ class EmployeController extends Controller implements HasMiddleware
     {
         $validator = Validator::make($request->all(), [
             'file' => 'required|mimes:xlsx,csv',
+            'periode' => 'required',
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -153,7 +154,8 @@ class EmployeController extends Controller implements HasMiddleware
             ], 422);
         }
 
-        Excel::import(new EmployesImport, $request->file('file'));
+
+        Excel::import(new EmployesImport(periode: $request->periode.'-01'), $request->file('file'));
         return response()->json(['message' => 'Employees imported successfully.']);
     }
 

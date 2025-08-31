@@ -50,6 +50,7 @@ export default function HeuresSupplementaires() {
 
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
+  const periode = localStorage.getItem("periode");
 
   const { permissions } = useAuth();
   const navigate = useNavigate();
@@ -65,7 +66,10 @@ export default function HeuresSupplementaires() {
     setLoading(true);
     setLoadError(false);
     try {
-      const [rowsRes, empsRes] = await Promise.all([axios.get(baseUrl), axios.get(employesUrl)]);
+      const [rowsRes, empsRes] = await Promise.all([
+        axios.get(baseUrl, { params: { periode } }),
+        axios.get(employesUrl, { params: { periode } }),
+      ]);
       setItems(rowsRes.data || []);
       setEmployes(empsRes.data || []);
     } catch (error) {

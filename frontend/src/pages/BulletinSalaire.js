@@ -32,9 +32,9 @@ import { useAuth } from "../context/AuthContext";
 import Rubriques from "./Rubriques";
 import { setAuthToken } from "./http";
 export default function BulletinSalaire() {
+  const periode = localStorage.getItem("periode");
   const [mois, setMois] = useState(() => {
-    const now = new Date();
-    return now.toISOString().slice(0, 7);
+    return periode;
   });
   const [employes, setEmployes] = useState([]);
   const [selectedEmploye, setSelectedEmploye] = useState(null);
@@ -70,7 +70,7 @@ export default function BulletinSalaire() {
       setLoading(true);
       setLoadError(false);
       try {
-        const res = await axios.get("http://localhost:8000/api/employes");
+        const res = await axios.get("http://localhost:8000/api/employes", { params: { periode } });
         setEmployes(res.data || []);
       } catch (e) {
         console.error(e);
@@ -369,7 +369,11 @@ export default function BulletinSalaire() {
                         </MDTypography>
                       </AccordionSummary>
                       <AccordionDetails>
-                        <Rubriques key={`${key || "none"}`} employe_id={key} />
+                        <Rubriques
+                          key={`${key || "none"}`}
+                          employe_id={selectedEmploye.id}
+                          mois={mois}
+                        />
                       </AccordionDetails>
                     </Accordion>
                   </Card>

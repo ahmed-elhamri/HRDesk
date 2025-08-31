@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\HeureSupplementaire;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Validation\Rule;
@@ -21,10 +22,13 @@ class HeureSupplementaireController extends Controller implements HasMiddleware
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        [$year, $month] = explode('-', $request->periode);
+        $start = Carbon::create((int)$year, (int)$month, 1)->startOfMonth()->toDateString(); // 2025-08-01
+        $end   = Carbon::create((int)$year, (int)$month, 1)->endOfMonth()->toDateString();   // 2025-08-31
         return response()->json(
-            HeureSupplementaire::with('employe')->orderByDesc('id')->get()
+            HeureSupplementaire::whereBetween('date', [$start, $end])->with('employe')->orderByDesc('id')->get()
         );
     }
 
@@ -48,9 +52,12 @@ class HeureSupplementaireController extends Controller implements HasMiddleware
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        $heureSupplementaire = HeureSupplementaire::with('employe')->where('employe_id', $id)->get();
+        [$year, $month] = explode('-', $request->mois);
+        $start = Carbon::create((int)$year, (int)$month, 1)->startOfMonth()->toDateString(); // 2025-08-01
+        $end   = Carbon::create((int)$year, (int)$month, 1)->endOfMonth()->toDateString();   // 2025-08-31
+        $heureSupplementaire = HeureSupplementaire::with('employe')->whereBetween('date', [$start, $end])->where('employe_id', $id)->get();
         return response()->json($heureSupplementaire);
     }
 

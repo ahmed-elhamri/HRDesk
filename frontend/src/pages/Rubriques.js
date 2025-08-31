@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import {
   Button,
@@ -26,13 +26,15 @@ import MDBox from "components/MDBox";
 import { useAuth } from "../context/AuthContext";
 import { setAuthToken } from "./http";
 
-// Combined component
-export default function Rubriques({ employe_id }) {
+// Axios helper (reuses same base and auth; optional but reduces overhead)
+const api = axios.create({ baseURL: "http://localhost:8000/api" });
+
+export default function Rubriques({ employe_id, mois }) {
   const { permissions } = useAuth();
-  console.log(employe_id);
+
   // Datasets
   const [employePrimes, setEmployePrimes] = useState([]);
-  const [employe, setEmploye] = useState([]);
+  const [employe, setEmploye] = useState(null);
   const [absences, setAbsences] = useState([]);
   const [heuresSupp, setHeuresSupp] = useState([]);
   const [primes, setPrimes] = useState([]);
@@ -52,10 +54,10 @@ export default function Rubriques({ employe_id }) {
   const openAddMenu = (e) => setAnchorEl(e.currentTarget);
   const closeAddMenu = () => setAnchorEl(null);
 
-  // Which dialog is open: "prime" | "absence" | "heure" | null
+  // Which dialog is open: "prime" | "absence" | "heure" | "jours" | null
   const [activeDialog, setActiveDialog] = useState(null);
 
-  // Form states
+  // Forms
   const [primeForm, setPrimeForm] = useState({
     id: null,
     employe_id: employe_id || "",
@@ -87,117 +89,178 @@ export default function Rubriques({ employe_id }) {
   });
   const [joursErrors, setJoursErrors] = useState({});
 
-  // Delete confirmation (generic)
+  // Delete confirmation
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState({ type: null, id: null }); // type: 'prime'|'absence'|'heure'
+  const [deleteTarget, setDeleteTarget] = useState({ type: null, id: null });
 
-  // Endpoints
-  const API = {
-    employePrimes: "http://localhost:8000/api/employe-primes",
-    primes: "http://localhost:8000/api/primes",
-    absences: `http://localhost:8000/api/absences`,
-    heuresSupp: `http://localhost:8000/api/heures-supplementaires`,
-    employe: `http://localhost:8000/api/employes/${employe_id}`,
-  };
+  // AbortController for in-flight requests (cancel stale)
+  const inflightRef = useRef(null);
 
+  // Auth token (once)
   useEffect(() => {
     setAuthToken(localStorage.getItem("token") || null);
   }, []);
 
-  const fetchAll = async () => {
+  // Static endpoints
+  const API = useMemo(
+    () => ({
+      employePrimes: "/employe-primes",
+      primes: "/primes",
+      absences: "/absences",
+      heuresSupp: "/heures-supplementaires",
+      employe: `/employes/${employe_id}`,
+      joursTrav: `/jours-trav/${employe_id}`,
+    }),
+    [employe_id]
+  );
+
+  // Fetch primes once (static list)
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await api.get(API.primes, { params: { _ts: 1 } }); // cache-bust if needed
+        if (mounted) setPrimes(res.data || []);
+      } catch {
+        /* ignore; non-critical */
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [API.primes]);
+
+  // Fetch employe once per employe_id (jours_travailles lives here)
+  useEffect(() => {
+    if (!employe_id) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await api.get(API.employe);
+        if (mounted) setEmploye(res.data || null);
+      } catch (e) {
+        if (mounted) setEmploye(null);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [API.employe, employe_id]);
+
+  // Fetch datasets that depend on (employe_id, mois)
+  const fetchMonthScoped = useCallback(async () => {
+    if (!employe_id || !mois) return;
     setLoading(true);
     setLoadError(false);
+
+    // cancel previous
+    if (inflightRef.current) inflightRef.current.abort();
+    inflightRef.current = new AbortController();
+
     try {
-      const epRes = await axios.get(API.employePrimes, { params: { employe_id } });
-      const primesRes = await axios.get(API.primes);
-      const absRes = await axios.get(`${API.absences}/${employe_id}`);
-      console.log(absRes.data);
-      const hsRes = await axios.get(`${API.heuresSupp}/${employe_id}`);
-      const empRes = await axios.get(API.employe);
+      const [epRes, absRes, hsRes] = await Promise.all([
+        api.get(API.employePrimes, { params: { employe_id }, signal: inflightRef.current.signal }),
+        api.get(`${API.absences}/${employe_id}`, {
+          params: { mois },
+          signal: inflightRef.current.signal,
+        }),
+        api.get(`${API.heuresSupp}/${employe_id}`, {
+          params: { mois },
+          signal: inflightRef.current.signal,
+        }),
+      ]);
+
+      // Batch updates to reduce re-renders
       setEmployePrimes(epRes.data || []);
-      setPrimes(primesRes.data || []);
       setAbsences(absRes.data || []);
       setHeuresSupp(hsRes.data || []);
-      setEmploye(empRes.data || []);
     } catch (error) {
-      console.error("Erreur lors du chargement :", error);
-      setLoadError(true);
+      if (!axios.isCancel(error)) {
+        console.error("Load error:", error);
+        setLoadError(true);
+      }
     } finally {
       setLoading(false);
+      inflightRef.current = null;
     }
-  };
+  }, [API.absences, API.employePrimes, API.heuresSupp, employe_id, mois]);
 
   useEffect(() => {
-    fetchAll();
-  }, [employe_id]);
+    fetchMonthScoped();
+    // cleanup cancels in-flight
+    return () => {
+      if (inflightRef.current) inflightRef.current.abort();
+    };
+  }, [fetchMonthScoped]);
 
   // Helpers
-  const can = (entity, action) =>
-    permissions.find((p) => p.entity === entity)?.[`can_${action}`] === 1;
+  const can = useCallback(
+    (entity, action) => permissions.find((p) => p.entity === entity)?.[`can_${action}`] === 1,
+    [permissions]
+  );
 
-  const resetForms = () => {
-    setPrimeForm({
-      id: null,
-      employe_id: employe_id,
-      prime_id: "",
-      montant: "",
-    });
+  const resetForms = useCallback(() => {
+    setPrimeForm({ id: null, employe_id: employe_id || "", prime_id: "", montant: "" });
     setPrimeErrors({});
-
-    setAbsenceForm({
-      id: null,
-      employe_id: employe_id,
-      date: "",
-    });
+    setAbsenceForm({ id: null, employe_id, date: "" });
     setAbsenceErrors({});
-
-    setHeureForm({
-      id: null,
-      employe_id: employe_id,
-      date: "",
-      jour: "",
-      periode: "",
-      nombre: "",
-    });
+    setHeureForm({ id: null, employe_id, date: "", jour: "", periode: "", nombre: "" });
     setHeureErrors({});
-
-    setJoursForm({
-      employe_id: employe_id,
-      jours_travailles: "",
-    });
+    setJoursForm({ employe_id, jours_travailles: "" });
     setJoursErrors({});
-  };
+  }, [employe_id]);
 
-  const handleOpenDialog = (type) => {
-    closeAddMenu();
-    resetForms();
-    setActiveDialog(type);
-  };
+  const handleOpenDialog = useCallback(
+    (type) => {
+      closeAddMenu();
+      resetForms();
+      setActiveDialog(type);
+    },
+    [resetForms]
+  );
 
-  const handleCloseDialog = () => {
-    setActiveDialog(null);
-  };
+  const handleCloseDialog = useCallback(() => setActiveDialog(null), []);
 
-  // --- CREATE / UPDATE handlers ---
-  const submitPrime = async () => {
+  // --------- MUTATIONS (optimistic, no full refetch) ----------
+  const submitPrime = useCallback(async () => {
     try {
       const payload = {
-        employe_id: primeForm.employe_id,
+        employe_id: primeForm.employe_id || employe_id,
         prime_id: primeForm.prime_id,
         montant: primeForm.montant,
         id: primeForm.id ?? undefined,
       };
 
       if (primeForm.id) {
-        await axios.put(`${API.employePrimes}/${primeForm.id}`, payload);
+        await api.put(`${API.employePrimes}/${primeForm.id}`, payload);
+        setEmployePrimes((prev) =>
+          prev.map((r) =>
+            r.id === primeForm.id
+              ? {
+                  ...r,
+                  ...payload,
+                  prime: primes.find((p) => String(p.id) === String(payload.prime_id)) || r.prime,
+                }
+              : r
+          )
+        );
         setSnackbarMessage("Prime modifiée avec succès !");
       } else {
-        await axios.post(API.employePrimes, payload);
+        // create branch
+        const { data } = await api.post(API.employePrimes, payload);
+        const created = data ?? {
+          ...payload,
+          id: Date.now(),
+        };
+        created.prime =
+          created.prime || primes.find((p) => String(p.id) === String(created.prime_id)) || null;
+
+        setEmployePrimes((prev) => [...prev, created]);
         setSnackbarMessage("Prime ajoutée avec succès !");
       }
+
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchAll();
       handleCloseDialog();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -209,26 +272,30 @@ export default function Rubriques({ employe_id }) {
         setSnackbarOpen(true);
       }
     }
-  };
+  }, [API.employePrimes, employe_id, handleCloseDialog, primeForm]);
 
-  const submitAbsence = async () => {
+  const submitAbsence = useCallback(async () => {
     try {
       const payload = {
-        employe_id: absenceForm.employe_id,
+        employe_id: absenceForm.employe_id || employe_id,
         date: absenceForm.date,
         id: absenceForm.id ?? undefined,
       };
 
       if (absenceForm.id) {
-        await axios.put(`${API.absences}/${absenceForm.id}`, payload);
+        await api.put(`${API.absences}/${absenceForm.id}`, payload);
+        setAbsences((prev) =>
+          prev.map((r) => (r.id === absenceForm.id ? { ...r, ...payload } : r))
+        );
         setSnackbarMessage("Absence modifiée avec succès !");
       } else {
-        await axios.post(API.absences, payload);
+        const { data } = await api.post(API.absences, payload);
+        setAbsences((prev) => [...prev, data ?? { ...payload, id: Date.now() }]);
         setSnackbarMessage("Absence ajoutée avec succès !");
       }
+
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchAll();
       handleCloseDialog();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -240,12 +307,12 @@ export default function Rubriques({ employe_id }) {
         setSnackbarOpen(true);
       }
     }
-  };
+  }, [API.absences, employe_id, handleCloseDialog, absenceForm]);
 
-  const submitHeure = async () => {
+  const submitHeure = useCallback(async () => {
     try {
       const payload = {
-        employe_id: heureForm.employe_id,
+        employe_id: heureForm.employe_id || employe_id,
         date: heureForm.date,
         jour: heureForm.jour,
         periode: heureForm.periode,
@@ -254,15 +321,19 @@ export default function Rubriques({ employe_id }) {
       };
 
       if (heureForm.id) {
-        await axios.put(`${API.heuresSupp}/${heureForm.id}`, payload);
+        await api.put(`${API.heuresSupp}/${heureForm.id}`, payload);
+        setHeuresSupp((prev) =>
+          prev.map((r) => (r.id === heureForm.id ? { ...r, ...payload } : r))
+        );
         setSnackbarMessage("Heure supplémentaire modifiée avec succès !");
       } else {
-        await axios.post(API.heuresSupp, payload);
+        const { data } = await api.post(API.heuresSupp, payload);
+        setHeuresSupp((prev) => [...prev, data ?? { ...payload, id: Date.now() }]);
         setSnackbarMessage("Heure supplémentaire ajoutée avec succès !");
       }
+
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchAll();
       handleCloseDialog();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -274,18 +345,17 @@ export default function Rubriques({ employe_id }) {
         setSnackbarOpen(true);
       }
     }
-  };
+  }, [API.heuresSupp, employe_id, handleCloseDialog, heureForm]);
 
-  const submitJours = async () => {
+  const submitJours = useCallback(async () => {
     try {
-      const payload = {
-        jours_travailles: joursForm.jours_travailles,
-      };
-      await axios.post(`http://localhost:8000/api/jours-trav/${employe_id}`, payload);
+      const payload = { jours_travailles: joursForm.jours_travailles };
+      await api.post(`/jours-trav/${employe_id}`, payload);
+      // Optimistic update employe
+      setEmploye((prev) => (prev ? { ...prev, jours_travailles: payload.jours_travailles } : prev));
       setSnackbarMessage("Jours travaillés modifiée avec succès !");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchAll();
       handleCloseDialog();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -295,29 +365,28 @@ export default function Rubriques({ employe_id }) {
         setSnackbarOpen(true);
       }
     }
-  };
+  }, [employe_id, handleCloseDialog, joursForm]);
 
-  // --- EDIT handlers (populate forms) ---
-  const editPrime = (row) => {
-    setPrimeForm({
-      id: row.id,
-      employe_id: row.employe_id ?? employe_id ?? "",
-      prime_id: row.prime_id ?? row.prime?.id ?? "",
-      montant: row.montant ?? "",
-    });
-    setActiveDialog("prime");
-  };
+  // EDIT handlers (populate forms)
+  const editPrime = useCallback(
+    (row) => {
+      setPrimeForm({
+        id: row.id,
+        employe_id: row.employe_id ?? employe_id ?? "",
+        prime_id: row.prime_id ?? row.prime?.id ?? "",
+        montant: row.montant ?? "",
+      });
+      setActiveDialog("prime");
+    },
+    [employe_id]
+  );
 
-  const editAbsence = (row) => {
-    setAbsenceForm({
-      id: row.id,
-      employe_id: row.employe_id ?? "",
-      date: row.date ?? "",
-    });
+  const editAbsence = useCallback((row) => {
+    setAbsenceForm({ id: row.id, employe_id: row.employe_id ?? "", date: row.date ?? "" });
     setActiveDialog("absence");
-  };
+  }, []);
 
-  const editHeure = (row) => {
+  const editHeure = useCallback((row) => {
     setHeureForm({
       id: row.id,
       employe_id: row.employe_id ?? "",
@@ -327,38 +396,43 @@ export default function Rubriques({ employe_id }) {
       nombre: row.nombre ?? "",
     });
     setActiveDialog("heure");
-  };
+  }, []);
 
-  const editJours = (row) => {
-    setJoursForm({
-      employe_id: row.employe_id ?? "",
-      jours_travailles: row.jours_travailles ?? "",
-    });
-    setActiveDialog("jours");
-  };
+  const editJours = useCallback(
+    (row) => {
+      setJoursForm({
+        employe_id: row.employe_id ?? employe_id ?? "",
+        jours_travailles: row.jours_travailles ?? "",
+      });
+      setActiveDialog("jours");
+    },
+    [employe_id]
+  );
 
-  // --- DELETE ---
-  const askDelete = (type, id) => {
+  // DELETE
+  const askDelete = useCallback((type, id) => {
     setDeleteTarget({ type, id });
     setConfirmDeleteOpen(true);
-  };
+  }, []);
 
-  const confirmDelete = async () => {
+  const confirmDelete = useCallback(async () => {
     try {
       const { type, id } = deleteTarget;
       if (type === "prime") {
-        await axios.delete(`${API.employePrimes}/${id}`);
+        await api.delete(`${API.employePrimes}/${id}`);
+        setEmployePrimes((prev) => prev.filter((r) => r.id !== id));
         setSnackbarMessage("Prime supprimée avec succès !");
       } else if (type === "absence") {
-        await axios.delete(`${API.absences}/${id}`);
+        await api.delete(`${API.absences}/${id}`);
+        setAbsences((prev) => prev.filter((r) => r.id !== id));
         setSnackbarMessage("Absence supprimée avec succès !");
       } else if (type === "heure") {
-        await axios.delete(`${API.heuresSupp}/${id}`);
+        await api.delete(`${API.heuresSupp}/${id}`);
+        setHeuresSupp((prev) => prev.filter((r) => r.id !== id));
         setSnackbarMessage("Heure supplémentaire supprimée avec succès !");
       }
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchAll();
     } catch (e) {
       setSnackbarMessage("Erreur lors de la suppression !");
       setSnackbarSeverity("error");
@@ -367,14 +441,22 @@ export default function Rubriques({ employe_id }) {
       setConfirmDeleteOpen(false);
       setDeleteTarget({ type: null, id: null });
     }
-  };
+  }, [API.absences, API.employePrimes, API.heuresSupp, deleteTarget]);
 
-  // --- Unified rows ---
+  const getPrimeMotif = React.useCallback(
+    (row) => {
+      if (row?.prime?.motif) return row.prime.motif;
+      const p = primes.find((x) => String(x.id) === String(row.prime_id));
+      return p?.motif ?? "Prime";
+    },
+    [primes]
+  );
+  // Unified rows
   const rows = useMemo(() => {
     const primeRows = (employePrimes || []).map((r) => ({
       __type: "prime",
       id: r.id,
-      libelle: r.prime?.motif ?? "Prime",
+      libelle: getPrimeMotif(r), // <-- was r.prime?.motif ?? "Prime"
       value: r.montant,
       raw: r,
     }));
@@ -383,7 +465,7 @@ export default function Rubriques({ employe_id }) {
       __type: "absence",
       id: r.id,
       libelle: "Absence",
-      value: 1, // always 1 on table
+      value: 1,
       raw: r,
     }));
 
@@ -395,12 +477,12 @@ export default function Rubriques({ employe_id }) {
       raw: r,
     }));
 
-    const e = Array.isArray(employe) ? employe[0] : employe; // robust if it ever becomes an array
+    const e = Array.isArray(employe) ? employe[0] : employe;
     const joursRows = e
       ? [
           {
             __type: "jours",
-            id: e.id ?? "jours", // give it a stable id for actions/keys
+            id: e.id ?? "jours",
             libelle: "Jours travaillés",
             value: Number(e.jours_travailles ?? 0),
             raw: e,
@@ -409,171 +491,187 @@ export default function Rubriques({ employe_id }) {
       : [];
 
     return [...joursRows, ...primeRows, ...absenceRows, ...heureRows];
-  }, [employePrimes, absences, heuresSupp, employe_id]);
+  }, [employePrimes, absences, heuresSupp, employe]);
 
-  const columns = [
-    { Header: "Libellé", accessor: "libelle" },
-    { Header: "Montant / Nombre", accessor: "value" },
-    {
-      Header: "Actions",
-      accessor: "actions",
-      Cell: ({ row }) => {
-        const { __type, raw } = row.original;
-        return (
-          <>
-            {__type === "prime" && can("prime", "update") && (
-              <Tooltip
-                title="modifier"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      backgroundColor: "rgba(26,115,232,0.8)",
-                      color: "#fff",
-                      fontSize: "0.8rem",
+  const columns = useMemo(
+    () => [
+      { Header: "Libellé", accessor: "libelle" },
+      { Header: "Montant / Nombre", accessor: "value" },
+      {
+        Header: "Actions",
+        accessor: "actions",
+        Cell: ({ row }) => {
+          const { __type, raw } = row.original;
+          return (
+            <>
+              {__type === "prime" && can("prime", "update") && (
+                <Tooltip
+                  title="modifier"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(26,115,232,0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
                     },
-                  },
-                }}
-              >
-                <Button variant="text" color="primary" size="large" onClick={() => editPrime(raw)}>
-                  <Icon>edit</Icon>
-                </Button>
-              </Tooltip>
-            )}
-            {__type === "absence" && can("absence", "update") && (
-              <Tooltip
-                title="modifier"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      backgroundColor: "rgba(26,115,232,0.8)",
-                      color: "#fff",
-                      fontSize: "0.8rem",
-                    },
-                  },
-                }}
-              >
-                <Button
-                  variant="text"
-                  color="primary"
-                  size="large"
-                  onClick={() => editAbsence(raw)}
+                  }}
                 >
-                  <Icon>edit</Icon>
-                </Button>
-              </Tooltip>
-            )}
-            {__type === "heure" && can("heure_supplementaire", "update") && (
-              <Tooltip
-                title="modifier"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      backgroundColor: "rgba(26,115,232,0.8)",
-                      color: "#fff",
-                      fontSize: "0.8rem",
+                  <Button
+                    variant="text"
+                    color="primary"
+                    size="large"
+                    onClick={() => editPrime(raw)}
+                  >
+                    <Icon>edit</Icon>
+                  </Button>
+                </Tooltip>
+              )}
+              {__type === "absence" && can("absence", "update") && (
+                <Tooltip
+                  title="modifier"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(26,115,232,0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
                     },
-                  },
-                }}
-              >
-                <Button variant="text" color="primary" size="large" onClick={() => editHeure(raw)}>
-                  <Icon>edit</Icon>
-                </Button>
-              </Tooltip>
-            )}
-
-            {__type === "jours" && can("heure_supplementaire", "update") && (
-              <Tooltip
-                title="modifier"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      backgroundColor: "rgba(26,115,232,0.8)",
-                      color: "#fff",
-                      fontSize: "0.8rem",
-                    },
-                  },
-                }}
-              >
-                <Button variant="text" color="primary" size="large" onClick={() => editJours(raw)}>
-                  <Icon>edit</Icon>
-                </Button>
-              </Tooltip>
-            )}
-
-            {__type === "prime" && can("prime", "delete") && (
-              <Tooltip
-                title="supprimer"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      backgroundColor: "rgba(244,67,53,0.8)",
-                      color: "#fff",
-                      fontSize: "0.8rem",
-                    },
-                  },
-                }}
-              >
-                <Button
-                  variant="text"
-                  size="large"
-                  onClick={() => askDelete("prime", raw.id)}
-                  sx={{ ml: 1 }}
+                  }}
                 >
-                  <Icon sx={{ color: "error.main" }}>delete</Icon>
-                </Button>
-              </Tooltip>
-            )}
-            {__type === "absence" && can("absence", "delete") && (
-              <Tooltip
-                title="supprimer"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      backgroundColor: "rgba(244,67,53,0.8)",
-                      color: "#fff",
-                      fontSize: "0.8rem",
+                  <Button
+                    variant="text"
+                    color="primary"
+                    size="large"
+                    onClick={() => editAbsence(raw)}
+                  >
+                    <Icon>edit</Icon>
+                  </Button>
+                </Tooltip>
+              )}
+              {__type === "heure" && can("heure_supplementaire", "update") && (
+                <Tooltip
+                  title="modifier"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(26,115,232,0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
                     },
-                  },
-                }}
-              >
-                <Button
-                  variant="text"
-                  size="large"
-                  onClick={() => askDelete("absence", raw.id)}
-                  sx={{ ml: 1 }}
+                  }}
                 >
-                  <Icon sx={{ color: "error.main" }}>delete</Icon>
-                </Button>
-              </Tooltip>
-            )}
-            {__type === "heure" && can("heure_supplementaire", "delete") && (
-              <Tooltip
-                title="supprimer"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      backgroundColor: "rgba(244,67,53,0.8)",
-                      color: "#fff",
-                      fontSize: "0.8rem",
+                  <Button
+                    variant="text"
+                    color="primary"
+                    size="large"
+                    onClick={() => editHeure(raw)}
+                  >
+                    <Icon>edit</Icon>
+                  </Button>
+                </Tooltip>
+              )}
+              {__type === "jours" && can("heure_supplementaire", "update") && (
+                <Tooltip
+                  title="modifier"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(26,115,232,0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
                     },
-                  },
-                }}
-              >
-                <Button
-                  variant="text"
-                  size="large"
-                  onClick={() => askDelete("heure", raw.id)}
-                  sx={{ ml: 1 }}
+                  }}
                 >
-                  <Icon sx={{ color: "error.main" }}>delete</Icon>
-                </Button>
-              </Tooltip>
-            )}
-          </>
-        );
+                  <Button
+                    variant="text"
+                    color="primary"
+                    size="large"
+                    onClick={() => editJours(raw)}
+                  >
+                    <Icon>edit</Icon>
+                  </Button>
+                </Tooltip>
+              )}
+              {__type === "prime" && can("prime", "delete") && (
+                <Tooltip
+                  title="supprimer"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(244,67,53,0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
+                    },
+                  }}
+                >
+                  <Button
+                    variant="text"
+                    size="large"
+                    onClick={() => askDelete("prime", raw.id)}
+                    sx={{ ml: 1 }}
+                  >
+                    <Icon sx={{ color: "error.main" }}>delete</Icon>
+                  </Button>
+                </Tooltip>
+              )}
+              {__type === "absence" && can("absence", "delete") && (
+                <Tooltip
+                  title="supprimer"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(244,67,53,0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
+                    },
+                  }}
+                >
+                  <Button
+                    variant="text"
+                    size="large"
+                    onClick={() => askDelete("absence", raw.id)}
+                    sx={{ ml: 1 }}
+                  >
+                    <Icon sx={{ color: "error.main" }}>delete</Icon>
+                  </Button>
+                </Tooltip>
+              )}
+              {__type === "heure" && can("heure_supplementaire", "delete") && (
+                <Tooltip
+                  title="supprimer"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "rgba(244,67,53,0.8)",
+                        color: "#fff",
+                        fontSize: "0.8rem",
+                      },
+                    },
+                  }}
+                >
+                  <Button
+                    variant="text"
+                    size="large"
+                    onClick={() => askDelete("heure", raw.id)}
+                    sx={{ ml: 1 }}
+                  >
+                    <Icon sx={{ color: "error.main" }}>delete</Icon>
+                  </Button>
+                </Tooltip>
+              )}
+            </>
+          );
+        },
       },
-    },
-  ];
+    ],
+    [askDelete, can, editAbsence, editHeure, editJours, editPrime]
+  );
 
   if (loading) {
     return (
@@ -650,11 +748,7 @@ export default function Rubriques({ employe_id }) {
                   SelectProps={{ native: true }}
                 >
                   <option value="">-- Choisir un employé --</option>
-                  {employes.map((emp) => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.nom} {emp.prenom}
-                    </option>
-                  ))}
+                  {/* You can populate 'employes' here if you later add it */}
                 </TextField>
               </Grid>
             )}
@@ -700,7 +794,7 @@ export default function Rubriques({ employe_id }) {
         </DialogActions>
       </Dialog>
 
-      {/* Absence Dialog (date only in form, not in table) */}
+      {/* Absence Dialog */}
       <Dialog open={activeDialog === "absence"} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>{absenceForm.id ? "Modifier" : "Ajouter"} Absence</DialogTitle>
         <DialogContent>
@@ -733,7 +827,7 @@ export default function Rubriques({ employe_id }) {
         </DialogActions>
       </Dialog>
 
-      {/* Heure Supp Dialog (date only in form, not in table) */}
+      {/* Heure Supp Dialog */}
       <Dialog open={activeDialog === "heure"} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>{heureForm.id ? "Modifier" : "Ajouter"} Heure supp</DialogTitle>
         <DialogContent>
@@ -809,6 +903,7 @@ export default function Rubriques({ employe_id }) {
         </DialogActions>
       </Dialog>
 
+      {/* Jours travaillés */}
       <Dialog open={activeDialog === "jours"} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>Modifier jours travaillés</DialogTitle>
         <DialogContent>

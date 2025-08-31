@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'password_changed',
         'role',
+        'periode',
     ];
 
     public function employe()

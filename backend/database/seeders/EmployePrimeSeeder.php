@@ -15,12 +15,12 @@ class EmployePrimeSeeder extends Seeder
     {
         EmployePrime::insert([
             [
-                'employe_id' => 2,
+                'employe_id' => 1,
                 'prime_id' => 1,
                 'montant' => 1000,
             ],
             [
-                'employe_id' => 2,
+                'employe_id' => 1,
                 'prime_id' => 2,
                 'montant' => 1600,
             ],

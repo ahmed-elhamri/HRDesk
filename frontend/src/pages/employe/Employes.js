@@ -48,6 +48,7 @@ export default function Employes() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // "success", "error", etc.
   const navigate = useNavigate();
+  const periode = localStorage.getItem("periode");
 
   // New state for delete confirmation dialog
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -62,7 +63,7 @@ export default function Employes() {
 
   const fetchEmployes = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/employes");
+      const res = await axios.get("http://localhost:8000/api/employes", { params: { periode } });
       setEmployes(res.data);
       setLoadError(false);
     } catch (error) {
@@ -113,6 +114,7 @@ export default function Employes() {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("periode", periode);
 
     try {
       await axios.post("http://localhost:8000/api/import-employes", formData, {

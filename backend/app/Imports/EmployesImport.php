@@ -16,39 +16,12 @@ use Maatwebsite\Excel\Row;
 
 class EmployesImport implements OnEachRow, WithHeadingRow
 {
+    public function __construct(
+        public readonly string $periode,
+    ){}
     public function onRow(Row $row)
     {
-        $user = User::create([
-            'email' => $row['email'],
-            'password' => Hash::make('123456'),
-            'role' => 'EMPLOYE'
-        ]);
-
-        Permission::insert([
-            [
-                'user_id' => $user->id,
-                'entity' => 'departement',
-            ],
-            [
-                'user_id' => $user->id,
-                'entity' => 'service',
-            ],
-            [
-                'user_id' => $user->id,
-                'entity' => 'fonction',
-            ],
-            [
-                'user_id' => $user->id,
-                'entity' => 'employe',
-            ],
-            [
-                'user_id' => $user->id,
-                'entity' => 'prime',
-            ],
-        ]);
-
         $employe = Employe::create([
-            'user_id' => $user->id,
             'fonction_id' => (int) trim($row['fonction_id']),
             'matricule' => trim($row['matricule']),
             'civilite' => trim($row['civilite']),
@@ -65,6 +38,8 @@ class EmployesImport implements OnEachRow, WithHeadingRow
             'situation_familiale' => trim($row['situation_familiale']),
             'date_embauche' => trim($row['date_embauche']),
             'date_entree' => trim($row['date_entree']),
+            'periode' => $this->periode,
+            'jours_travailles' => 26,
         ]);
         $contrat = Contrat::create([
             'employe_id' => $employe->id,

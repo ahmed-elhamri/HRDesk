@@ -16,7 +16,7 @@ class EmployeSeeder extends Seeder
     {
         Employe::create([
             'fonction_id' => 1,
-            'matricule' => "001",
+            'matricule' => "MAT0001",
             'civilite' => "M",
             'nom' => "ELHAMRI",
             'prenom' => "Ahmed",
@@ -31,7 +31,7 @@ class EmployeSeeder extends Seeder
             'situation_familiale' => "CELIBATAIRE",
             'date_embauche' => fake()->date(),
             'date_entree' => fake()->date(),
-            'periode' => now()->format('Y-m').'-01',
+            'periode' => '2025-01-01',
             'jours_travailles' => '26',
         ]);
 

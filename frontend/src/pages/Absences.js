@@ -46,6 +46,7 @@ export default function Absences() {
 
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
+  const periode = localStorage.getItem("periode");
 
   const { permissions } = useAuth();
   const navigate = useNavigate();
@@ -62,8 +63,8 @@ export default function Absences() {
     setLoadError(false);
     try {
       const [absencesRes, employesRes] = await Promise.all([
-        axios.get(baseUrl),
-        axios.get(employesUrl),
+        axios.get(baseUrl, { params: { periode } }),
+        axios.get(employesUrl, { params: { periode } }),
       ]);
       setItems(absencesRes.data || []);
       setEmployes(employesRes.data || []);

@@ -12,19 +12,32 @@ use App\Models\Employe;
 use App\Models\EmployePrime;
 use App\Models\Paiement;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class MergeEmployesController extends Controller
 {
-    public function run(){
-        $employes = Employe::where('periode', now()->format('Y-m').'-01')->get();
-        foreach ($employes as $employe) {
-            $newUser = $employe->replicate();
-            $newUser->periode = now()->format('Y-m').'-01';
-            $newUser->save();
+    public function run(Request $request){
+        $employesDe = Employe::where('periode', $request->periodeDe.'-01')->get();
+        $employesVers = Employe::where('periode', $request->periodeVers.'-01')->get();
+        if ($employesDe->isEmpty()){
+            return response()->json([
+                'message' => 'Les employés de la période ' . $request->periodeDe .  ' n\'existent pas',
+            ], 422);
+        }
+        if ($employesVers->isNotEmpty()){
+            return response()->json([
+                'message' => 'Les employés de la période ' . $request->periodeVers .  ' existent déjà',
+            ], 422);
+        }
+
+        foreach ($employesDe as $employe) {
+//            $newUser = $employe->replicate();
+//            $newUser->periode = $request->periodeVers.'-01';
+//            $newUser->save();
 
             $newEmploye = $employe->replicate();
-            $newEmploye->periode = now()->format('Y-m').'-01';
+            $newEmploye->periode = $request->periodeVers.'-01';
             $newEmploye->save();
 
             $newContrat = Contrat::where('employe_id', $employe->id)->first()->replicate();
@@ -50,11 +63,11 @@ class MergeEmployesController extends Controller
                 $newEmployePrime->save();
             }
 
-            $Bulletins = Bulletin::where('employe_id', $employe->id)->where('periode', now()->subMonth()->format('Y-m').'-01')->get();
+            $Bulletins = Bulletin::where('employe_id', $employe->id)->where('periode', $request->periodeDe.'-01')->get();
             foreach ($Bulletins as $bulletin) {
                 $newBulletin = $bulletin->replicate();
                 $newBulletin->employe_id = $newEmploye->id;
-                $newBulletin->periode = now()->format('Y-m').'-01';
+                $newBulletin->periode = $request->periodeVers.'-01';
                 $newBulletin->save();
 
                 $bulletins_details = BulletinDetails::where('bulletin_id', $bulletin->id)->get();
@@ -64,5 +77,8 @@ class MergeEmployesController extends Controller
                 }
             }
         }
+        return response()->json([
+            'message' => 'Les employés ont été transférés avec succès.',
+        ], 201);
     }
 }

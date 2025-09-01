@@ -28,7 +28,7 @@ import { setAuthToken } from "./http";
 
 // Axios helper (reuses same base and auth; optional but reduces overhead)
 const api = axios.create({ baseURL: "http://localhost:8000/api" });
-
+// read token now
 export default function Rubriques({ employe_id, mois }) {
   const { permissions } = useAuth();
 
@@ -56,6 +56,23 @@ export default function Rubriques({ employe_id, mois }) {
 
   // Which dialog is open: "prime" | "absence" | "heure" | "jours" | null
   const [activeDialog, setActiveDialog] = useState(null);
+
+  const bootstrapToken = localStorage.getItem("token");
+  if (bootstrapToken) {
+    api.defaults.headers.common.Authorization = `Bearer ${bootstrapToken}`;
+    api.defaults.headers.common.Accept = "application/json";
+  }
+  // keep api in sync when the component mounts
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    setAuthToken(t || null); // keeps the global axios in case you still use it elsewhere
+    if (t) {
+      api.defaults.headers.common.Authorization = `Bearer ${t}`;
+      api.defaults.headers.common.Accept = "application/json";
+    } else {
+      delete api.defaults.headers.common.Authorization;
+    }
+  }, []);
 
   // Forms
   const [primeForm, setPrimeForm] = useState({
